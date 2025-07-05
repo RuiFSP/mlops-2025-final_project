@@ -8,6 +8,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix
 import mlflow
 import mlflow.sklearn
+from mlflow.models import infer_signature
 from typing import Dict, Any, Optional
 import logging
 import joblib
@@ -100,7 +101,9 @@ class ModelTrainer:
         if 'UNKNOWN' not in encoder.classes_:
             encoder.classes_ = np.append(encoder.classes_, 'UNKNOWN')
         
-        return pd.Series(encoder.transform(series_mapped.astype(str)), index=series.index)
+        # Transform and convert to numpy array first, then to Series
+        transformed_data = np.array(encoder.transform(series_mapped.astype(str)))
+        return pd.Series(transformed_data, index=series.index)
     
     def train(self, train_data: pd.DataFrame, val_data: pd.DataFrame) -> Any:
         """Train the prediction model.
@@ -152,7 +155,8 @@ class ModelTrainer:
             
             # Log parameters
             mlflow.log_param("model_type", self.model_type)
-            mlflow.log_param("n_estimators", self.model.n_estimators)
+            if hasattr(self.model, 'n_estimators'):
+                mlflow.log_param("n_estimators", getattr(self.model, 'n_estimators', 'N/A'))
             mlflow.log_param("train_size", len(X_train))
             mlflow.log_param("val_size", len(X_val))
             
@@ -166,10 +170,11 @@ class ModelTrainer:
                 
                 # Log classification report
                 report = classification_report(y_val, val_predictions, output_dict=True)
-                for class_name, metrics in report.items():
-                    if isinstance(metrics, dict):
-                        for metric_name, value in metrics.items():
-                            mlflow.log_metric(f"{class_name}_{metric_name}", value)
+                if isinstance(report, dict):
+                    for class_name, metrics in report.items():
+                        if isinstance(metrics, dict):
+                            for metric_name, value in metrics.items():
+                                mlflow.log_metric(f"{class_name}_{metric_name}", value)
                 
                 logger.info(f"Validation accuracy: {val_accuracy:.4f}")
             
@@ -179,7 +184,7 @@ class ModelTrainer:
             mlflow.log_metric("cv_std_accuracy", cv_scores.std())
             
             # Log model
-            mlflow.sklearn.log_model(self.model, "model")
+            mlflow.sklearn.log_model(self.model, "model")  # type: ignore
             
             # Save model locally
             self.save_model("models/")

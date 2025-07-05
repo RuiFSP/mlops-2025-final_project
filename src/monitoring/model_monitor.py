@@ -1,359 +1,195 @@
-"""Model monitoring with EvidentlyAI for Premier League match prediction."""
+"""Model monitoring for Premier League match prediction.
+
+Note: This module is currently using simplified monitoring due to Evidently API changes.
+For production use, consider updating to the latest Evidently API or using the simplified
+monitor in model_monitor_simple.py.
+"""
 
 import pandas as pd
 import numpy as np
-from evidently import ColumnMapping
-from evidently.report import Report
-from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, DataQualityPreset
-from evidently.metrics import *
 from pathlib import Path
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import json
 from datetime import datetime
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Import the simplified monitor
+from .model_monitor_simple import SimpleModelMonitor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class ModelMonitor:
-    """Monitor model performance and data drift using EvidentlyAI."""
+    """Model monitoring class - currently using simplified approach."""
     
-    def __init__(self, reference_data: Optional[pd.DataFrame] = None):
+    def __init__(self, reference_data: pd.DataFrame, 
+                 target_column: str = 'result',
+                 prediction_column: str = 'predicted_result'):
         """Initialize the model monitor.
         
         Args:
-            reference_data: Reference dataset for drift detection
+            reference_data: Reference dataset for comparison
+            target_column: Name of the target column
+            prediction_column: Name of the prediction column
         """
         self.reference_data = reference_data
-        self.reports_dir = Path("monitoring_reports")
-        self.reports_dir.mkdir(exist_ok=True)
+        self.target_column = target_column
+        self.prediction_column = prediction_column
+        self.logger = logger
         
-        # Define column mapping for football data
-        self.column_mapping = ColumnMapping(
-            target='result',
-            prediction='predicted_result',
-            numerical_features=['goal_difference', 'total_goals', 'month'],
-            categorical_features=['home_team', 'away_team']
-        )
+        # Use simplified monitor for now
+        self.simple_monitor = SimpleModelMonitor(reference_data, target_column, prediction_column)
     
-    def set_reference_data(self, reference_data: pd.DataFrame):
-        """Set reference data for drift detection.
+    def generate_data_drift_report(self, current_data: pd.DataFrame, 
+                                 reference_data: pd.DataFrame,
+                                 output_dir: str = "monitoring_reports") -> Dict[str, Any]:
+        """Generate data drift report using simplified approach.
         
         Args:
+            current_data: Current dataset
+            reference_data: Reference dataset  
+            output_dir: Directory to save reports
+            
+        Returns:
+            Dictionary with drift metrics
+        """
+        logger.info("Generating data drift report using simplified approach")
+        return self.simple_monitor.calculate_data_drift(current_data)
+    
+    def generate_target_drift_report(self, current_data: pd.DataFrame,
+                                   reference_data: pd.DataFrame,
+                                   output_dir: str = "monitoring_reports") -> Dict[str, Any]:
+        """Generate target drift report using simplified approach.
+        
+        Args:
+            current_data: Current dataset
             reference_data: Reference dataset
-        """
-        self.reference_data = reference_data
-        logger.info(f"Reference data set with {len(reference_data)} samples")
-    
-    def generate_data_drift_report(self, current_data: pd.DataFrame, save_html: bool = True) -> Dict[str, Any]:
-        """Generate data drift report comparing current data to reference.
-        
-        Args:
-            current_data: Current dataset to compare
-            save_html: Whether to save HTML report
+            output_dir: Directory to save reports
             
         Returns:
-            Dictionary containing drift metrics
+            Dictionary with target drift metrics
         """
-        if self.reference_data is None:
-            raise ValueError("Reference data not set. Call set_reference_data() first.")
+        logger.info("Generating target drift report using simplified approach")
         
-        logger.info("Generating data drift report...")
+        if self.target_column not in current_data.columns or self.target_column not in reference_data.columns:
+            logger.warning(f"Target column '{self.target_column}' not found in data")
+            return {}
         
-        # Create data drift report
-        data_drift_report = Report(metrics=[
-            DataDriftPreset(),
-        ])
+        # Compare target distributions
+        ref_dist = reference_data[self.target_column].value_counts(normalize=True)
+        current_dist = current_data[self.target_column].value_counts(normalize=True)
         
-        # Run the report
-        data_drift_report.run(
-            reference_data=self.reference_data,
-            current_data=current_data,
-            column_mapping=self.column_mapping
-        )
-        
-        # Save HTML report
-        if save_html:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            html_path = self.reports_dir / f"data_drift_report_{timestamp}.html"
-            data_drift_report.save_html(str(html_path))
-            logger.info(f"Data drift report saved to {html_path}")
-        
-        # Extract metrics
-        report_dict = data_drift_report.as_dict()
-        
-        # Parse drift results
-        drift_metrics = {}
-        try:
-            metrics = report_dict.get('metrics', [])
-            for metric in metrics:
-                if metric.get('metric') == 'DatasetDriftMetric':
-                    result = metric.get('result', {})
-                    drift_metrics['dataset_drift'] = result.get('dataset_drift', False)
-                    drift_metrics['drift_score'] = result.get('drift_score', 0.0)
-                    drift_metrics['number_of_drifted_columns'] = result.get('number_of_drifted_columns', 0)
-                    
-        except Exception as e:
-            logger.error(f"Error parsing drift metrics: {e}")
-            drift_metrics = {'error': str(e)}
-        
-        return drift_metrics
+        return {
+            'target_drift': {
+                'reference_distribution': ref_dist.to_dict(),
+                'current_distribution': current_dist.to_dict(),
+                'drift_detected': not ref_dist.equals(current_dist)
+            }
+        }
     
-    def generate_target_drift_report(self, current_data: pd.DataFrame, save_html: bool = True) -> Dict[str, Any]:
-        """Generate target drift report.
+    def generate_data_quality_report(self, current_data: pd.DataFrame,
+                                   reference_data: pd.DataFrame,
+                                   output_dir: str = "monitoring_reports") -> Dict[str, Any]:
+        """Generate data quality report using simplified approach.
         
         Args:
-            current_data: Current dataset to compare
-            save_html: Whether to save HTML report
+            current_data: Current dataset
+            reference_data: Reference dataset
+            output_dir: Directory to save reports
             
         Returns:
-            Dictionary containing target drift metrics
+            Dictionary with data quality metrics
         """
-        if self.reference_data is None:
-            raise ValueError("Reference data not set. Call set_reference_data() first.")
+        logger.info("Generating data quality report using simplified approach")
         
-        logger.info("Generating target drift report...")
+        quality_score = self.simple_monitor._calculate_data_quality_score(current_data)
         
-        # Create target drift report
-        target_drift_report = Report(metrics=[
-            TargetDriftPreset(),
-        ])
-        
-        # Run the report
-        target_drift_report.run(
-            reference_data=self.reference_data,
-            current_data=current_data,
-            column_mapping=self.column_mapping
-        )
-        
-        # Save HTML report
-        if save_html:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            html_path = self.reports_dir / f"target_drift_report_{timestamp}.html"
-            target_drift_report.save_html(str(html_path))
-            logger.info(f"Target drift report saved to {html_path}")
-        
-        # Extract metrics
-        report_dict = target_drift_report.as_dict()
-        
-        # Parse target drift results
-        target_metrics = {}
-        try:
-            metrics = report_dict.get('metrics', [])
-            for metric in metrics:
-                if metric.get('metric') == 'TargetDriftMetric':
-                    result = metric.get('result', {})
-                    target_metrics['target_drift'] = result.get('drift_detected', False)
-                    target_metrics['drift_score'] = result.get('drift_score', 0.0)
-                    
-        except Exception as e:
-            logger.error(f"Error parsing target drift metrics: {e}")
-            target_metrics = {'error': str(e)}
-        
-        return target_metrics
+        return {
+            'data_quality': {
+                'quality_score': quality_score,
+                'missing_values': current_data.isnull().sum().to_dict(),
+                'duplicate_rows': current_data.duplicated().sum(),
+                'total_rows': len(current_data)
+            }
+        }
     
-    def generate_data_quality_report(self, data: pd.DataFrame, save_html: bool = True) -> Dict[str, Any]:
-        """Generate data quality report.
+    def generate_model_performance_report(self, predictions: pd.DataFrame,
+                                        actual_values: pd.DataFrame,
+                                        output_dir: str = "monitoring_reports") -> Dict[str, Any]:
+        """Generate model performance report using simplified approach.
         
         Args:
-            data: Dataset to analyze
-            save_html: Whether to save HTML report
-            
-        Returns:
-            Dictionary containing data quality metrics
-        """
-        logger.info("Generating data quality report...")
-        
-        # Create data quality report
-        data_quality_report = Report(metrics=[
-            DataQualityPreset(),
-        ])
-        
-        # Run the report
-        data_quality_report.run(
-            reference_data=data,
-            current_data=None,
-            column_mapping=self.column_mapping
-        )
-        
-        # Save HTML report
-        if save_html:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            html_path = self.reports_dir / f"data_quality_report_{timestamp}.html"
-            data_quality_report.save_html(str(html_path))
-            logger.info(f"Data quality report saved to {html_path}")
-        
-        # Extract metrics
-        report_dict = data_quality_report.as_dict()
-        
-        # Parse data quality results
-        quality_metrics = {}
-        try:
-            metrics = report_dict.get('metrics', [])
-            for metric in metrics:
-                metric_name = metric.get('metric', '')
-                if 'Missing' in metric_name:
-                    result = metric.get('result', {})
-                    quality_metrics['missing_values'] = result
-                elif 'Duplicated' in metric_name:
-                    result = metric.get('result', {})
-                    quality_metrics['duplicated_rows'] = result
-                    
-        except Exception as e:
-            logger.error(f"Error parsing data quality metrics: {e}")
-            quality_metrics = {'error': str(e)}
-        
-        return quality_metrics
-    
-    def generate_model_performance_report(
-        self, 
-        data: pd.DataFrame, 
-        predictions: np.ndarray,
-        save_html: bool = True
-    ) -> Dict[str, Any]:
-        """Generate model performance report.
-        
-        Args:
-            data: Dataset with actual results
             predictions: Model predictions
-            save_html: Whether to save HTML report
+            actual_values: Actual values
+            output_dir: Directory to save reports
             
         Returns:
-            Dictionary containing performance metrics
+            Dictionary with performance metrics
         """
-        logger.info("Generating model performance report...")
+        logger.info("Generating model performance report using simplified approach")
         
-        # Add predictions to data
-        data_with_predictions = data.copy()
-        data_with_predictions['predicted_result'] = predictions
+        # Combine predictions and actual values
+        combined_data = pd.DataFrame({
+            self.prediction_column: predictions.iloc[:, 0] if not predictions.empty else [],
+            self.target_column: actual_values.iloc[:, 0] if not actual_values.empty else []
+        })
         
-        # Create performance report
-        performance_report = Report(metrics=[
-            ClassificationClassBalance(),
-            ClassificationConfusionMatrix(),
-            ClassificationQualityMetric(),
-        ])
+        return self.simple_monitor.calculate_model_performance(combined_data)
+    
+    def generate_comprehensive_report(self, current_data: pd.DataFrame,
+                                    predictions: Optional[pd.DataFrame] = None,
+                                    actual_values: Optional[pd.DataFrame] = None,
+                                    output_dir: str = "monitoring_reports") -> Dict[str, Any]:
+        """Generate comprehensive monitoring report.
         
-        # Run the report
-        performance_report.run(
-            reference_data=data_with_predictions,
-            current_data=None,
-            column_mapping=self.column_mapping
-        )
+        Args:
+            current_data: Current dataset
+            predictions: Model predictions (optional)
+            actual_values: Actual values (optional)
+            output_dir: Directory to save reports
+            
+        Returns:
+            Dictionary with all monitoring metrics
+        """
+        logger.info("Generating comprehensive monitoring report")
         
-        # Save HTML report
-        if save_html:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            html_path = self.reports_dir / f"model_performance_report_{timestamp}.html"
-            performance_report.save_html(str(html_path))
-            logger.info(f"Model performance report saved to {html_path}")
+        # Add predictions and actual values to current data if provided
+        if predictions is not None and actual_values is not None:
+            current_data = current_data.copy()
+            current_data[self.prediction_column] = predictions.iloc[:, 0] if not predictions.empty else None
+            current_data[self.target_column] = actual_values.iloc[:, 0] if not actual_values.empty else None
         
-        # Extract metrics
-        report_dict = performance_report.as_dict()
-        
-        # Parse performance results
-        performance_metrics = {}
-        try:
-            metrics = report_dict.get('metrics', [])
-            for metric in metrics:
-                metric_name = metric.get('metric', '')
-                result = metric.get('result', {})
-                
-                if 'Quality' in metric_name:
-                    performance_metrics['accuracy'] = result.get('accuracy', 0.0)
-                    performance_metrics['precision'] = result.get('precision', 0.0)
-                    performance_metrics['recall'] = result.get('recall', 0.0)
-                    performance_metrics['f1'] = result.get('f1', 0.0)
-                    
-        except Exception as e:
-            logger.error(f"Error parsing performance metrics: {e}")
-            performance_metrics = {'error': str(e)}
-        
-        return performance_metrics
+        return self.simple_monitor.generate_monitoring_report(current_data, output_dir)
     
     def check_for_alerts(self, drift_metrics: Dict[str, Any], threshold: float = 0.5) -> List[str]:
-        """Check for alerts based on drift metrics.
+        """Check for monitoring alerts.
         
         Args:
-            drift_metrics: Drift metrics from report
-            threshold: Threshold for triggering alerts
+            drift_metrics: Data drift metrics
+            threshold: Threshold for alerts
             
         Returns:
             List of alert messages
         """
-        alerts = []
-        
-        # Check dataset drift
-        if drift_metrics.get('dataset_drift', False):
-            alerts.append("🚨 Dataset drift detected!")
-        
-        # Check drift score
-        drift_score = drift_metrics.get('drift_score', 0.0)
-        if drift_score > threshold:
-            alerts.append(f"⚠️ High drift score: {drift_score:.3f} (threshold: {threshold})")
-        
-        # Check number of drifted columns
-        drifted_columns = drift_metrics.get('number_of_drifted_columns', 0)
-        if drifted_columns > 0:
-            alerts.append(f"📊 {drifted_columns} columns showing drift")
-        
-        return alerts
-    
-    def save_monitoring_summary(self, summary: Dict[str, Any]):
-        """Save monitoring summary to JSON file.
-        
-        Args:
-            summary: Monitoring summary dictionary
-        """
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        summary_path = self.reports_dir / f"monitoring_summary_{timestamp}.json"
-        
-        with open(summary_path, 'w') as f:
-            json.dump(summary, f, indent=2, default=str)
-        
-        logger.info(f"Monitoring summary saved to {summary_path}")
+        return self.simple_monitor.check_for_alerts(drift_metrics, threshold)
 
 
-def monitor_model_performance(
-    reference_data: pd.DataFrame,
-    current_data: pd.DataFrame,
-    predictions: np.ndarray
-) -> Dict[str, Any]:
-    """Main function to monitor model performance.
+def create_model_monitor(reference_data_path: str, 
+                        target_column: str = 'result',
+                        prediction_column: str = 'predicted_result') -> ModelMonitor:
+    """Create a model monitor instance.
     
     Args:
-        reference_data: Reference dataset
-        current_data: Current dataset
-        predictions: Model predictions
+        reference_data_path: Path to reference dataset
+        target_column: Name of the target column
+        prediction_column: Name of the prediction column
         
     Returns:
-        Monitoring summary
+        ModelMonitor instance
     """
-    monitor = ModelMonitor(reference_data)
-    
-    # Generate reports
-    data_drift = monitor.generate_data_drift_report(current_data)
-    target_drift = monitor.generate_target_drift_report(current_data)
-    data_quality = monitor.generate_data_quality_report(current_data)
-    performance = monitor.generate_model_performance_report(current_data, predictions)
-    
-    # Check for alerts
-    alerts = monitor.check_for_alerts(data_drift)
-    
-    # Create summary
-    summary = {
-        'timestamp': datetime.now().isoformat(),
-        'data_drift': data_drift,
-        'target_drift': target_drift,
-        'data_quality': data_quality,
-        'model_performance': performance,
-        'alerts': alerts,
-        'reference_data_size': len(reference_data),
-        'current_data_size': len(current_data)
-    }
-    
-    # Save summary
-    monitor.save_monitoring_summary(summary)
-    
-    return summary
+    reference_data = pd.read_csv(reference_data_path)
+    return ModelMonitor(reference_data, target_column, prediction_column)

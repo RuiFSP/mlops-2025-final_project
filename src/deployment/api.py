@@ -121,7 +121,7 @@ async def predict_match(match: MatchInput):
         
         # Convert prediction to readable format
         result_map = {'H': 'Home Win', 'A': 'Away Win', 'D': 'Draw'}
-        readable_prediction = result_map.get(prediction, prediction)
+        readable_prediction = result_map.get(prediction, str(prediction))
         
         return MatchPrediction(
             home_team=match.home_team,
@@ -147,7 +147,10 @@ async def predict_matches_bulk(matches: BulkMatchInput):
             'date': match.date or '2024-01-01',
             'season': match.season,
             'home_score': 0,  # Placeholder
-            'away_score': 0   # Placeholder
+            'away_score': 0,  # Placeholder
+            'home_odds': match.home_odds,
+            'draw_odds': match.draw_odds,
+            'away_odds': match.away_odds
         } for match in matches.matches])
         
         # Preprocess data
@@ -165,7 +168,7 @@ async def predict_matches_bulk(matches: BulkMatchInput):
         
         prediction_results = []
         for i, (match, prediction) in enumerate(zip(matches.matches, predictions)):
-            readable_prediction = result_map.get(prediction, prediction)
+            readable_prediction = result_map.get(prediction, str(prediction))
             prediction_results.append(MatchPrediction(
                 home_team=match.home_team,
                 away_team=match.away_team,

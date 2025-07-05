@@ -131,12 +131,13 @@ class ModelEvaluator:
             f.write("=" * 50 + "\n\n")
             f.write("Overall Metrics:\n")
             f.write("-" * 20 + "\n")
-            for metric_name, value in metrics.items():
-                f.write(f"{metric_name}: {value:.4f}\n")
-            f.write("\n")
-            f.write("Classification Report:\n")
-            f.write("-" * 20 + "\n")
-            f.write(report)
+            for metric_name, value in metrics.items():            f.write(f"{metric_name}: {value:.4f}\n")
+        f.write("\n")
+        f.write("Classification Report:\n")
+        f.write("-" * 20 + "\n")
+        # Ensure report is a string
+        report_str = str(report) if not isinstance(report, str) else report
+        f.write(report_str)
         
         logger.info(f"Evaluation report saved to {report_path}")
         
