@@ -63,7 +63,36 @@ python -m src.main train --data-path data/real_data/
 ```bash
 # Start the API server
 python -m src.deployment.api
-# API available at http://localhost:8001
+# API available at http://localhost:8000
+
+# Note: Model will only be loaded if model artifacts exist in ./models/
+# To train a model first, run: python -m src.main
+```
+
+## 🐳 Docker Quick Start
+
+### Development (API only)
+```bash
+# Build and run API container
+docker build -t premier-league-predictor .
+docker run -p 8000:8000 premier-league-predictor
+
+# Test health endpoint
+curl http://localhost:8000/health
+```
+
+### Production (with trained model)
+```bash
+# Ensure you have a trained model first
+python -m src.main  # This will train and save model artifacts
+
+# Run with model mounted
+docker run -p 8000:8000 -v $(pwd)/models:/app/models premier-league-predictor
+
+# Test prediction endpoint
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"home_team": "Arsenal", "away_team": "Chelsea", "month": 3, "goal_difference": 0, "total_goals": 0}'
 ```
 
 ## 📊 Data Pipeline
@@ -97,38 +126,51 @@ python -m src.deployment.api
 
 ### Available Endpoints
 ```bash
-# Health check
-GET http://localhost:8001/health
+# Health check (shows model loading status)
+GET http://localhost:8000/health
 
-# Single match prediction
-POST http://localhost:8001/predict
+# Model information
+GET http://localhost:8000/model/info
+
+# Available teams
+GET http://localhost:8000/teams
+
+# Match prediction
+POST http://localhost:8000/predict
 {
   "home_team": "Arsenal",
-  "away_team": "Manchester United", 
-  "home_odds": 2.0,
-  "draw_odds": 3.0,
-  "away_odds": 2.5
+  "away_team": "Manchester United",
+  "month": 3,
+  "goal_difference": 0,
+  "total_goals": 0
 }
 
 # Response
 {
   "home_team": "Arsenal",
   "away_team": "Manchester United",
-  "predicted_result": "Draw"
+  "predicted_result": "Home Win",
+  "prediction_confidence": null
 }
 ```
 
 ### Example Usage
 ```bash
+# Check API health and model status
+curl http://localhost:8000/health
+
+# Get available teams
+curl http://localhost:8000/teams
+
 # Predict Arsenal vs Man United
-curl -X POST "http://localhost:8001/predict" \
+curl -X POST "http://localhost:8000/predict" \
   -H "Content-Type: application/json" \
   -d '{
     "home_team": "Arsenal",
     "away_team": "Manchester United",
-    "home_odds": 2.0,
-    "draw_odds": 3.0,
-    "away_odds": 2.5
+    "month": 3,
+    "goal_difference": 0,
+    "total_goals": 0
   }'
 ```
 
@@ -228,18 +270,53 @@ mlflow server --backend-store-uri sqlite:///mlflow.db --host 0.0.0.0 --port 5000
 ## 🚀 Deployment & Production
 
 ### Docker Deployment
+
+#### Basic API Container
 ```bash
 # Build secure image (Ubuntu 22.04 base, non-root user)
 docker build -t premier-league-predictor .
 
-# Run container on port 8001
-docker run -p 8001:8001 premier-league-predictor
+# Run container on port 8000 (API only, no model loaded)
+docker run -p 8000:8000 premier-league-predictor
+```
+
+#### Full Prediction Service with Model
+```bash
+# Run container with trained model mounted
+docker run -p 8000:8000 -v $(pwd)/models:/app/models premier-league-predictor
+
+# Test the full prediction service
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"home_team": "Arsenal", "away_team": "Chelsea", "month": 3, "goal_difference": 0, "total_goals": 0}'
+```
+
+#### Available Docker Endpoints
+```bash
+# Health check (shows model status)
+curl http://localhost:8000/health
+# Returns: {"status":"healthy","model_loaded":true}
+
+# Model information
+curl http://localhost:8000/model/info
+# Returns: {"model_type":"random_forest","model_loaded":true,"features":[...]}
+
+# Team list
+curl http://localhost:8000/teams
+# Returns: {"teams": ["Arsenal", "Chelsea", ...]}
+
+# Match prediction
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"home_team": "Arsenal", "away_team": "Chelsea", "month": 3, "goal_difference": 0, "total_goals": 0}'
+# Returns: {"home_team":"Arsenal","away_team":"Chelsea","predicted_result":"Home Win","prediction_confidence":null}
 ```
 
 **Security Features:**
 - Ubuntu 22.04 LTS base image (no known vulnerabilities)
 - Non-root user execution (`appuser`)
 - Minimal attack surface with clean package installation
+- Optimized build with proper layer caching
 
 ### Production Checklist
 - ✅ Real data pipeline established
