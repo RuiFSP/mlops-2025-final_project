@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class ModelTrainer:
     """Handles training of Premier League match prediction models."""
 
-    def __init__(self, model_type: str = "random_forest"):
+    def __init__(self, model_type: str = "random_forest") -> None:
         """Initialize the model trainer.
 
         Args:
@@ -29,7 +29,7 @@ class ModelTrainer:
         """
         self.model_type = model_type
         self.model = None
-        self.label_encoders = {}
+        self.label_encoders: dict[str, LabelEncoder] = {}
         self.scaler = StandardScaler()
 
     def prepare_features(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -161,7 +161,11 @@ class ModelTrainer:
             )
 
             # Train model
-            self.model.fit(X_train_scaled, y_train)
+            if self.model is not None:
+                self.model.fit(X_train_scaled, y_train)
+            else:
+                logger.error("Model is not initialized")
+                return None
 
             # Log parameters
             mlflow.log_param("model_type", self.model_type)
@@ -173,7 +177,7 @@ class ModelTrainer:
             mlflow.log_param("val_size", len(X_val))
 
             # Evaluate on validation set
-            if not X_val.empty and not y_val.empty:
+            if not X_val.empty and not y_val.empty and self.model is not None:
                 val_predictions = self.model.predict(X_val_scaled)
                 val_accuracy = (val_predictions == y_val).mean()
 

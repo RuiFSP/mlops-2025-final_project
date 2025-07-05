@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 class ModelEvaluator:
     """Handles evaluation of Premier League match prediction models."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the model evaluator."""
-        self.evaluation_results = {}
+        self.evaluation_results: dict[str, Any] = {}
 
     def evaluate(self, model: Any, test_data: pd.DataFrame) -> Dict[str, float]:
         """Evaluate model performance on test data.

@@ -11,13 +11,13 @@ load_dotenv()
 
 
 @click.group()
-def cli():
+def cli() -> None:
     """Premier League Match Predictor CLI."""
 
 
 @cli.command()
 @click.option("--data-path", default="data/", help="Path to data directory")
-def train(data_path: str):
+def train(data_path: str) -> None:
     """Train the prediction model."""
     click.echo("Starting model training...")
 
@@ -39,14 +39,14 @@ def train(data_path: str):
 @cli.command()
 @click.option("--model-path", required=True, help="Path to trained model")
 @click.option("--data-path", default="data/", help="Path to data directory")
-def predict(model_path: str, data_path: str):
+def predict(model_path: str, data_path: str) -> None:
     """Make predictions using trained model."""
     click.echo(f"Making predictions with model: {model_path}")
     # TODO: Implement prediction logic
 
 
 @cli.command()
-def serve():
+def serve() -> None:
     """Start the prediction API server."""
     click.echo("Starting API server...")
     try:

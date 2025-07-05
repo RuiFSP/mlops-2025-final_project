@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class DataCollector:
     """Collects Premier League data from football-data.co.uk."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.session = requests.Session()
         self.session.headers.update(
             {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
@@ -206,7 +206,7 @@ class DataCollector:
             raise
 
 
-def main():
+def main() -> Optional[pd.DataFrame]:
     """Main function to collect data."""
     logging.basicConfig(level=logging.INFO)
     collector = DataCollector()
