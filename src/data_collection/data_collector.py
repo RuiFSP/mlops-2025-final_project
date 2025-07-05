@@ -1,7 +1,7 @@
-"""Alternative data sources for Premier League data.
+"""Data collection module for Premier League data.
 
-This module provides fallback data collection methods when the primary
-Football-Data.org API is not available or restricted.
+This module provides data collection methods from football-data.co.uk
+for Premier League match data.
 """
 
 import pandas as pd
@@ -10,71 +10,19 @@ from typing import Optional, Dict, Any
 import logging
 from pathlib import Path
 import time
+from io import StringIO
 
 logger = logging.getLogger(__name__)
 
 
-class AlternativeDataCollector:
-    """Collects Premier League data from alternative sources."""
+class DataCollector:
+    """Collects Premier League data from football-data.co.uk."""
     
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
         })
-    
-    def collect_from_github_datasets(self) -> Optional[pd.DataFrame]:
-        """Collect data from GitHub open datasets."""
-        try:
-            # Try multiple sources
-            sources = [
-                {
-                    'url': 'https://raw.githubusercontent.com/footballcsv/england/master/2023-24/1-premierleague.csv',
-                    'name': '2023-24 Premier League'
-                },
-                {
-                    'url': 'https://raw.githubusercontent.com/footballcsv/england/master/2022-23/1-premierleague.csv',
-                    'name': '2022-23 Premier League'
-                },
-                {
-                    'url': 'https://raw.githubusercontent.com/footballcsv/england/master/2021-22/1-premierleague.csv',
-                    'name': '2021-22 Premier League'
-                }
-            ]
-            
-            all_data = []
-            
-            for source in sources:
-                try:
-                    logger.info(f"Fetching data from {source['name']}...")
-                    response = self.session.get(source['url'], timeout=30)
-                    response.raise_for_status()
-                    
-                    # Parse CSV data properly
-                    from io import StringIO
-                    csv_data = StringIO(response.text)
-                    df = pd.read_csv(csv_data)
-                    df['season'] = source['name']
-                    all_data.append(df)
-                    
-                    logger.info(f"Successfully loaded {len(df)} matches from {source['name']}")
-                    time.sleep(1)  # Be respectful to the server
-                    
-                except Exception as e:
-                    logger.warning(f"Failed to load {source['name']}: {e}")
-                    continue
-            
-            if all_data:
-                combined_df = pd.concat(all_data, ignore_index=True)
-                logger.info(f"Combined {len(combined_df)} matches from {len(all_data)} seasons")
-                return combined_df
-            else:
-                logger.error("No data could be loaded from GitHub sources")
-                return None
-                
-        except Exception as e:
-            logger.error(f"Error collecting from GitHub datasets: {e}")
-            return None
     
     def collect_from_football_data_co_uk(self) -> Optional[pd.DataFrame]:
         """Collect data from football-data.co.uk."""
@@ -90,9 +38,6 @@ class AlternativeDataCollector:
                     
                     response = self.session.get(url, timeout=30)
                     response.raise_for_status()
-                    
-                    # Parse CSV data properly
-                    from io import StringIO
                     
                     # Clean the response text - remove any non-printable characters except newlines and tabs
                     clean_text = ''.join(char for char in response.text if char.isprintable() or char in '\r\n\t')
@@ -121,98 +66,68 @@ class AlternativeDataCollector:
             logger.error(f"Error collecting from football-data.co.uk: {e}")
             return None
     
-    def standardize_data(self, df: pd.DataFrame, source: str) -> pd.DataFrame:
-        """Standardize data from different sources to a common format."""
+    def standardize_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Standardize data from football-data.co.uk to common format."""
         try:
-            standardized = None
-            
-            if source == 'github':
-                # GitHub footballcsv format
-                standardized = pd.DataFrame({
-                    'date': pd.to_datetime(df['Date'] if 'Date' in df.columns else df['date']),
-                    'home_team': df['Home'] if 'Home' in df.columns else df['home'],
-                    'away_team': df['Away'] if 'Away' in df.columns else df['away'],
-                    'home_score': df['HomeGoals'] if 'HomeGoals' in df.columns else df['home_goals'],
-                    'away_score': df['AwayGoals'] if 'AwayGoals' in df.columns else df['away_goals'],
-                    'season': df['season']
-                })
-            
-            elif source == 'football_data_co_uk':
-                # Football-Data.co.uk format
-                # Handle both 4-digit and 2-digit year formats
+            # Handle both 4-digit and 2-digit year formats
+            try:
+                # Try 4-digit year format first
+                dates = pd.to_datetime(df['Date'], format='%d/%m/%Y')
+            except ValueError:
                 try:
-                    # Try 4-digit year format first
-                    dates = pd.to_datetime(df['Date'], format='%d/%m/%Y')
+                    # Try 2-digit year format
+                    dates = pd.to_datetime(df['Date'], format='%d/%m/%y')
                 except ValueError:
-                    try:
-                        # Try 2-digit year format
-                        dates = pd.to_datetime(df['Date'], format='%d/%m/%y')
-                    except ValueError:
-                        # Fall back to automatic parsing
-                        dates = pd.to_datetime(df['Date'], dayfirst=True)
-                
-                standardized = pd.DataFrame({
-                    'date': dates,
-                    'home_team': df['HomeTeam'],
-                    'away_team': df['AwayTeam'],
-                    'home_score': df['FTHG'],  # Full Time Home Goals
-                    'away_score': df['FTAG'],  # Full Time Away Goals
-                    'season': df['season']
-                })
-                
-                # Add additional features available in this dataset
-                if 'B365H' in df.columns:  # Bet365 home odds
-                    standardized['home_odds'] = df['B365H']
-                if 'B365D' in df.columns:  # Bet365 draw odds
-                    standardized['draw_odds'] = df['B365D']
-                if 'B365A' in df.columns:  # Bet365 away odds
-                    standardized['away_odds'] = df['B365A']
-            else:
-                # Default standardization - try to find common columns
-                standardized = df.copy()
+                    # Fall back to automatic parsing
+                    dates = pd.to_datetime(df['Date'], dayfirst=True)
             
-            if standardized is not None:
-                # Create result column
-                standardized['result'] = standardized.apply(
-                    lambda row: 'H' if row['home_score'] > row['away_score'] 
-                    else 'A' if row['away_score'] > row['home_score'] 
-                    else 'D', axis=1
-                )
-                
-                # Create goal difference
-                standardized['goal_difference'] = standardized['home_score'] - standardized['away_score']
-                
-                logger.info(f"Standardized {len(standardized)} matches from {source}")
-                return standardized
-            else:
-                logger.warning(f"Could not standardize data from {source}, returning original")
-                return df
+            standardized = pd.DataFrame({
+                'date': dates,
+                'home_team': df['HomeTeam'],
+                'away_team': df['AwayTeam'],
+                'home_score': df['FTHG'],  # Full Time Home Goals
+                'away_score': df['FTAG'],  # Full Time Away Goals
+                'season': df['season']
+            })
+            
+            # Add additional features available in this dataset
+            if 'B365H' in df.columns:  # Bet365 home odds
+                standardized['home_odds'] = df['B365H']
+            if 'B365D' in df.columns:  # Bet365 draw odds
+                standardized['draw_odds'] = df['B365D']
+            if 'B365A' in df.columns:  # Bet365 away odds
+                standardized['away_odds'] = df['B365A']
+            
+            # Create result column
+            standardized['result'] = standardized.apply(
+                lambda row: 'H' if row['home_score'] > row['away_score'] 
+                else 'A' if row['away_score'] > row['home_score'] 
+                else 'D', axis=1
+            )
+            
+            # Create goal difference
+            standardized['goal_difference'] = standardized['home_score'] - standardized['away_score']
+            
+            logger.info(f"Standardized {len(standardized)} matches from football-data.co.uk")
+            return standardized
             
         except Exception as e:
-            logger.error(f"Error standardizing data from {source}: {e}")
+            logger.error(f"Error standardizing data: {e}")
             return df
     
     def collect_all_data(self) -> Optional[pd.DataFrame]:
-        """Collect data from football-data.co.uk as primary source."""
-        # Use football-data.co.uk as primary source
-        football_data_uk = self.collect_from_football_data_co_uk()
-        if football_data_uk is not None:
-            standardized_data = self.standardize_data(football_data_uk, 'football_data_co_uk')
+        """Collect and standardize data from football-data.co.uk."""
+        # Collect data from football-data.co.uk
+        raw_data = self.collect_from_football_data_co_uk()
+        if raw_data is not None:
+            standardized_data = self.standardize_data(raw_data)
             
             # Remove duplicates based on available columns
-            duplicate_columns = []
-            if 'date' in standardized_data.columns:
-                duplicate_columns.append('date')
-            if 'home_team' in standardized_data.columns:
-                duplicate_columns.append('home_team')
-            if 'away_team' in standardized_data.columns:
-                duplicate_columns.append('away_team')
-            
-            if duplicate_columns:
-                standardized_data = standardized_data.drop_duplicates(
-                    subset=duplicate_columns, 
-                    keep='first'
-                )
+            duplicate_columns = ['date', 'home_team', 'away_team']
+            standardized_data = standardized_data.drop_duplicates(
+                subset=duplicate_columns, 
+                keep='first'
+            )
             
             logger.info(f"Collected {len(standardized_data)} unique matches from football-data.co.uk")
             return standardized_data
@@ -242,7 +157,6 @@ class AlternativeDataCollector:
                 f.write("=" * 30 + "\n\n")
                 f.write(f"Total matches: {len(df)}\n")
                 
-                # Only include date info if date column exists
                 if 'date' in df.columns:
                     f.write(f"Date range: {df['date'].min()} to {df['date'].max()}\n")
                 
@@ -265,8 +179,9 @@ class AlternativeDataCollector:
 
 
 def main():
-    """Main function to collect alternative data."""
-    collector = AlternativeDataCollector()
+    """Main function to collect data."""
+    logging.basicConfig(level=logging.INFO)
+    collector = DataCollector()
     
     # Collect data
     df = collector.collect_all_data()
@@ -276,19 +191,19 @@ def main():
         output_dir = Path("data/real_data")
         collector.save_data(df, output_dir)
         
-        print(f"SUCCESS: Successfully collected {len(df)} matches!")
-        print(f"DATA: Data saved to {output_dir}")
+        logger.info(f"Successfully collected {len(df)} matches!")
+        logger.info(f"Data saved to {output_dir}")
         
-        # Show some statistics
-        print("\nDATA STATISTICS:")
-        print(f"  - Total matches: {len(df)}")
-        print(f"  - Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
-        print(f"  - Seasons: {', '.join(sorted(df['season'].unique()))}")
-        print(f"  - Teams: {len(set(df['home_team'].unique()) | set(df['away_team'].unique()))}")
+        # Log statistics
+        logger.info("Data Statistics:")
+        logger.info(f"  - Total matches: {len(df)}")
+        logger.info(f"  - Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
+        logger.info(f"  - Seasons: {', '.join(sorted(df['season'].unique()))}")
+        logger.info(f"  - Teams: {len(set(df['home_team'].unique()) | set(df['away_team'].unique()))}")
         
         return df
     else:
-        print("ERROR: Failed to collect any data")
+        logger.error("Failed to collect any data")
         return None
 
 

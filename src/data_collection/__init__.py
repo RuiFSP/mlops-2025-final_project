@@ -1,5 +1,5 @@
 """Data collection module for Premier League match data."""
 
-from .data_collector import AlternativeDataCollector
+from .data_collector import DataCollector
 
-__all__ = ['AlternativeDataCollector']
+__all__ = ['DataCollector']
