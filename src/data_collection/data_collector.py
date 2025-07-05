@@ -28,7 +28,7 @@ class DataCollector:
     def collect_from_football_data_co_uk(self) -> Optional[pd.DataFrame]:
         """Collect data from football-data.co.uk."""
         try:
-            # Historical data from football-data.co.uk - 8 recent seasons with consistent format
+            # Historical data from football-data.co.uk - 8 recent seasons
             seasons = ["2324", "2223", "2122", "2021", "1920", "1819", "1718", "1617"]
             all_data = []
 
@@ -42,7 +42,7 @@ class DataCollector:
                     response = self.session.get(url, timeout=30)
                     response.raise_for_status()
 
-                    # Clean the response text - remove any non-printable characters except newlines and tabs
+                    # Clean response text - remove non-printable chars
                     clean_text = "".join(
                         char
                         for char in response.text
@@ -55,7 +55,8 @@ class DataCollector:
                     all_data.append(df)
 
                     logger.info(
-                        f"Successfully loaded {len(df)} matches from season 20{season[:2]}-20{season[2:]}"
+                        f"Successfully loaded {len(df)} matches from season "
+                        f"20{season[:2]}-20{season[2:]}"
                     )
                     time.sleep(1)  # Be respectful to the server
 
@@ -151,7 +152,8 @@ class DataCollector:
             )
 
             logger.info(
-                f"Collected {len(standardized_data)} unique matches from football-data.co.uk"
+                f"Collected {len(standardized_data)} unique matches from "
+                f"football-data.co.uk"
             )
             return standardized_data
         else:
@@ -187,9 +189,10 @@ class DataCollector:
                     f.write(f"Seasons: {', '.join(df['season'].unique())}\n")
 
                 if "home_team" in df.columns and "away_team" in df.columns:
-                    f.write(
-                        f"Teams: {len(set(df['home_team'].unique()) | set(df['away_team'].unique()))}\n"
+                    teams_count = len(
+                        set(df["home_team"].unique()) | set(df["away_team"].unique())
                     )
+                    f.write(f"Teams: {teams_count}\n")
 
                 f.write(f"Columns: {', '.join(df.columns)}\n\n")
 
@@ -223,12 +226,14 @@ def main():
         logger.info("Data Statistics:")
         logger.info(f"  - Total matches: {len(df)}")
         logger.info(
-            f"  - Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}"
+            f"  - Date range: {df['date'].min().strftime('%Y-%m-%d')} to "
+            f"{df['date'].max().strftime('%Y-%m-%d')}"
         )
         logger.info(f"  - Seasons: {', '.join(sorted(df['season'].unique()))}")
-        logger.info(
-            f"  - Teams: {len(set(df['home_team'].unique()) | set(df['away_team'].unique()))}"
+        teams_count = len(
+            set(df["home_team"].unique()) | set(df["away_team"].unique())
         )
+        logger.info(f"  - Teams: {teams_count}")
 
         return df
     else:

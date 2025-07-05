@@ -1,8 +1,8 @@
 """Model monitoring for Premier League match prediction.
 
 This module provides simplified monitoring functionality due to Evidently API changes.
-For production use, consider updating to the latest Evidently API or using the simplified
-monitor in model_monitor_simple.py.
+For production use, consider updating to the latest Evidently API or using the
+simplified monitor in model_monitor_simple.py.
 """
 
 import logging

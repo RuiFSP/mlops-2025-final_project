@@ -106,7 +106,8 @@ class SimpleModelMonitor:
 
         if self.prediction_column not in current_data.columns:
             logger.warning(
-                f"Prediction column '{self.prediction_column}' not found in current data"
+                f"Prediction column '{self.prediction_column}' not found in "
+                f"current data"
             )
             return {}
 

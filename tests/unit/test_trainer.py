@@ -55,8 +55,9 @@ class TestModelTrainer:
         assert "home_team" in result.columns
         assert "away_team" in result.columns
         assert "month" in result.columns
-        # goal_difference and total_goals are not included as they're computed from match results
-        # which wouldn't be available before the match for prediction
+        # goal_difference and total_goals are not included as they're computed
+        # from match results which wouldn't be available before the match
+        # for prediction
 
     def test_encode_with_unknown(self):
         """Test encoding with unknown categories."""

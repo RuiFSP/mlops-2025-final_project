@@ -203,7 +203,8 @@ class ModelTrainer:
             self.save_model("models/")
 
             logger.info(
-                f"Model training completed. CV accuracy: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}"
+                f"Model training completed. CV accuracy: {cv_scores.mean():.4f} ± "
+                f"{cv_scores.std():.4f}"
             )
 
             return self.model
