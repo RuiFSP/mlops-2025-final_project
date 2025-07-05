@@ -230,9 +230,7 @@ def main():
             f"{df['date'].max().strftime('%Y-%m-%d')}"
         )
         logger.info(f"  - Seasons: {', '.join(sorted(df['season'].unique()))}")
-        teams_count = len(
-            set(df["home_team"].unique()) | set(df["away_team"].unique())
-        )
+        teams_count = len(set(df["home_team"].unique()) | set(df["away_team"].unique()))
         logger.info(f"  - Teams: {teams_count}")
 
         return df
