@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 import matplotlib.pyplot as plt
+import mlflow
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -16,8 +17,6 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-
-import mlflow
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

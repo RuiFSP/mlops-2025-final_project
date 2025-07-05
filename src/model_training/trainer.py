@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import joblib
+import mlflow
 import mlflow.sklearn
 import numpy as np
 import pandas as pd
@@ -12,8 +13,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-
-import mlflow
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
