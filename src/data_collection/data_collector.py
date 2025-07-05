@@ -276,19 +276,19 @@ def main():
         output_dir = Path("data/real_data")
         collector.save_data(df, output_dir)
         
-        print(f"✅ Successfully collected {len(df)} matches!")
-        print(f"📊 Data saved to {output_dir}")
+        print(f"SUCCESS: Successfully collected {len(df)} matches!")
+        print(f"DATA: Data saved to {output_dir}")
         
         # Show some statistics
-        print("\n📈 Data Statistics:")
-        print(f"  • Total matches: {len(df)}")
-        print(f"  • Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
-        print(f"  • Seasons: {', '.join(sorted(df['season'].unique()))}")
-        print(f"  • Teams: {len(set(df['home_team'].unique()) | set(df['away_team'].unique()))}")
+        print("\nDATA STATISTICS:")
+        print(f"  - Total matches: {len(df)}")
+        print(f"  - Date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
+        print(f"  - Seasons: {', '.join(sorted(df['season'].unique()))}")
+        print(f"  - Teams: {len(set(df['home_team'].unique()) | set(df['away_team'].unique()))}")
         
         return df
     else:
-        print("❌ Failed to collect any data")
+        print("ERROR: Failed to collect any data")
         return None
 
 

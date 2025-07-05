@@ -32,6 +32,7 @@ class SimpleModelMonitor:
         self.target_column = target_column
         self.prediction_column = prediction_column
         self.logger = logger
+        self.last_performance = None  # Track last performance metric
         
     def calculate_data_drift(self, current_data: pd.DataFrame, 
                            threshold: float = 0.1) -> Dict[str, Any]:
@@ -106,6 +107,9 @@ class SimpleModelMonitor:
         # Calculate metrics
         accuracy = accuracy_score(y_true, y_pred)
         report = classification_report(y_true, y_pred, output_dict=True)
+        
+        # Store last performance for alerts
+        self.last_performance = accuracy
         
         return {
             'accuracy': accuracy,
