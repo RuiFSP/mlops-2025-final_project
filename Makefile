@@ -38,7 +38,7 @@ setup-dev: install-dev
 
 # Run MLflow server
 mlflow-server:
-	uv run mlflow server --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root ./mlflow/artifacts --host 0.0.0.0 --port 5000
+	uv run mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --host 0.0.0.0 --port 5000
 
 # Run Prefect server
 prefect-server:

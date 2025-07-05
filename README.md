@@ -225,7 +225,6 @@ pytest --cov=src tests/
 
 # Specific test suites
 pytest tests/unit/
-pytest tests/integration/
 ```
 
 ### Code Quality

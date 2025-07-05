@@ -37,15 +37,6 @@ def train(data_path: str) -> None:
 
 
 @cli.command()
-@click.option("--model-path", required=True, help="Path to trained model")
-@click.option("--data-path", default="data/", help="Path to data directory")
-def predict(model_path: str, data_path: str) -> None:
-    """Make predictions using trained model."""
-    click.echo(f"Making predictions with model: {model_path}")
-    # TODO: Implement prediction logic
-
-
-@cli.command()
 def serve() -> None:
     """Start the prediction API server."""
     click.echo("Starting API server...")
