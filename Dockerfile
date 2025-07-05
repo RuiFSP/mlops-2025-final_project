@@ -38,7 +38,6 @@ COPY --chown=appuser:appuser README.md ./
 # Copy source code with correct ownership
 COPY --chown=appuser:appuser src/ ./src/
 COPY --chown=appuser:appuser data/ ./data/
-COPY --chown=appuser:appuser mlflow/ ./mlflow/
 
 # Install Python dependencies
 RUN uv sync --frozen
