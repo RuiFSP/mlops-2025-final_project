@@ -28,19 +28,20 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 # Set working directory
 WORKDIR /app
 
-# Copy dependency files
-COPY pyproject.toml uv.lock ./
+# Create home directory and set permissions first
+RUN mkdir -p /home/appuser/.cache && chown -R appuser:appuser /home/appuser
+
+# Copy dependency files with correct ownership
+COPY --chown=appuser:appuser pyproject.toml uv.lock ./
+COPY --chown=appuser:appuser README.md ./
+
+# Copy source code with correct ownership
+COPY --chown=appuser:appuser src/ ./src/
+COPY --chown=appuser:appuser data/ ./data/
+COPY --chown=appuser:appuser mlflow/ ./mlflow/
 
 # Install Python dependencies
 RUN uv sync --frozen
-
-# Copy source code
-COPY src/ ./src/
-COPY data/ ./data/
-COPY mlflow/ ./mlflow/
-
-# Change ownership to non-root user
-RUN chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
