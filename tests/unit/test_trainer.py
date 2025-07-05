@@ -17,7 +17,7 @@ from src.model_training.trainer import ModelTrainer  # noqa: E402
 @pytest.fixture(autouse=True)
 def mock_mlflow():
     """Mock MLflow for all tests."""
-    with patch('src.model_training.trainer.mlflow') as mock:
+    with patch("src.model_training.trainer.mlflow") as mock:
         # Mock the context manager
         mock.start_run.return_value.__enter__ = lambda x: None
         mock.start_run.return_value.__exit__ = lambda x, y, z, w: None
