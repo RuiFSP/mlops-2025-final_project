@@ -1,0 +1,71 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data files (exclude large datasets but keep summary and samples)
+data/*.csv
+data/*.parquet
+!data/real_data/data_summary.txt
+!data/real_data/premier_league_matches.csv
+# Keep the main dataset for reproducibility
+
+# Model artifacts (exclude large models but keep small ones for demo)
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.onnx
+# Keep for demo/testing
+!models/.gitkeep
+
+# MLflow (exclude run data but keep structure)
+mlruns/*/
+mlflow/artifacts/
+mlflow.db
+!mlruns/.gitkeep
+
+# Evaluation reports
+evaluation_reports/*.png
+evaluation_reports/*.pdf
+evaluation_reports/*.html
+
+# Logs
+logs/
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Coverage reports
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Docker
+.dockerignore
+
+# Temporary files
+*.tmp
+*.temp
+*~
