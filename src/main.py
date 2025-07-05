@@ -4,8 +4,8 @@ import click
 from dotenv import load_dotenv
 
 from src.data_preprocessing.data_loader import DataLoader
-from src.model_training.trainer import ModelTrainer
 from src.evaluation.evaluator import ModelEvaluator
+from src.model_training.trainer import ModelTrainer
 
 load_dotenv()
 
@@ -13,7 +13,6 @@ load_dotenv()
 @click.group()
 def cli():
     """Premier League Match Predictor CLI."""
-    pass
 
 
 @cli.command()
@@ -21,19 +20,19 @@ def cli():
 def train(data_path: str):
     """Train the prediction model."""
     click.echo("Starting model training...")
-    
+
     # Load data
     data_loader = DataLoader(data_path)
     train_data, val_data = data_loader.load_and_split()
-    
+
     # Train model
     trainer = ModelTrainer()
     model = trainer.train(train_data, val_data)
-    
+
     # Evaluate model
     evaluator = ModelEvaluator()
     metrics = evaluator.evaluate(model, val_data)
-    
+
     click.echo(f"Training completed! Metrics: {metrics}")
 
 
@@ -44,7 +43,7 @@ def predict(model_path: str, data_path: str):
     """Make predictions using trained model."""
     click.echo(f"Making predictions with model: {model_path}")
     # TODO: Implement prediction logic
-    
+
 
 @cli.command()
 def serve():
@@ -52,7 +51,9 @@ def serve():
     click.echo("Starting API server...")
     try:
         import uvicorn
+
         from src.deployment.api import app
+
         uvicorn.run(app, host="0.0.0.0", port=8000)
     except ImportError:
         click.echo("Error: uvicorn not installed. Install with: uv add uvicorn")
