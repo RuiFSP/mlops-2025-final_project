@@ -50,7 +50,7 @@ class SimpleModelMonitor:
         Returns:
             Dictionary with drift metrics
         """
-        drift_metrics = {}
+        drift_metrics: Dict[str, Any] = {}
 
         # Compare feature distributions
         for column in self.reference_data.columns:
@@ -197,7 +197,7 @@ class SimpleModelMonitor:
 
         # Simple quality score
         quality_score = 1.0 - (missing_ratio + duplicate_ratio)
-        return max(0.0, min(1.0, quality_score))
+        return float(max(0.0, min(1.0, quality_score)))
 
     def _generate_visualizations(
         self,
@@ -206,7 +206,7 @@ class SimpleModelMonitor:
         performance_metrics: Dict[str, Any],
         output_path: Path,
         timestamp: str,
-    ):
+    ) -> None:
         """Generate monitoring visualizations.
 
         Args:

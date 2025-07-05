@@ -3,7 +3,7 @@
 import logging
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -59,7 +59,7 @@ trainer: Optional[ModelTrainer] = None
 
 
 @app.on_event("startup")
-async def load_model():
+async def load_model() -> None:
     """Load the trained model on startup."""
     global trainer
     try:
@@ -75,7 +75,7 @@ async def load_model():
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, Any]:
     """Root endpoint."""
     return {
         "message": "Premier League Match Predictor API",
@@ -86,13 +86,13 @@ async def root():
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, Any]:
     """Health check endpoint."""
     return {"status": "healthy", "model_loaded": trainer is not None}
 
 
 @app.post("/predict", response_model=MatchPrediction)
-async def predict_match(match: MatchInput):
+async def predict_match(match: MatchInput) -> MatchPrediction:
     """Predict outcome for a single match."""
     if trainer is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
@@ -147,7 +147,7 @@ async def predict_match(match: MatchInput):
 
 
 @app.post("/predict/bulk", response_model=BulkMatchPrediction)
-async def predict_matches_bulk(matches: BulkMatchInput):
+async def predict_matches_bulk(matches: BulkMatchInput) -> BulkMatchPrediction:
     """Predict outcomes for multiple matches."""
     if trainer is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
@@ -203,7 +203,7 @@ async def predict_matches_bulk(matches: BulkMatchInput):
 
 
 @app.get("/teams")
-async def get_teams():
+async def get_teams() -> dict[str, List[str]]:
     """Get list of available teams."""
     # This would ideally come from the trained model or a configuration file
     teams = [
@@ -222,7 +222,7 @@ async def get_teams():
 
 
 @app.get("/model/info")
-async def get_model_info():
+async def get_model_info() -> dict[str, Any]:
     """Get information about the loaded model."""
     if trainer is None:
         raise HTTPException(status_code=503, detail="Model not loaded")

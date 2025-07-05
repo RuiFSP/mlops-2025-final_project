@@ -150,7 +150,7 @@ class DataLoader:
         logger.info(f"Preprocessed data shape: {df.shape}")
         return df
 
-    def _determine_result(self, row) -> str:
+    def _determine_result(self, row: pd.Series) -> str:
         """Determine match result from scores.
 
         Args:
