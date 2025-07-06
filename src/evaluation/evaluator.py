@@ -387,9 +387,6 @@ class ModelEvaluator:
         """
         metrics = {}
 
-        # Convert class order to ensure we have the right mapping
-        class_to_idx = {cls: idx for idx, cls in enumerate(class_order)}
-
         # Calculate Brier score for each class
         for i, class_name in enumerate(class_order):
             # Create binary indicator for this class
