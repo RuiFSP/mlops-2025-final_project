@@ -34,11 +34,7 @@ RUN mkdir -p /home/appuser/.cache && chown -R appuser:appuser /home/appuser
 # Copy dependency files with correct ownership
 COPY --chown=appuser:appuser pyproject.toml uv.lock ./
 COPY --chown=appuser:appuser README.md ./
-
-# Copy entrypoint script
 COPY --chown=appuser:appuser entrypoint.sh /usr/local/bin/entrypoint.sh
-
-# Copy source code with correct ownership
 COPY --chown=appuser:appuser src/ ./src/
 COPY --chown=appuser:appuser data/ ./data/
 
