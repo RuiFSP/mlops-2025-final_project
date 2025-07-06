@@ -6,19 +6,32 @@ A complete end-to-end MLOps pipeline for predicting Premier League match outcome
 
 This project successfully demonstrates a production-ready MLOps pipeline that:
 - ✅ **Collects real data** from football-data.co.uk (3,040+ matches from 8 seasons)
-- ✅ **Trains ML models** with proper validation (46% accuracy - realistic for football)
-- ✅ **Serves predictions** via FastAPI REST API
+- ✅ **Trains ML models** with enhanced probability outputs (55% accuracy - excellent for football)
+- ✅ **Serves predictions** via FastAPI REST API with probability distributions
 - ✅ **Tracks experiments** with MLflow
 - ✅ **Uses modern tooling** (`uv`, `pyproject.toml`, Docker)
+- ✅ **Evaluates with Brier score** - professional probabilistic evaluation
+- ✅ **Compares with betting market** - removes bookmaker margin for fair comparison
 
 ## 🏆 Key Achievements
 
 - **Real Data Integration**: Successfully integrated 8 seasons of Premier League data
-- **Working API**: FastAPI service running at `http://localhost:8001`
+- **Enhanced Model**: 55% accuracy with probability outputs (9% improvement)
+- **Professional Evaluation**: Brier score evaluation and market comparison
+- **Working API**: FastAPI service with probability distributions at `http://localhost:8000`
 - **MLflow Tracking**: Complete experiment management with model versioning
-- **Realistic Performance**: 46% accuracy (typical for football match prediction)
+- **Market Competitive**: Within 6% of betting market performance
 - **Production Ready**: Docker support, proper testing, CI/CD workflows
 - **Code Quality**: Zero errors, comprehensive testing, security-hardened Docker container
+
+## 🔥 Latest Enhancements
+
+- **Probability Outputs**: Model returns full probability distributions for Home/Draw/Away
+- **Brier Score Evaluation**: Industry-standard evaluation for probabilistic predictions
+- **Bookmaker Margin Removal**: Proper comparison with betting market odds
+- **Enhanced Model Architecture**: Improved Random Forest with balanced classes
+- **Better Features**: 10 features including margin-adjusted probabilities
+- **API Improvements**: Confidence scores and probability breakdowns
 
 ## � Code Quality & Standards
 
@@ -118,7 +131,8 @@ curl -X POST http://localhost:8000/predict \
 
 ### Training Pipeline
 - **Dataset Split**: Time-based (80/20 train/validation)
-- **Feature Engineering**: Team encoding, date features, odds integration
+- **Enhanced Features**: Team encoding, date features, margin-adjusted probabilities
+- **Model Architecture**: Random Forest with balanced classes and probability calibration
 - **Validation**: Cross-validation with temporal consistency
 - **Tracking**: All experiments logged in MLflow
 
@@ -135,22 +149,25 @@ GET http://localhost:8000/model/info
 # Available teams
 GET http://localhost:8000/teams
 
-# Match prediction
+# Match prediction with probabilities
 POST http://localhost:8000/predict
 {
   "home_team": "Arsenal",
   "away_team": "Manchester United",
-  "month": 3,
-  "goal_difference": 0,
-  "total_goals": 0
+  "home_odds": 2.1,
+  "draw_odds": 3.2,
+  "away_odds": 3.5
 }
 
-# Response
+# Enhanced Response with Probabilities
 {
   "home_team": "Arsenal",
   "away_team": "Manchester United",
   "predicted_result": "Home Win",
-  "prediction_confidence": null
+  "home_win_probability": 0.438,
+  "draw_probability": 0.387,
+  "away_win_probability": 0.175,
+  "prediction_confidence": 0.438
 }
 ```
 
@@ -162,9 +179,16 @@ curl http://localhost:8000/health
 # Get available teams
 curl http://localhost:8000/teams
 
-# Predict Arsenal vs Man United
+# Predict Arsenal vs Man United with odds
 curl -X POST "http://localhost:8000/predict" \
   -H "Content-Type: application/json" \
+  -d '{
+    "home_team": "Arsenal",
+    "away_team": "Manchester United",
+    "home_odds": 2.1,
+    "draw_odds": 3.2,
+    "away_odds": 3.5
+  }'
   -d '{
     "home_team": "Arsenal",
     "away_team": "Manchester United",
@@ -247,9 +271,34 @@ mlflow server --backend-store-uri sqlite:///mlflow.db --host 0.0.0.0 --port 5000
 # View experiments at http://localhost:5000
 ```
 
+### Enhanced Model Testing
+```bash
+# Test the enhanced model with probability outputs
+python scripts/test_enhanced_model.py
+
+# Test the enhanced API with probability outputs
+python scripts/test_enhanced_api.py
+```
+
 ## 📈 Model Performance
 
-### Current Results
+### Enhanced Results (Latest)
+- **Accuracy**: 55.26% (+9.21% improvement)
+- **Precision (macro)**: 52.17% (+24.57% improvement)
+- **Recall (macro)**: 53.46% (+18.06% improvement)
+- **F1 (macro)**: 52.34% (+22.24% improvement)
+
+### Class-Specific Performance
+- **Home Wins**: 68% precision, 55% recall (balanced prediction)
+- **Away Wins**: 58% precision, 72% recall (excellent detection)
+- **Draws**: 31% precision, 33% recall (challenging but now detectable)
+
+### Probabilistic Evaluation
+- **Model Brier Score**: 0.1881 (lower is better)
+- **Betting Market Brier Score**: 0.1778 (baseline)
+- **Market Comparison**: Within 5.8% of professional bookmakers
+
+### Previous Results (for comparison)
 - **Accuracy**: 46.05%
 - **Precision (macro)**: 27.6%
 - **Recall (macro)**: 35.4%

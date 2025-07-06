@@ -43,6 +43,9 @@ class MatchPrediction(BaseModel):
     home_team: str
     away_team: str
     predicted_result: str
+    home_win_probability: Optional[float] = None
+    draw_probability: Optional[float] = None
+    away_win_probability: Optional[float] = None
     prediction_confidence: Optional[float] = None
 
 
@@ -123,22 +126,46 @@ async def predict_match(match: MatchInput) -> MatchPrediction:
         logger.info(f"Processed data columns: {processed_data.columns.tolist()}")
         logger.info(f"Processed data shape: {processed_data.shape}")
 
-        # Make prediction
+        # Make prediction and get probabilities
         predictions = trainer.predict(processed_data)
+        probabilities = trainer.predict_proba(processed_data)
+        class_order = trainer.get_class_order()
 
         if len(predictions) == 0:
             raise HTTPException(status_code=400, detail="Could not make prediction")
 
         prediction = predictions[0]
+        proba = probabilities[0] if len(probabilities) > 0 else None
 
         # Convert prediction to readable format
         result_map = {"H": "Home Win", "A": "Away Win", "D": "Draw"}
         readable_prediction = result_map.get(prediction, str(prediction))
 
+        # Extract individual probabilities
+        home_prob = None
+        draw_prob = None
+        away_prob = None
+        confidence = None
+        
+        if proba is not None and class_order is not None:
+            # Create mapping from class to probability
+            class_to_prob = {cls: proba[i] for i, cls in enumerate(class_order)}
+            
+            home_prob = class_to_prob.get("H", 0.0)
+            draw_prob = class_to_prob.get("D", 0.0)
+            away_prob = class_to_prob.get("A", 0.0)
+            
+            # Confidence is the maximum probability
+            confidence = float(max(proba))
+
         return MatchPrediction(
             home_team=match.home_team,
             away_team=match.away_team,
             predicted_result=readable_prediction,
+            home_win_probability=home_prob,
+            draw_probability=draw_prob,
+            away_win_probability=away_prob,
+            prediction_confidence=confidence,
         )
 
     except Exception as e:

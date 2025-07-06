@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Tuple
 
 import joblib
 import mlflow
@@ -56,6 +56,18 @@ class ModelTrainer:
         if "away_odds" in df.columns:
             feature_columns.append("away_odds")
 
+        # Add implied probabilities from odds (removing margin)
+        if all(col in df.columns for col in ["home_odds", "draw_odds", "away_odds"]):
+            df = self._add_implied_probabilities(df)
+            feature_columns.extend(["home_prob_adj", "draw_prob_adj", "away_prob_adj"])
+
+        # Add historical features if available
+        if "Date" in df.columns or "date" in df.columns:
+            date_col = "Date" if "Date" in df.columns else "date"
+            # Add day of week (weekend vs weekday effect)
+            df["day_of_week"] = pd.to_datetime(df[date_col]).dt.dayofweek
+            feature_columns.append("day_of_week")
+
         # Use only columns that exist in the DataFrame
         available_columns = [col for col in feature_columns if col in df.columns]
 
@@ -83,7 +95,32 @@ class ModelTrainer:
         features_df = features_df.fillna(0)
 
         logger.info(f"Prepared features shape: {features_df.shape}")
+        logger.info(f"Features: {features_df.columns.tolist()}")
         return features_df
+
+    def _add_implied_probabilities(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Add implied probabilities from odds, removing the bookmaker margin.
+        
+        Args:
+            df: DataFrame with odds columns
+            
+        Returns:
+            DataFrame with added probability columns
+        """
+        # Calculate implied probabilities
+        df["home_prob_raw"] = 1 / df["home_odds"]
+        df["draw_prob_raw"] = 1 / df["draw_odds"]
+        df["away_prob_raw"] = 1 / df["away_odds"]
+        
+        # Calculate total probability (includes margin)
+        df["total_prob"] = df["home_prob_raw"] + df["draw_prob_raw"] + df["away_prob_raw"]
+        
+        # Remove margin by normalizing
+        df["home_prob_adj"] = df["home_prob_raw"] / df["total_prob"]
+        df["draw_prob_adj"] = df["draw_prob_raw"] / df["total_prob"]
+        df["away_prob_adj"] = df["away_prob_raw"] / df["total_prob"]
+        
+        return df
 
     def _encode_with_unknown(
         self, series: pd.Series, encoder: LabelEncoder
@@ -143,15 +180,27 @@ class ModelTrainer:
                 logger.warning("Training data is empty, returning None")
                 return None
 
-            # Initialize model
+            # Initialize model with better parameters for probability estimation
             if self.model_type == "random_forest":
                 self.model = RandomForestClassifier(
-                    n_estimators=100, random_state=42, n_jobs=-1
+                    n_estimators=200,  # More trees for better probability estimates
+                    max_depth=10,      # Prevent overfitting
+                    min_samples_split=20,
+                    min_samples_leaf=10,
+                    random_state=42,
+                    n_jobs=-1,
+                    class_weight="balanced"  # Handle imbalanced classes
                 )
             else:
                 # Default to RandomForest
                 self.model = RandomForestClassifier(
-                    n_estimators=100, random_state=42, n_jobs=-1
+                    n_estimators=200,
+                    max_depth=10,
+                    min_samples_split=20,
+                    min_samples_leaf=10,
+                    random_state=42,
+                    n_jobs=-1,
+                    class_weight="balanced"
                 )
 
             # Scale features
@@ -288,3 +337,41 @@ class ModelTrainer:
         predictions = self.model.predict(X_scaled)
 
         return predictions
+
+    def predict_proba(self, data: pd.DataFrame) -> np.ndarray:
+        """Make probability predictions using the trained model.
+
+        Args:
+            data: Input data for prediction
+
+        Returns:
+            Predicted probabilities for each class [Away, Draw, Home]
+        """
+        if self.model is None:
+            raise ValueError("Model not trained or loaded")
+
+        # Prepare features
+        X = self.prepare_features(data)
+
+        if X.empty:
+            logger.warning("No features available for prediction")
+            return np.array([])
+
+        # Scale features
+        X_scaled = self.scaler.transform(X)
+
+        # Make probability predictions
+        probabilities = self.model.predict_proba(X_scaled)
+
+        return probabilities
+
+    def get_class_order(self) -> np.ndarray:
+        """Get the order of classes as used by the model.
+        
+        Returns:
+            Array of class labels in the order used by predict_proba
+        """
+        if self.model is None:
+            raise ValueError("Model not trained or loaded")
+        
+        return self.model.classes_
