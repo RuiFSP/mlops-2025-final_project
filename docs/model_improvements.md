@@ -14,7 +14,7 @@
 
 ### 3. **Bookmaker Margin Removal**
 - **Process**: Convert odds to probabilities and normalize to remove margin
-- **Example**: 
+- **Example**:
   - Original odds: H=2.10, D=3.20, A=3.50
   - Implied probabilities: 0.476, 0.313, 0.286 (total = 1.074)
   - Bookmaker margin: 7.44%

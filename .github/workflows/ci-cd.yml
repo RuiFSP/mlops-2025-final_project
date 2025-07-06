@@ -9,42 +9,42 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         python-version: ["3.10", "3.11"]
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    
+
     - name: Install uv
       run: |
         curl -LsSf https://astral.sh/uv/install.sh | sh
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-    
+
     - name: Install dependencies
       run: |
         uv sync --extra dev
-    
+
     - name: Run linting
       run: |
         uv run flake8 src tests
         uv run black --check src tests
         uv run isort --check-only src tests
-    
+
     - name: Run type checking
       run: |
         uv run mypy src
-    
+
     - name: Run tests
       run: |
         uv run pytest --cov=src --cov-report=xml
-    
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       continue-on-error: true
@@ -59,17 +59,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-    
+
     - name: Build Docker image
       run: |
         docker build -t premier-league-predictor:latest .
-    
+
     - name: Test Docker image
       run: |
         docker run --rm premier-league-predictor:latest --help

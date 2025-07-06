@@ -7,20 +7,21 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-sys.path.append('/home/ruifspinto/projects/mlops-2025-final_project')
+sys.path.append("/home/ruifspinto/projects/mlops-2025-final_project")
+
 
 def check_project_status():
     """Check the status of all project components"""
-    
+
     print("🎉 Enhanced Premier League Match Predictor - Final Status Check")
     print("=" * 70)
-    
+
     # Check key files exist
-    project_root = Path('/home/ruifspinto/projects/mlops-2025-final_project')
-    
+    project_root = Path("/home/ruifspinto/projects/mlops-2025-final_project")
+
     key_files = {
         "Enhanced Model": "src/model_training/trainer.py",
-        "Enhanced Evaluator": "src/evaluation/evaluator.py", 
+        "Enhanced Evaluator": "src/evaluation/evaluator.py",
         "Enhanced API": "src/deployment/api.py",
         "Data Loader": "src/data_preprocessing/data_loader.py",
         "Model Artifacts": "models/model.pkl",
@@ -28,17 +29,17 @@ def check_project_status():
         "API Test Script": "scripts/test_enhanced_api.py",
         "Documentation": "docs/model_improvements.md",
         "README": "README.md",
-        "Requirements": "pyproject.toml"
+        "Requirements": "pyproject.toml",
     }
-    
+
     print("📂 Key Files Status:")
     print("-" * 30)
-    
+
     for name, path in key_files.items():
         file_path = project_root / path
         status = "✅" if file_path.exists() else "❌"
         print(f"  {status} {name}: {path}")
-    
+
     # Check models directory
     models_dir = project_root / "models"
     if models_dir.exists():
@@ -47,7 +48,7 @@ def check_project_status():
         print("-" * 30)
         for model_file in model_files:
             print(f"  ✅ {model_file.name}")
-    
+
     # Check evaluation reports
     eval_dir = project_root / "evaluation_reports"
     if eval_dir.exists():
@@ -56,22 +57,24 @@ def check_project_status():
         print("-" * 30)
         for eval_file in eval_files:
             print(f"  ✅ {eval_file.name}")
-    
+
     print("\n" + "=" * 70)
     print("🚀 ENHANCEMENTS COMPLETED SUCCESSFULLY!")
     print("=" * 70)
-    
+
     print("\n📈 Key Improvements Made:")
     print("-" * 30)
     print("1. ✅ Probability Outputs - Model now returns probability distributions")
-    print("2. ✅ Brier Score Evaluation - Professional probabilistic evaluation metric")  
+    print("2. ✅ Brier Score Evaluation - Professional probabilistic evaluation metric")
     print("3. ✅ Bookmaker Margin Removal - Fair comparison with betting market")
     print("4. ✅ Enhanced Model Architecture - Better Random Forest configuration")
-    print("5. ✅ Improved Features - 10 features including margin-adjusted probabilities")
+    print(
+        "5. ✅ Improved Features - 10 features including margin-adjusted probabilities"
+    )
     print("6. ✅ Enhanced API - Returns probabilities and confidence scores")
     print("7. ✅ Market Comparison - Automatically compares with betting odds")
     print("8. ✅ Better Documentation - Comprehensive improvement documentation")
-    
+
     print("\n📊 Performance Improvements:")
     print("-" * 30)
     print("• Accuracy: 46.05% → 55.26% (+9.21%)")
@@ -80,7 +83,7 @@ def check_project_status():
     print("• F1 Score: 30.10% → 52.34% (+22.24%)")
     print("• Draw Detection: 0.00% → 31.91% (+31.91%)")
     print("• Market Comparison: Within 5.8% of professional bookmakers")
-    
+
     print("\n🎯 What You Can Do Now:")
     print("-" * 30)
     print("1. 🧪 Test Enhanced Model:")
@@ -93,25 +96,31 @@ def check_project_status():
     print("   python scripts/test_enhanced_api.py")
     print()
     print("4. 📊 View MLflow UI:")
-    print("   mlflow server --backend-store-uri sqlite:///mlflow.db --host 0.0.0.0 --port 5000")
+    print(
+        "   mlflow server --backend-store-uri sqlite:///mlflow.db --host 0.0.0.0 --port 5000"
+    )
     print()
     print("5. 🎯 Make Predictions with Probabilities:")
     print("   curl -X POST http://localhost:8000/predict \\")
     print("     -H 'Content-Type: application/json' \\")
-    print("     -d '{\"home_team\": \"Arsenal\", \"away_team\": \"Chelsea\", \"home_odds\": 2.1, \"draw_odds\": 3.2, \"away_odds\": 3.5}'")
-    
+    print(
+        '     -d \'{"home_team": "Arsenal", "away_team": "Chelsea", "home_odds": 2.1, "draw_odds": 3.2, "away_odds": 3.5}\''
+    )
+
     print("\n💡 API Response Example:")
     print("-" * 30)
-    print('''{
+    print(
+        """{
   "home_team": "Arsenal",
-  "away_team": "Chelsea", 
+  "away_team": "Chelsea",
   "predicted_result": "Draw",
   "home_win_probability": 0.300,
   "draw_probability": 0.460,
   "away_win_probability": 0.240,
   "prediction_confidence": 0.460
-}''')
-    
+}"""
+    )
+
     print("\n🏆 Summary:")
     print("-" * 30)
     print("Your Premier League Match Predictor is now SIGNIFICANTLY ENHANCED with:")

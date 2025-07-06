@@ -77,6 +77,7 @@ extend-ignore = ["E203", "W503"]
 dev = [
     "autoflake>=2.3.1",
     "pandas-stubs>=2.3.0.250703",
+    "pre-commit>=4.2.0",
     "types-requests>=2.32.4.20250611",
     "types-seaborn>=0.13.2.20250516",
 ]

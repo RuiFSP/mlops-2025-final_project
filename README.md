@@ -218,7 +218,7 @@ curl -X POST "http://localhost:8000/predict" \
 mlops-2025-final_project/
 ├── src/
 │   ├── data_collection/           # Data collection from football-data.co.uk
-│   ├── data_preprocessing/        # Data loading and preprocessing  
+│   ├── data_preprocessing/        # Data loading and preprocessing
 │   ├── model_training/           # ML model training and validation
 │   ├── evaluation/               # Model evaluation and metrics
 │   ├── deployment/               # FastAPI application
@@ -256,7 +256,7 @@ pytest tests/unit/
 # Format code
 make format
 
-# Lint code  
+# Lint code
 make lint
 
 # Pre-commit checks
@@ -278,6 +278,49 @@ python scripts/test_enhanced_model.py
 
 # Test the enhanced API with probability outputs
 python scripts/test_enhanced_api.py
+```
+
+## 🔍 Pre-Commit Hooks & Quality Checks
+
+### Automatic Quality Checks
+Pre-commit hooks are set up to automatically run quality checks before each commit:
+
+```bash
+# Install pre-commit hooks (one-time setup)
+uv run pre-commit install
+
+# Now every git commit will automatically run:
+# ✅ Code formatting (black)
+# ✅ Import sorting (isort)
+# ✅ Linting (flake8)
+# ✅ Unit tests (pytest)
+```
+
+### Manual Quality Checks
+Run all quality checks manually before committing:
+
+```bash
+# Run all checks at once
+python scripts/run_checks.py
+
+# Or run individual checks
+uv run flake8 src tests        # Linting
+uv run black src tests         # Format code
+uv run isort src tests         # Sort imports
+uv run mypy src               # Type checking
+python -m pytest tests/       # Run tests
+```
+
+### Pre-Commit Workflow
+With pre-commit hooks installed, your workflow becomes:
+
+```bash
+# Make your changes
+git add .
+git commit -m "your message"  # Hooks run automatically here!
+# If hooks pass → commit succeeds
+# If hooks fail → commit blocked, fix issues and try again
+git push origin main
 ```
 
 ## 📈 Model Performance
@@ -306,7 +349,7 @@ python scripts/test_enhanced_api.py
 
 ### Class Performance
 - **Home Wins**: 50% precision, 81% recall (model favors home advantage)
-- **Away Wins**: 33% precision, 25% recall  
+- **Away Wins**: 33% precision, 25% recall
 - **Draws**: Very difficult to predict (realistic for football)
 
 ### Model Insights
@@ -411,6 +454,3 @@ curl -X POST http://localhost:8000/predict \
 - [ ] Implement A/B testing for model versions
 - [ ] Add real-time data streaming
 - [ ] Enhance monitoring dashboards
-
-
-

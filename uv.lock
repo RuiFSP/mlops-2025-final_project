@@ -2220,6 +2220,7 @@ dev = [
 dev = [
     { name = "autoflake" },
     { name = "pandas-stubs" },
+    { name = "pre-commit" },
     { name = "types-requests" },
     { name = "types-seaborn" },
 ]
@@ -2258,6 +2259,7 @@ provides-extras = ["dev"]
 dev = [
     { name = "autoflake", specifier = ">=2.3.1" },
     { name = "pandas-stubs", specifier = ">=2.3.0.250703" },
+    { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "types-requests", specifier = ">=2.32.4.20250611" },
     { name = "types-seaborn", specifier = ">=0.13.2.20250516" },
 ]

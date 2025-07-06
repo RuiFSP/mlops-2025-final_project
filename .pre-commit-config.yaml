@@ -7,28 +7,35 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
       - id: check-merge-conflict
-      - id: debug-statements
 
   - repo: https://github.com/psf/black
     rev: 23.7.0
     hooks:
       - id: black
         language_version: python3.10
+        files: ^(src|tests)/.*\.py$
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
         args: ["--profile", "black"]
+        files: ^(src|tests)/.*\.py$
 
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
-        additional_dependencies: [flake8-docstrings]
+        files: ^(src|tests)/.*\.py$
+        args: ["--max-line-length=88", "--ignore=E203,W503,D"]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.0
+  - repo: local
     hooks:
-      - id: mypy
-        additional_dependencies: [types-requests]
+      - id: pytest-core
+        name: pytest (core tests only)
+        entry: uv run pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+        args: [tests/, -v, --tb=short, -q]
