@@ -100,10 +100,10 @@ class ModelTrainer:
 
     def _add_implied_probabilities(self, df: pd.DataFrame) -> pd.DataFrame:
         """Add implied probabilities from odds, removing the bookmaker margin.
-        
+
         Args:
             df: DataFrame with odds columns
-            
+
         Returns:
             DataFrame with added probability columns
         """
@@ -111,15 +111,17 @@ class ModelTrainer:
         df["home_prob_raw"] = 1 / df["home_odds"]
         df["draw_prob_raw"] = 1 / df["draw_odds"]
         df["away_prob_raw"] = 1 / df["away_odds"]
-        
+
         # Calculate total probability (includes margin)
-        df["total_prob"] = df["home_prob_raw"] + df["draw_prob_raw"] + df["away_prob_raw"]
-        
+        df["total_prob"] = (
+            df["home_prob_raw"] + df["draw_prob_raw"] + df["away_prob_raw"]
+        )
+
         # Remove margin by normalizing
         df["home_prob_adj"] = df["home_prob_raw"] / df["total_prob"]
         df["draw_prob_adj"] = df["draw_prob_raw"] / df["total_prob"]
         df["away_prob_adj"] = df["away_prob_raw"] / df["total_prob"]
-        
+
         return df
 
     def _encode_with_unknown(
@@ -184,12 +186,12 @@ class ModelTrainer:
             if self.model_type == "random_forest":
                 self.model = RandomForestClassifier(
                     n_estimators=200,  # More trees for better probability estimates
-                    max_depth=10,      # Prevent overfitting
+                    max_depth=10,  # Prevent overfitting
                     min_samples_split=20,
                     min_samples_leaf=10,
                     random_state=42,
                     n_jobs=-1,
-                    class_weight="balanced"  # Handle imbalanced classes
+                    class_weight="balanced",  # Handle imbalanced classes
                 )
             else:
                 # Default to RandomForest
@@ -200,7 +202,7 @@ class ModelTrainer:
                     min_samples_leaf=10,
                     random_state=42,
                     n_jobs=-1,
-                    class_weight="balanced"
+                    class_weight="balanced",
                 )
 
             # Scale features
@@ -367,11 +369,11 @@ class ModelTrainer:
 
     def get_class_order(self) -> np.ndarray:
         """Get the order of classes as used by the model.
-        
+
         Returns:
             Array of class labels in the order used by predict_proba
         """
         if self.model is None:
             raise ValueError("Model not trained or loaded")
-        
+
         return self.model.classes_

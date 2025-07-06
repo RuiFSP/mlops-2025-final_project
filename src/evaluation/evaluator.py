@@ -11,12 +11,12 @@ import pandas as pd
 import seaborn as sns
 from sklearn.metrics import (
     accuracy_score,
+    brier_score_loss,
     classification_report,
     confusion_matrix,
     f1_score,
     precision_score,
     recall_score,
-    brier_score_loss,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -86,12 +86,16 @@ class ModelEvaluator:
 
         # Calculate Brier score if probabilities are available
         if probabilities is not None and class_order is not None:
-            brier_metrics = self._calculate_brier_score(y_true, probabilities, class_order)
+            brier_metrics = self._calculate_brier_score(
+                y_true, probabilities, class_order
+            )
             metrics.update(brier_metrics)
 
         # Compare with betting odds if available
         if probabilities is not None and self._has_odds_data(test_data):
-            odds_comparison = self._compare_with_odds(y_true, probabilities, class_order, test_data)
+            odds_comparison = self._compare_with_odds(
+                y_true, probabilities, class_order, test_data
+            )
             metrics.update(odds_comparison)
 
         # Log metrics to MLflow
@@ -99,7 +103,9 @@ class ModelEvaluator:
             mlflow.log_metric(f"test_{metric_name}", value)
 
         # Generate evaluation report
-        self._generate_evaluation_report(y_true, predictions, metrics, probabilities, class_order)
+        self._generate_evaluation_report(
+            y_true, predictions, metrics, probabilities, class_order
+        )
 
         logger.info(f"Evaluation completed. Accuracy: {metrics.get('accuracy', 0):.4f}")
         return metrics
@@ -157,8 +163,12 @@ class ModelEvaluator:
         return metrics
 
     def _generate_evaluation_report(
-        self, y_true: pd.Series, y_pred: np.ndarray, metrics: Dict[str, float],
-        probabilities: Optional[np.ndarray] = None, class_order: Optional[np.ndarray] = None
+        self,
+        y_true: pd.Series,
+        y_pred: np.ndarray,
+        metrics: Dict[str, float],
+        probabilities: Optional[np.ndarray] = None,
+        class_order: Optional[np.ndarray] = None,
     ) -> None:
         """Generate comprehensive evaluation report.
 
@@ -362,104 +372,120 @@ class ModelEvaluator:
             logger.error(f"Error evaluating prediction confidence: {e}")
             return {}
 
-    def _calculate_brier_score(self, y_true: pd.Series, y_proba: np.ndarray, class_order: np.ndarray) -> Dict[str, float]:
+    def _calculate_brier_score(
+        self, y_true: pd.Series, y_proba: np.ndarray, class_order: np.ndarray
+    ) -> Dict[str, float]:
         """Calculate Brier score for probability predictions.
-        
+
         Args:
             y_true: True labels
             y_proba: Predicted probabilities
             class_order: Order of classes in probability array
-            
+
         Returns:
             Dictionary with Brier score metrics
         """
         metrics = {}
-        
+
         # Convert class order to ensure we have the right mapping
         class_to_idx = {cls: idx for idx, cls in enumerate(class_order)}
-        
+
         # Calculate Brier score for each class
         for i, class_name in enumerate(class_order):
             # Create binary indicator for this class
             y_binary = (y_true == class_name).astype(int)
-            
+
             # Get probabilities for this class
             y_prob_class = y_proba[:, i]
-            
+
             # Calculate Brier score (lower is better)
             brier_score = brier_score_loss(y_binary, y_prob_class)
             metrics[f"brier_score_{class_name}"] = brier_score
-            
+
         # Calculate overall Brier score (average)
-        metrics["brier_score_avg"] = np.mean([metrics[f"brier_score_{cls}"] for cls in class_order])
-        
+        metrics["brier_score_avg"] = np.mean(
+            [metrics[f"brier_score_{cls}"] for cls in class_order]
+        )
+
         return metrics
-    
+
     def _has_odds_data(self, test_data: pd.DataFrame) -> bool:
         """Check if test data contains odds information.
-        
+
         Args:
             test_data: Test dataset
-            
+
         Returns:
             True if odds data is available
         """
         required_odds_cols = ["home_odds", "draw_odds", "away_odds"]
         return all(col in test_data.columns for col in required_odds_cols)
-    
-    def _compare_with_odds(self, y_true: pd.Series, y_proba: np.ndarray, class_order: np.ndarray, test_data: pd.DataFrame) -> Dict[str, float]:
+
+    def _compare_with_odds(
+        self,
+        y_true: pd.Series,
+        y_proba: np.ndarray,
+        class_order: np.ndarray,
+        test_data: pd.DataFrame,
+    ) -> Dict[str, float]:
         """Compare model predictions with betting odds.
-        
+
         Args:
             y_true: True labels
             y_proba: Model predicted probabilities
             class_order: Order of classes in probability array
             test_data: Test dataset with odds
-            
+
         Returns:
             Dictionary with comparison metrics
         """
         metrics = {}
-        
+
         # Remove margin from betting odds to get true probabilities
         odds_cols = ["home_odds", "draw_odds", "away_odds"]
-        
+
         # Calculate implied probabilities
         implied_probs = {}
         for col in odds_cols:
             implied_probs[col.replace("_odds", "_prob")] = 1 / test_data[col]
-        
+
         # Calculate total probability (includes margin)
         total_prob = sum(implied_probs.values())
-        
+
         # Remove margin by normalizing
         for key in implied_probs:
             implied_probs[key] = implied_probs[key] / total_prob
-        
+
         # Create odds probability array in same order as model classes
         odds_proba = np.zeros_like(y_proba)
         class_to_odds = {"H": "home_prob", "D": "draw_prob", "A": "away_prob"}
-        
+
         for i, class_name in enumerate(class_order):
             if class_name in class_to_odds:
                 odds_key = class_to_odds[class_name]
                 odds_proba[:, i] = implied_probs[odds_key]
-        
+
         # Calculate Brier score for odds
         odds_brier_scores = {}
         for i, class_name in enumerate(class_order):
             y_binary = (y_true == class_name).astype(int)
             odds_brier = brier_score_loss(y_binary, odds_proba[:, i])
             odds_brier_scores[f"odds_brier_{class_name}"] = odds_brier
-        
+
         metrics.update(odds_brier_scores)
         metrics["odds_brier_avg"] = np.mean(list(odds_brier_scores.values()))
-        
+
         # Calculate improvement over odds
-        model_brier_avg = np.mean([brier_score_loss((y_true == cls).astype(int), y_proba[:, i]) 
-                                 for i, cls in enumerate(class_order)])
-        
+        model_brier_avg = np.mean(
+            [
+                brier_score_loss((y_true == cls).astype(int), y_proba[:, i])
+                for i, cls in enumerate(class_order)
+            ]
+        )
+
         metrics["brier_improvement"] = metrics["odds_brier_avg"] - model_brier_avg
-        metrics["brier_improvement_pct"] = (metrics["brier_improvement"] / metrics["odds_brier_avg"]) * 100
-        
+        metrics["brier_improvement_pct"] = (
+            metrics["brier_improvement"] / metrics["odds_brier_avg"]
+        ) * 100
+
         return metrics

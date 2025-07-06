@@ -146,15 +146,15 @@ async def predict_match(match: MatchInput) -> MatchPrediction:
         draw_prob = None
         away_prob = None
         confidence = None
-        
+
         if proba is not None and class_order is not None:
             # Create mapping from class to probability
             class_to_prob = {cls: proba[i] for i, cls in enumerate(class_order)}
-            
+
             home_prob = class_to_prob.get("H", 0.0)
             draw_prob = class_to_prob.get("D", 0.0)
             away_prob = class_to_prob.get("A", 0.0)
-            
+
             # Confidence is the maximum probability
             confidence = float(max(proba))
 
