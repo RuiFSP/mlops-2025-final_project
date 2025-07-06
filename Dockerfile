@@ -35,6 +35,9 @@ RUN mkdir -p /home/appuser/.cache && chown -R appuser:appuser /home/appuser
 COPY --chown=appuser:appuser pyproject.toml uv.lock ./
 COPY --chown=appuser:appuser README.md ./
 
+# Copy entrypoint script
+COPY --chown=appuser:appuser entrypoint.sh /usr/local/bin/entrypoint.sh
+
 # Copy source code with correct ownership
 COPY --chown=appuser:appuser src/ ./src/
 COPY --chown=appuser:appuser data/ ./data/
@@ -48,5 +51,8 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Command to run the application
-CMD ["uv", "run", "python", "-m", "src.deployment.api"]
+# Set the entrypoint to our custom script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# Default command to run the API
+CMD ["src.deployment.api"]
