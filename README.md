@@ -1,5 +1,7 @@
 # Premier League Match Predictor
 
+[![CI/CD Pipeline](https://github.com/RuiFSP/mlops-2025-final_project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/RuiFSP/mlops-2025-final_project/actions/workflows/ci-cd.yml)
+
 A complete end-to-end MLOps pipeline for predicting Premier League match outcomes using real historical data and modern Python tooling.
 
 ## 🎯 Project Overview
