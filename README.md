@@ -86,9 +86,17 @@ python -m src.deployment.api
 
 ### Development (API only)
 ```bash
-# Build and run API container
+# Build the Docker image
 docker build -t premier-league-predictor .
+
+# Show help for available options
+docker run --rm premier-league-predictor --help
+
+# Run API container (default behavior)
 docker run -p 8000:8000 premier-league-predictor
+
+# Run API with custom host/port
+docker run -p 8080:8080 premier-league-predictor --host 0.0.0.0 --port 8080
 
 # Test health endpoint
 curl http://localhost:8000/health
@@ -367,8 +375,14 @@ git push origin main
 # Build secure image (Ubuntu 22.04 base, non-root user)
 docker build -t premier-league-predictor .
 
+# View available command-line options
+docker run --rm premier-league-predictor --help
+
 # Run container on port 8000 (API only, no model loaded)
 docker run -p 8000:8000 premier-league-predictor
+
+# Run with custom configuration
+docker run -p 8080:8080 premier-league-predictor --host 0.0.0.0 --port 8080
 ```
 
 #### Full Prediction Service with Model
