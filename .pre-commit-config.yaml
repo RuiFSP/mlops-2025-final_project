@@ -27,15 +27,14 @@ repos:
     hooks:
       - id: flake8
         files: ^(src|tests)/.*\.py$
-        args: ["--max-line-length=88", "--ignore=E203,W503,D"]
+        args: ["--max-line-length=88", "--ignore=E203,W503"]
 
   - repo: local
     hooks:
       - id: pytest-core
         name: pytest (core tests only)
-        entry: uv run pytest
+        entry: bash -c 'cd /home/ruifspinto/projects/mlops-2025-final_project && uv run python -m pytest tests/ -v --tb=short -q'
         language: system
         types: [python]
         pass_filenames: false
         always_run: true
-        args: [tests/, -v, --tb=short, -q]

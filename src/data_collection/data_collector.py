@@ -119,7 +119,9 @@ class DataCollector:
                 lambda row: (
                     "H"
                     if row["home_score"] > row["away_score"]
-                    else "A" if row["away_score"] > row["home_score"] else "D"
+                    else "A"
+                    if row["away_score"] > row["home_score"]
+                    else "D"
                 ),
                 axis=1,
             )
