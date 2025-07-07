@@ -4,7 +4,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,7 +40,7 @@ class SimpleModelMonitor:
 
     def calculate_data_drift(
         self, current_data: pd.DataFrame, threshold: float = 0.1
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Calculate simple data drift metrics.
 
         Args:
@@ -50,7 +50,7 @@ class SimpleModelMonitor:
         Returns:
             Dictionary with drift metrics
         """
-        drift_metrics: Dict[str, Any] = {}
+        drift_metrics: dict[str, Any] = {}
 
         # Compare feature distributions
         for column in self.reference_data.columns:
@@ -89,7 +89,7 @@ class SimpleModelMonitor:
 
         return drift_metrics
 
-    def calculate_model_performance(self, current_data: pd.DataFrame) -> Dict[str, Any]:
+    def calculate_model_performance(self, current_data: pd.DataFrame) -> dict[str, Any]:
         """Calculate model performance metrics.
 
         Args:
@@ -129,7 +129,7 @@ class SimpleModelMonitor:
 
     def generate_monitoring_report(
         self, current_data: pd.DataFrame, output_dir: str = "monitoring_reports"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate comprehensive monitoring report.
 
         Args:
@@ -202,8 +202,8 @@ class SimpleModelMonitor:
     def _generate_visualizations(
         self,
         current_data: pd.DataFrame,
-        drift_metrics: Dict[str, Any],
-        performance_metrics: Dict[str, Any],
+        drift_metrics: dict[str, Any],
+        performance_metrics: dict[str, Any],
         output_path: Path,
         timestamp: str,
     ) -> None:
@@ -248,8 +248,8 @@ class SimpleModelMonitor:
             logger.error(f"Error generating visualizations: {e}")
 
     def check_for_alerts(
-        self, drift_metrics: Dict[str, Any], performance_threshold: float = 0.4
-    ) -> List[str]:
+        self, drift_metrics: dict[str, Any], performance_threshold: float = 0.4
+    ) -> list[str]:
         """Check for monitoring alerts.
 
         Args:

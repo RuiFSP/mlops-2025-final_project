@@ -8,7 +8,6 @@ import logging
 import time
 from io import StringIO
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 import requests
@@ -25,7 +24,7 @@ class DataCollector:
             {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
         )
 
-    def collect_from_football_data_co_uk(self) -> Optional[pd.DataFrame]:
+    def collect_from_football_data_co_uk(self) -> pd.DataFrame | None:
         """Collect data from football-data.co.uk."""
         try:
             # Historical data from football-data.co.uk - 8 recent seasons
@@ -140,7 +139,7 @@ class DataCollector:
             logger.error(f"Error standardizing data: {e}")
             return df
 
-    def collect_all_data(self) -> Optional[pd.DataFrame]:
+    def collect_all_data(self) -> pd.DataFrame | None:
         """Collect and standardize data from football-data.co.uk."""
         # Collect data from football-data.co.uk
         raw_data = self.collect_from_football_data_co_uk()
@@ -208,7 +207,7 @@ class DataCollector:
             raise
 
 
-def main() -> Optional[pd.DataFrame]:
+def main() -> pd.DataFrame | None:
     """Main function to collect data."""
     logging.basicConfig(level=logging.INFO)
     collector = DataCollector()

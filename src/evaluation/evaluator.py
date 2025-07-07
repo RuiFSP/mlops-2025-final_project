@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import matplotlib.pyplot as plt
 import mlflow
@@ -30,7 +30,7 @@ class ModelEvaluator:
         """Initialize the model evaluator."""
         self.evaluation_results: dict[str, Any] = {}
 
-    def evaluate(self, model: Any, test_data: pd.DataFrame) -> Dict[str, float]:
+    def evaluate(self, model: Any, test_data: pd.DataFrame) -> dict[str, float]:
         """Evaluate model performance on test data.
 
         Args:
@@ -112,7 +112,7 @@ class ModelEvaluator:
 
     def _calculate_metrics(
         self, y_true: pd.Series, y_pred: np.ndarray
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Calculate various evaluation metrics.
 
         Args:
@@ -166,9 +166,9 @@ class ModelEvaluator:
         self,
         y_true: pd.Series,
         y_pred: np.ndarray,
-        metrics: Dict[str, float],
-        probabilities: Optional[np.ndarray] = None,
-        class_order: Optional[np.ndarray] = None,
+        metrics: dict[str, float],
+        probabilities: np.ndarray | None = None,
+        class_order: np.ndarray | None = None,
     ) -> None:
         """Generate comprehensive evaluation report.
 
@@ -251,7 +251,7 @@ class ModelEvaluator:
         except Exception as e:
             logger.error(f"Error plotting confusion matrix: {e}")
 
-    def _plot_metrics(self, metrics: Dict[str, float], save_dir: Path) -> None:
+    def _plot_metrics(self, metrics: dict[str, float], save_dir: Path) -> None:
         """Plot evaluation metrics.
 
         Args:
@@ -274,7 +274,7 @@ class ModelEvaluator:
             plt.ylim(0, 1)
 
             # Add value labels on bars
-            for bar, value in zip(bars, values):
+            for bar, value in zip(bars, values, strict=False):
                 plt.text(
                     bar.get_x() + bar.get_width() / 2,
                     bar.get_height() + 0.01,
@@ -300,7 +300,7 @@ class ModelEvaluator:
             logger.error(f"Error plotting metrics: {e}")
 
     def compare_models(
-        self, model_results: Dict[str, Dict[str, float]]
+        self, model_results: dict[str, dict[str, float]]
     ) -> pd.DataFrame:
         """Compare multiple models' performance.
 
@@ -333,7 +333,7 @@ class ModelEvaluator:
 
     def evaluate_prediction_confidence(
         self, model: Any, test_data: pd.DataFrame
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Evaluate prediction confidence and uncertainty.
 
         Args:
@@ -374,7 +374,7 @@ class ModelEvaluator:
 
     def _calculate_brier_score(
         self, y_true: pd.Series, y_proba: np.ndarray, class_order: np.ndarray
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Calculate Brier score for probability predictions.
 
         Args:
@@ -424,7 +424,7 @@ class ModelEvaluator:
         y_proba: np.ndarray,
         class_order: np.ndarray,
         test_data: pd.DataFrame,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Compare model predictions with betting odds.
 
         Args:

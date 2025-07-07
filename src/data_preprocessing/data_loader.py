@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import Tuple
 
 import pandas as pd
 
@@ -194,7 +193,7 @@ class DataLoader:
 
     def load_and_split(
         self, test_size: float = 0.2
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Load data and split into train/validation sets.
 
         Args:

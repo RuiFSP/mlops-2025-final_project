@@ -3,7 +3,7 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -32,33 +32,33 @@ app = FastAPI(
 class MatchInput(BaseModel):
     home_team: str
     away_team: str
-    date: Optional[str] = None
-    season: Optional[str] = "2023-24"
-    home_odds: Optional[float] = 2.0
-    draw_odds: Optional[float] = 3.0
-    away_odds: Optional[float] = 2.5
+    date: str | None = None
+    season: str | None = "2023-24"
+    home_odds: float | None = 2.0
+    draw_odds: float | None = 3.0
+    away_odds: float | None = 2.5
 
 
 class MatchPrediction(BaseModel):
     home_team: str
     away_team: str
     predicted_result: str
-    home_win_probability: Optional[float] = None
-    draw_probability: Optional[float] = None
-    away_win_probability: Optional[float] = None
-    prediction_confidence: Optional[float] = None
+    home_win_probability: float | None = None
+    draw_probability: float | None = None
+    away_win_probability: float | None = None
+    prediction_confidence: float | None = None
 
 
 class BulkMatchInput(BaseModel):
-    matches: List[MatchInput]
+    matches: list[MatchInput]
 
 
 class BulkMatchPrediction(BaseModel):
-    predictions: List[MatchPrediction]
+    predictions: list[MatchPrediction]
 
 
 # Global model trainer instance
-trainer: Optional[ModelTrainer] = None
+trainer: ModelTrainer | None = None
 
 
 @app.on_event("startup")
@@ -170,7 +170,9 @@ async def predict_match(match: MatchInput) -> MatchPrediction:
 
     except Exception as e:
         logger.error(f"Error making prediction: {e}")
-        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Prediction error: {str(e)}"
+        ) from e
 
 
 @app.post("/predict/bulk", response_model=BulkMatchPrediction)
@@ -212,7 +214,7 @@ async def predict_matches_bulk(matches: BulkMatchInput) -> BulkMatchPrediction:
         result_map = {"H": "Home Win", "A": "Away Win", "D": "Draw"}
 
         prediction_results = []
-        for i, (match, prediction) in enumerate(zip(matches.matches, predictions)):
+        for match, prediction in zip(matches.matches, predictions, strict=False):
             readable_prediction = result_map.get(prediction, str(prediction))
             prediction_results.append(
                 MatchPrediction(
@@ -226,11 +228,13 @@ async def predict_matches_bulk(matches: BulkMatchInput) -> BulkMatchPrediction:
 
     except Exception as e:
         logger.error(f"Error making bulk predictions: {e}")
-        raise HTTPException(status_code=500, detail=f"Bulk prediction error: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Bulk prediction error: {str(e)}"
+        ) from e
 
 
 @app.get("/teams")
-async def get_teams() -> dict[str, List[str]]:
+async def get_teams() -> dict[str, list[str]]:
     """Get list of available teams."""
     # This would ideally come from the trained model or a configuration file
     teams = [

@@ -31,12 +31,11 @@ jobs:
       run: |
         uv sync --extra dev
 
-    - name: Run pre-commit checks
+    - name: Run Ruff checks
       run: |
-        # Run the same checks as pre-commit
-        uv run black --check src tests
-        uv run isort --check-only --profile black src tests
-        uv run flake8 src tests --max-line-length=88 --ignore=E203,W503
+        # Run Ruff linter and formatter - replaces black, isort, flake8
+        uv run ruff check src tests
+        uv run ruff format --check src tests
 
     - name: Run type checking
       run: |
@@ -44,7 +43,7 @@ jobs:
 
     - name: Run tests
       run: |
-        uv run pytest tests/ -v --tb=short -q --cov=src --cov-report=xml
+        uv run python -m pytest tests/ -v --tb=short -q --cov=src --cov-report=xml
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
