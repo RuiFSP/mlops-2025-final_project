@@ -6,7 +6,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import pandas as pd
 
