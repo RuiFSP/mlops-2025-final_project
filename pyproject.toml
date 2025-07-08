@@ -46,6 +46,9 @@ packages = ["src"]
 line-length = 100
 target-version = "py310"
 
+
+# Move these to lint section (FIXED)
+[tool.ruff.lint]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
 # Also enable isort (`I`), pydocstyle (`D`), and other useful rules
 select = [
@@ -60,15 +63,20 @@ select = [
 
 ignore = [
     "E203",  # whitespace before ':' (conflicts with black)
+    "E501",  # line too long (handled by formatter)
+    "D100",  # missing docstring in public module
+    "D101",  # missing docstring in public class
+    "D102",  # missing docstring in public method
+    "D103",  # missing docstring in public function
+    "D104",  # missing docstring in public package
+    "D105",  # missing docstring in magic method
 ]
 
-# Allow autofix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
 unfixable = []
 
-# Exclude a variety of commonly ignored directories.
+# Exclude from checking.
 exclude = [
-    ".bzr",
     ".direnv",
     ".eggs",
     ".git",
