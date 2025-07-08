@@ -96,7 +96,7 @@ source .venv/bin/activate
 ### 2. Collect Data
 ```bash
 # Collect real Premier League data
-python scripts/collect_real_data.py
+python scripts/data/collect_real_data.py
 ```
 
 ### 3. Train Model
@@ -286,16 +286,16 @@ Weekly Match Simulation:
 
 ```bash
 # Quick demo (3 weeks)
-python scripts/demo_simulation.py
+python scripts/simulation/demo_simulation.py
 
 # Interactive simulation
-python scripts/run_simulation.py --mode interactive --weeks 10
+python scripts/simulation/run_simulation.py --mode interactive --weeks 10
 
 # Full season batch simulation
-python scripts/run_simulation.py --mode batch
+python scripts/simulation/run_simulation.py --mode batch
 
 # Custom simulation
-python scripts/run_simulation.py --start-week 5 --weeks 15
+python scripts/simulation/run_simulation.py --start-week 5 --weeks 15
 ```
 
 ### **🎯 Real Production Benefits**
@@ -372,8 +372,12 @@ mlops-2025-final_project/
 ├── models/                      # Trained model artifacts
 ├── notebooks/                   # Jupyter analysis notebooks
 ├── tests/                       # Unit and integration tests
-├── scripts/                     # Utility scripts
-│   └── run_season_simulation.py # Season simulation runner (PLANNED)
+├── scripts/                     # Organized utility scripts
+│   ├── data/                    # Data collection and preparation
+│   ├── simulation/              # Season simulation scripts
+│   ├── monitoring/              # Monitoring and observability
+│   ├── testing/                 # Manual testing scripts
+│   └── utils/                   # Utility and maintenance scripts
 ├── evaluation_reports/          # Model evaluation results
 ├── mlruns/                      # MLflow experiment tracking
 ├── .github/workflows/           # CI/CD automation
@@ -419,16 +423,16 @@ mlflow server --backend-store-uri sqlite:///mlflow.db --host 0.0.0.0 --port 5000
 ### Enhanced Model Testing
 ```bash
 # Test the enhanced model with probability outputs
-python scripts/test_enhanced_model.py
+python scripts/testing/test_enhanced_model.py
 
 # Test the enhanced API with probability outputs
-python scripts/test_enhanced_api.py
+python scripts/testing/test_enhanced_api.py
 
 # Demo the new monitoring system
-python scripts/demo_monitoring.py
+python scripts/monitoring/demo_monitoring.py
 
 # Run season simulation
-python scripts/run_simulation.py --mode batch
+python scripts/simulation/run_simulation.py --mode batch
 ```
 
 ## 🔍 Pre-Commit Hooks & Quality Checks
@@ -451,7 +455,7 @@ Run all quality checks manually before committing:
 
 ```bash
 # Run all checks at once
-python scripts/run_checks.py
+python scripts/utils/run_checks.py
 
 # Or run individual checks
 uv run ruff check src tests   # Linting

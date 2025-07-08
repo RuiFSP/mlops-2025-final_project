@@ -137,8 +137,8 @@ class MatchScheduler:
     def get_simulation_progress(self) -> dict[str, Any]:
         """Get current simulation progress statistics."""
         total_matches = len(self.match_calendar)
-        predicted_matches = (self.match_calendar["prediction_made"] is True).sum()
-        completed_matches = (self.match_calendar["actual_result_revealed"] is True).sum()
+        predicted_matches = (self.match_calendar["prediction_made"]).sum()  # type: ignore[attr-defined]
+        completed_matches = (self.match_calendar["actual_result_revealed"]).sum()  # type: ignore[attr-defined]
 
         progress = {
             "current_week": self.current_week,
@@ -170,8 +170,8 @@ class MatchScheduler:
                 "start": week_matches["Date"].min().strftime("%Y-%m-%d"),
                 "end": week_matches["Date"].max().strftime("%Y-%m-%d"),
             },
-            "predictions_made": int((week_matches["prediction_made"] is True).sum()),
-            "results_revealed": int((week_matches["actual_result_revealed"] is True).sum()),
+            "predictions_made": int((week_matches["prediction_made"]).sum()),  # type: ignore[attr-defined]
+            "results_revealed": int((week_matches["actual_result_revealed"]).sum()),  # type: ignore[attr-defined]
             "status_counts": week_matches["simulation_status"].value_counts().to_dict(),
         }
 
@@ -189,15 +189,15 @@ class MatchScheduler:
     def save_state(self, output_path: str | None = None) -> str:
         """Save current scheduler state."""
         if output_path is None:
-            output_path = self.calendar_path
+            output_path = str(self.calendar_path)
 
         self.match_calendar.to_parquet(output_path, index=True)
         logger.info(f"Scheduler state saved to {output_path}")
-        return str(output_path)
+        return output_path
 
     def is_simulation_complete(self) -> bool:
         """Check if simulation is complete."""
-        return (self.match_calendar["actual_result_revealed"] is True).all()
+        return bool((self.match_calendar["actual_result_revealed"]).all())  # type: ignore[attr-defined]
 
     def get_completed_matches_since_week(self, since_week: int) -> pd.DataFrame:
         """Get all completed matches since a specific week."""

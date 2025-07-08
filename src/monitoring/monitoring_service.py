@@ -6,7 +6,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import pandas as pd
 
@@ -65,9 +65,9 @@ class MLOpsMonitoringService:
     def monitor_production_batch(
         self,
         production_data: pd.DataFrame,
-        true_labels: Union[pd.Series, None] = None,
-        batch_id: Union[str, None] = None,
-    ) -> Union[dict, Any]:
+        true_labels: pd.Series | None = None,
+        batch_id: str | None = None,
+    ) -> dict | Any:
         """
         Comprehensive monitoring of a production data batch.
 
@@ -94,9 +94,7 @@ class MLOpsMonitoringService:
         # 1. Drift Detection
         logger.info("Running drift detection...")
         try:
-            drift_results = self.drift_detector.monitor_batch(
-                production_data, batch_id=batch_id
-            )
+            drift_results = self.drift_detector.monitor_batch(production_data, batch_id=batch_id)
             monitoring_results["drift_monitoring"] = drift_results
         except Exception as e:
             logger.error(f"Drift detection failed: {e}")
@@ -123,9 +121,7 @@ class MLOpsMonitoringService:
             }
 
         # 3. Generate alerts and recommendations
-        alerts_and_recommendations = self._generate_alerts_and_recommendations(
-            monitoring_results
-        )
+        alerts_and_recommendations = self._generate_alerts_and_recommendations(monitoring_results)
         monitoring_results.update(alerts_and_recommendations)
 
         # 4. Save monitoring summary
@@ -181,9 +177,7 @@ class MLOpsMonitoringService:
                     "timestamp": datetime.now().isoformat(),
                 }
             )
-            recommendations.append(
-                "Investigate data drift causes and consider model retraining"
-            )
+            recommendations.append("Investigate data drift causes and consider model retraining")
             overall_status = "warning"
 
         # Check performance monitoring results
@@ -226,7 +220,7 @@ class MLOpsMonitoringService:
             "alert_count": len(alerts),
         }
 
-    def _save_monitoring_summary(self, monitoring_results: dict[str, Any]):
+    def _save_monitoring_summary(self, monitoring_results: dict[str, Any]) -> None:
         """Save monitoring summary to file."""
         try:
             # Load existing summaries
@@ -337,7 +331,7 @@ class MLOpsMonitoringService:
 
     def run_health_check(self) -> dict[str, Any]:
         """Run comprehensive health check of the monitoring system."""
-        health_check = {
+        health_check: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "monitoring_service_status": "healthy",
             "components": {},
@@ -345,10 +339,8 @@ class MLOpsMonitoringService:
 
         # Check drift detector
         try:
-            drift_check = {
-                "status": "healthy"
-                if self.drift_detector.model is not None
-                else "warning",
+            drift_check: dict[str, Any] = {
+                "status": "healthy" if self.drift_detector.model is not None else "warning",
                 "reference_data_loaded": self.drift_detector.reference_data is not None,
                 "model_loaded": self.drift_detector.model is not None,
             }
@@ -374,7 +366,7 @@ class MLOpsMonitoringService:
             }
 
         # Determine overall status
-        component_statuses = [
+        component_statuses: list[str] = [
             comp.get("status", "error") for comp in health_check["components"].values()
         ]
         if "error" in component_statuses:

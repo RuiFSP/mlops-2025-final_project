@@ -77,7 +77,7 @@ class SeasonSimulator:
 
         logger.info(f"Season simulator initialized for {self.max_week} weeks")
 
-    def _setup_output_directories(self):
+    def _setup_output_directories(self) -> None:
         """Create necessary output directories."""
         directories = [
             self.output_dir,
@@ -313,7 +313,7 @@ class SeasonSimulator:
             "timestamp": datetime.now().isoformat(),
         }
 
-    def _save_week_data(self, week_data: dict):
+    def _save_week_data(self, week_data: dict) -> None:
         """Save week data to files."""
         week_num = week_data["week"]
 

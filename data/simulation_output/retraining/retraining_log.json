@@ -25,6 +25,32 @@
       "retraining_method": "automated_incremental",
       "status": "success",
       "duration_seconds": 0.688714
+    },
+    {
+      "retraining_id": "retrain_3_1",
+      "week": 3,
+      "timestamp": "2025-07-08T21:56:57.799974",
+      "trigger_reasons": [
+        "time_based"
+      ],
+      "performance_before": 0.6222222222222222,
+      "data_points_used": 3,
+      "baseline_performance": 0.6,
+      "performance_after": 0.677231319454056,
+      "performance_improvement": 0.05500909723183378,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.8634544894453677,
+        "validation_accuracy": 0.677231319454056,
+        "training_loss": 0.3812945403521384,
+        "validation_loss": 0.8083437138588423,
+        "epochs": 17,
+        "training_samples": 2775
+      },
+      "model_version": "v1_week3",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.587287
     }
   ]
 }

@@ -65,7 +65,7 @@ class RetrainingOrchestrator:
 
         logger.info(f"Retraining orchestrator initialized with threshold: {threshold}")
 
-    def _load_current_model(self):
+    def _load_current_model(self) -> None:
         """Load and inspect the current model."""
         try:
             if os.path.exists(self.model_path):
@@ -78,7 +78,7 @@ class RetrainingOrchestrator:
             logger.error(f"Error loading model: {str(e)}")
             self.current_model = None
 
-    def set_baseline_performance(self, performance: float):
+    def set_baseline_performance(self, performance: float) -> None:
         """Set the baseline performance for comparison."""
         self.baseline_performance = performance
         logger.info(f"Baseline performance set to: {performance:.4f}")
@@ -169,7 +169,7 @@ class RetrainingOrchestrator:
 
         return False
 
-    def _trigger_retraining(self, week: int, reasons: list[str]):
+    def _trigger_retraining(self, week: int, reasons: list[str]) -> None:
         """Execute the retraining process."""
         logger.info(f"Triggering retraining at week {week}, reasons: {reasons}")
 
@@ -275,7 +275,7 @@ class RetrainingOrchestrator:
             return self.baseline_performance or 0.5
 
         recent_accuracies = [
-            p["accuracy"]
+            float(p["accuracy"])
             for p in self.performance_buffer[-5:]  # Last 5 weeks
             if p.get("accuracy") is not None
         ]
@@ -285,7 +285,7 @@ class RetrainingOrchestrator:
         else:
             return self.baseline_performance or 0.5
 
-    def _save_retraining_record(self, record: dict):
+    def _save_retraining_record(self, record: dict) -> None:
         """Save retraining record to file."""
         import json
 
@@ -375,7 +375,7 @@ class RetrainingOrchestrator:
             logger.error(f"Forced retraining failed: {str(e)}")
             return False
 
-    def reset_orchestrator(self):
+    def reset_orchestrator(self) -> None:
         """Reset the orchestrator state (useful for testing)."""
         self.baseline_performance = None
         self.retraining_history = []

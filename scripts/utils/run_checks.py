@@ -19,7 +19,7 @@ def run_command(cmd: str, description: str) -> bool:
             cmd.split(),
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent
+            cwd=Path(__file__).parent.parent.parent
         )
 
         if result.returncode == 0:
@@ -86,8 +86,8 @@ def main() -> None:
     else:
         print("\n⚠️  Some checks failed. Please fix the issues before committing.")
         print("\nTo fix common issues:")
-        print("  • Format code: uv run black src tests")
-        print("  • Fix imports: uv run isort src tests")
+        print("  • Format code: uv run ruff format src tests")
+        print("  • Fix imports: uv run ruff check --fix src tests")
         print("  • Check specific errors above")
         sys.exit(1)
 

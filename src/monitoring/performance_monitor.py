@@ -69,10 +69,11 @@ class ModelPerformanceMonitor:
         """Load performance history from file."""
         if self.performance_history_file.exists():
             with open(self.performance_history_file) as f:
-                return json.load(f)
+                data = json.load(f)
+                return data if isinstance(data, list) else []
         return []
 
-    def _save_performance_history(self):
+    def _save_performance_history(self) -> None:
         """Save performance history to file."""
         with open(self.performance_history_file, "w") as f:
             json.dump(self.performance_history, f, indent=2)
@@ -107,7 +108,7 @@ class ModelPerformanceMonitor:
         self,
         X: pd.DataFrame,
         y_true: pd.Series,
-        batch_id: str = None,
+        batch_id: str | None = None,
         save_results: bool = True,
     ) -> dict[str, Any]:
         """
@@ -149,9 +150,7 @@ class ModelPerformanceMonitor:
                     "batch_size": len(X),
                     "baseline_accuracy": self.baseline_accuracy,
                     "accuracy_change": metrics["accuracy"] - self.baseline_accuracy,
-                    "performance_degraded": (
-                        self.baseline_accuracy - metrics["accuracy"]
-                    )
+                    "performance_degraded": (self.baseline_accuracy - metrics["accuracy"])
                     > self.performance_threshold,
                 }
             )
@@ -171,7 +170,7 @@ class ModelPerformanceMonitor:
             return {"error": str(e), "batch_id": batch_id}
 
     def _calculate_metrics(
-        self, y_true: pd.Series, y_pred: np.ndarray, y_pred_proba: np.ndarray = None
+        self, y_true: pd.Series, y_pred: np.ndarray, y_pred_proba: np.ndarray | None = None
     ) -> dict[str, Any]:
         """Calculate comprehensive performance metrics."""
         # Basic classification metrics
@@ -189,9 +188,7 @@ class ModelPerformanceMonitor:
             recall_per_class,
             f1_per_class,
             support_per_class,
-        ) = precision_recall_fscore_support(
-            y_true, y_pred, average=None, zero_division=0
-        )
+        ) = precision_recall_fscore_support(y_true, y_pred, average=None, zero_division=0)
 
         # Get unique classes
         classes = sorted(y_true.unique())
@@ -207,13 +204,9 @@ class ModelPerformanceMonitor:
                     "precision": float(precision_per_class[i])
                     if i < len(precision_per_class)
                     else 0.0,
-                    "recall": float(recall_per_class[i])
-                    if i < len(recall_per_class)
-                    else 0.0,
+                    "recall": float(recall_per_class[i]) if i < len(recall_per_class) else 0.0,
                     "f1": float(f1_per_class[i]) if i < len(f1_per_class) else 0.0,
-                    "support": int(support_per_class[i])
-                    if i < len(support_per_class)
-                    else 0,
+                    "support": int(support_per_class[i]) if i < len(support_per_class) else 0,
                 }
                 for i, cls in enumerate(classes)
                 if i < len(precision_per_class)
@@ -250,7 +243,7 @@ class ModelPerformanceMonitor:
 
         return metrics
 
-    def _log_performance_results(self, metrics: dict[str, Any]):
+    def _log_performance_results(self, metrics: dict[str, Any]) -> None:
         """Log performance monitoring results."""
         batch_id = metrics.get("batch_id", "unknown")
         accuracy = metrics.get("accuracy", 0)
@@ -270,7 +263,7 @@ class ModelPerformanceMonitor:
                 f"(change: {accuracy_change:+.3f})"
             )
 
-    def get_performance_summary(self, days: int = None) -> dict[str, Any]:
+    def get_performance_summary(self, days: int | None = None) -> dict[str, Any]:
         """
         Get performance summary for the last N days.
 
@@ -316,16 +309,10 @@ class ModelPerformanceMonitor:
             "performance_trend": {
                 "mean_change": float(np.mean(accuracy_changes)),
                 "total_degradations": sum(
-                    1
-                    for p in recent_performance
-                    if p.get("performance_degraded", False)
+                    1 for p in recent_performance if p.get("performance_degraded", False)
                 ),
                 "degradation_rate": float(
-                    sum(
-                        1
-                        for p in recent_performance
-                        if p.get("performance_degraded", False)
-                    )
+                    sum(1 for p in recent_performance if p.get("performance_degraded", False))
                     / len(recent_performance)
                 ),
             },
@@ -352,7 +339,7 @@ class ModelPerformanceMonitor:
         Returns:
             Health status and recommendations
         """
-        health_status = {
+        health_status: dict[str, Any] = {
             "timestamp": datetime.now().isoformat(),
             "model_loaded": self.model is not None,
             "baseline_accuracy": self.baseline_accuracy,
@@ -363,8 +350,8 @@ class ModelPerformanceMonitor:
 
         if not self.model:
             health_status["health_score"] = 0.0
-            health_status["issues"].append("Model not loaded or not found")
-            health_status["recommendations"].append(
+            health_status["issues"].append("Model not loaded or not found")  # type: ignore[attr-defined]
+            health_status["recommendations"].append(  # type: ignore[attr-defined]
                 "Check model file path and retrain if necessary"
             )
             return health_status
@@ -374,30 +361,30 @@ class ModelPerformanceMonitor:
 
         if recent_summary["evaluations_count"] == 0:
             health_status["health_score"] -= 0.3
-            health_status["issues"].append("No recent performance evaluations")
-            health_status["recommendations"].append(
+            health_status["issues"].append("No recent performance evaluations")  # type: ignore[attr-defined]
+            health_status["recommendations"].append(  # type: ignore[attr-defined]
                 "Set up regular model evaluation on production data"
             )
         else:
             # Check for performance degradation
-            degradation_rate = recent_summary["performance_trend"]["degradation_rate"]
-            mean_accuracy = recent_summary["current_performance"]["mean_accuracy"]
+            degradation_rate = float(recent_summary["performance_trend"]["degradation_rate"])
+            mean_accuracy = float(recent_summary["current_performance"]["mean_accuracy"])
 
             if degradation_rate > 0.5:  # More than 50% of evaluations show degradation
                 health_status["health_score"] -= 0.4
-                health_status["issues"].append(
+                health_status["issues"].append(  # type: ignore[attr-defined]
                     f"High degradation rate: {degradation_rate:.1%}"
                 )
-                health_status["recommendations"].append(
+                health_status["recommendations"].append(  # type: ignore[attr-defined]
                     "Investigate data drift and consider model retraining"
                 )
 
             if mean_accuracy < (self.baseline_accuracy - self.performance_threshold):
                 health_status["health_score"] -= 0.3
-                health_status["issues"].append(
+                health_status["issues"].append(  # type: ignore[attr-defined]
                     f"Mean accuracy below threshold: {mean_accuracy:.3f}"
                 )
-                health_status["recommendations"].append(
+                health_status["recommendations"].append(  # type: ignore[attr-defined]
                     "Model performance significantly degraded - retraining recommended"
                 )
 

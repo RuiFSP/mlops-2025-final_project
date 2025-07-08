@@ -63,9 +63,7 @@ class ModelDriftDetector:
         elif self.reference_data_path.suffix == ".csv":
             return pd.read_csv(self.reference_data_path)
         else:
-            raise ValueError(
-                f"Unsupported file format: {self.reference_data_path.suffix}"
-            )
+            raise ValueError(f"Unsupported file format: {self.reference_data_path.suffix}")
 
     def _load_model(self) -> Any:
         """Load the trained model."""
@@ -75,9 +73,7 @@ class ModelDriftDetector:
             logger.warning(f"Model not found at {self.model_path}")
             return None
 
-    def detect_drift(
-        self, current_data: pd.DataFrame, save_report: bool = True
-    ) -> dict[str, Any]:
+    def detect_drift(self, current_data: pd.DataFrame, save_report: bool = True) -> dict[str, Any]:
         """
         Detect drift between reference and current data using statistical tests.
 
@@ -105,8 +101,7 @@ class ModelDriftDetector:
                 results["report_path"] = str(report_path)
 
             logger.info(
-                f"Drift detection completed. "
-                f"Dataset drift detected: {results['dataset_drift']}"
+                f"Drift detection completed. " f"Dataset drift detected: {results['dataset_drift']}"
             )
             return results
 
@@ -159,10 +154,7 @@ class ModelDriftDetector:
 
         # Test numerical features
         for feature in self.numerical_features:
-            if (
-                feature in self.reference_data.columns
-                and feature in current_data.columns
-            ):
+            if feature in self.reference_data.columns and feature in current_data.columns:
                 try:
                     ref_values = self.reference_data[feature].dropna()
                     curr_values = current_data[feature].dropna()
@@ -184,22 +176,15 @@ class ModelDriftDetector:
 
         # Test categorical features
         for feature in self.categorical_features:
-            if (
-                feature in self.reference_data.columns
-                and feature in current_data.columns
-            ):
+            if feature in self.reference_data.columns and feature in current_data.columns:
                 try:
                     ref_dist = self.reference_data[feature].value_counts(normalize=True)
                     curr_dist = current_data[feature].value_counts(normalize=True)
 
                     # Align distributions (fill missing categories with 0)
                     all_categories = set(ref_dist.index) | set(curr_dist.index)
-                    ref_aligned = pd.Series(
-                        [ref_dist.get(cat, 0) for cat in all_categories]
-                    )
-                    curr_aligned = pd.Series(
-                        [curr_dist.get(cat, 0) for cat in all_categories]
-                    )
+                    ref_aligned = pd.Series([ref_dist.get(cat, 0) for cat in all_categories])
+                    curr_aligned = pd.Series([curr_dist.get(cat, 0) for cat in all_categories])
 
                     if len(all_categories) > 1:
                         # Use Chi-square test for categorical features
@@ -231,9 +216,7 @@ class ModelDriftDetector:
                     if result.get("drift_detected", False):
                         drifted_features.append(feature)
 
-            drift_share = (
-                len(drifted_features) / total_features if total_features > 0 else 0
-            )
+            drift_share = len(drifted_features) / total_features if total_features > 0 else 0
             dataset_drift = drift_share > 0.1  # More than 10% of features drifted
 
             return {
@@ -276,7 +259,7 @@ class ModelDriftDetector:
         return report_path
 
     def monitor_batch(
-        self, batch_data: pd.DataFrame, batch_id: str = None
+        self, batch_data: pd.DataFrame, batch_id: str | None = None
     ) -> dict[str, Any]:
         """
         Monitor a batch of new data for drift.

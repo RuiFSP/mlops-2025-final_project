@@ -25,8 +25,8 @@ def check_project_status():
         "Enhanced API": "src/deployment/api.py",
         "Data Loader": "src/data_preprocessing/data_loader.py",
         "Model Artifacts": "models/model.pkl",
-        "Test Scripts": "scripts/test_enhanced_model.py",
-        "API Test Script": "scripts/test_enhanced_api.py",
+        "Test Scripts": "scripts/testing/test_enhanced_model.py",
+        "API Test Script": "scripts/testing/test_enhanced_api.py",
         "Documentation": "docs/model_improvements.md",
         "README": "README.md",
         "Requirements": "pyproject.toml",
@@ -87,13 +87,13 @@ def check_project_status():
     print("\n🎯 What You Can Do Now:")
     print("-" * 30)
     print("1. 🧪 Test Enhanced Model:")
-    print("   python scripts/test_enhanced_model.py")
+    print("   python scripts/testing/test_enhanced_model.py")
     print()
     print("2. 🌐 Start Enhanced API:")
     print("   python -m src.deployment.api")
     print()
     print("3. 🔍 Test Enhanced API:")
-    print("   python scripts/test_enhanced_api.py")
+    print("   python scripts/testing/test_enhanced_api.py")
     print()
     print("4. 📊 View MLflow UI:")
     print(

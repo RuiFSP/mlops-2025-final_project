@@ -12,7 +12,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # ruff: noqa: E402
-from simulation import (
+from src.simulation import (
     MatchScheduler,
     OddsGenerator,
     RetrainingOrchestrator,
