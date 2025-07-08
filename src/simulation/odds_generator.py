@@ -63,14 +63,12 @@ class OddsGenerator:
             home_matches = self.training_data[self.training_data["HomeTeam"] == team]
             home_wins = (home_matches["FTR"] == "H").sum()
             home_draws = (home_matches["FTR"] == "D").sum()
-            home_losses = (home_matches["FTR"] == "A").sum()
             home_total = len(home_matches)
 
             # Away performance
             away_matches = self.training_data[self.training_data["AwayTeam"] == team]
             away_wins = (away_matches["FTR"] == "A").sum()
             away_draws = (away_matches["FTR"] == "D").sum()
-            away_losses = (away_matches["FTR"] == "H").sum()
             away_total = len(away_matches)
 
             # Calculate strength metrics

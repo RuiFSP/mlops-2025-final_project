@@ -8,7 +8,6 @@ other components to provide a realistic testing environment for MLOps workflows.
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
@@ -112,7 +111,7 @@ class SeasonSimulator:
             ),
         }
 
-    def simulate_week(self, week_number: Optional[int] = None) -> dict:
+    def simulate_week(self, week_number: int | None = None) -> dict:
         """
         Simulate a single week of matches.
 
@@ -339,7 +338,7 @@ class SeasonSimulator:
         with open(performance_path, "w") as f:
             json.dump(week_data["performance"], f, indent=2)
 
-    def simulate_season(self, start_week: int = 1, end_week: Optional[int] = None) -> dict:
+    def simulate_season(self, start_week: int = 1, end_week: int | None = None) -> dict:
         """
         Simulate multiple weeks or the entire season.
 
@@ -410,7 +409,7 @@ class SeasonSimulator:
             "weeks_analyzed": len(self.performance_history),
         }
 
-    def get_week_summary(self, week_number: int) -> Optional[dict]:
+    def get_week_summary(self, week_number: int) -> dict | None:
         """Get summary of a specific week's simulation."""
         for week_data in self.simulation_history:
             if week_data["week"] == week_number:

@@ -9,7 +9,7 @@ Handles realistic fixture management, including:
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -64,7 +64,7 @@ class MatchScheduler:
         """Get current simulation week."""
         return self.current_week
 
-    def get_upcoming_matches(self, week: Optional[int] = None) -> pd.DataFrame:
+    def get_upcoming_matches(self, week: int | None = None) -> pd.DataFrame:
         """
         Get upcoming matches for prediction.
 
@@ -137,8 +137,8 @@ class MatchScheduler:
     def get_simulation_progress(self) -> dict[str, Any]:
         """Get current simulation progress statistics."""
         total_matches = len(self.match_calendar)
-        predicted_matches = (self.match_calendar["prediction_made"] == True).sum()
-        completed_matches = (self.match_calendar["actual_result_revealed"] == True).sum()
+        predicted_matches = (self.match_calendar["prediction_made"] is True).sum()
+        completed_matches = (self.match_calendar["actual_result_revealed"] is True).sum()
 
         progress = {
             "current_week": self.current_week,
@@ -155,7 +155,7 @@ class MatchScheduler:
 
         return progress
 
-    def get_week_summary(self, week: Optional[int] = None) -> dict[str, Any]:
+    def get_week_summary(self, week: int | None = None) -> dict[str, Any]:
         """Get summary for a specific week."""
         target_week = week if week is not None else self.current_week
         week_matches = self.get_matches_for_week(target_week)
@@ -170,8 +170,8 @@ class MatchScheduler:
                 "start": week_matches["Date"].min().strftime("%Y-%m-%d"),
                 "end": week_matches["Date"].max().strftime("%Y-%m-%d"),
             },
-            "predictions_made": int((week_matches["prediction_made"] == True).sum()),
-            "results_revealed": int((week_matches["actual_result_revealed"] == True).sum()),
+            "predictions_made": int((week_matches["prediction_made"] is True).sum()),
+            "results_revealed": int((week_matches["actual_result_revealed"] is True).sum()),
             "status_counts": week_matches["simulation_status"].value_counts().to_dict(),
         }
 
@@ -186,7 +186,7 @@ class MatchScheduler:
 
         logger.info("Simulation reset to week 1")
 
-    def save_state(self, output_path: Optional[str] = None) -> str:
+    def save_state(self, output_path: str | None = None) -> str:
         """Save current scheduler state."""
         if output_path is None:
             output_path = self.calendar_path
@@ -197,13 +197,13 @@ class MatchScheduler:
 
     def is_simulation_complete(self) -> bool:
         """Check if simulation is complete."""
-        return (self.match_calendar["actual_result_revealed"] == True).all()
+        return (self.match_calendar["actual_result_revealed"] is True).all()
 
     def get_completed_matches_since_week(self, since_week: int) -> pd.DataFrame:
         """Get all completed matches since a specific week."""
         completed = self.match_calendar[
             (self.match_calendar["simulation_week"] >= since_week)
-            & (self.match_calendar["actual_result_revealed"] == True)
+            & (self.match_calendar["actual_result_revealed"] is True)
         ].copy()
 
         return completed

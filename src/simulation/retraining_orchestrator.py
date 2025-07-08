@@ -9,7 +9,6 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import joblib
 import pandas as pd
@@ -52,7 +51,7 @@ class RetrainingOrchestrator:
         self.output_dir = Path(output_dir)
 
         # Initialize state
-        self.baseline_performance: Optional[float] = None
+        self.baseline_performance: float | None = None
         self.retraining_history: list[dict] = []
         self.performance_buffer: list[dict] = []
         self.last_retraining_week: int = 0
