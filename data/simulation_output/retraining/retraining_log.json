@@ -1,0 +1,30 @@
+{
+  "retraining_events": [
+    {
+      "retraining_id": "retrain_3_1",
+      "week": 3,
+      "timestamp": "2025-07-08T21:40:37.955749",
+      "trigger_reasons": [
+        "time_based"
+      ],
+      "performance_before": 0.6222222222222222,
+      "data_points_used": 3,
+      "baseline_performance": 0.6,
+      "performance_after": 0.6989173052437294,
+      "performance_improvement": 0.07669508302150718,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.7698385773580555,
+        "validation_accuracy": 0.6989173052437294,
+        "training_loss": 0.7316470043141847,
+        "validation_loss": 0.4169516262682615,
+        "epochs": 44,
+        "training_samples": 1921
+      },
+      "model_version": "v1_week3",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.688714
+    }
+  ]
+}

@@ -42,8 +42,8 @@ build-backend = "hatchling.build"
 packages = ["src"]
 
 [tool.ruff]
-# Same as Black
-line-length = 88
+# Increased from 88 to 100 for better readability
+line-length = 100
 target-version = "py310"
 
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
