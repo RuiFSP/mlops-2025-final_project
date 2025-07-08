@@ -46,9 +46,8 @@ def main() -> None:
     print("=" * 60)
 
     checks = [
-        ("uv run flake8 src tests", "Code Linting (flake8)"),
-        ("uv run black --check src tests", "Code Formatting (black)"),
-        ("uv run isort --check-only src tests", "Import Sorting (isort)"),
+        ("uv run ruff check src tests", "Code Linting (ruff)"),
+        ("uv run ruff format --check src tests", "Code Formatting (ruff)"),
         ("uv run mypy src", "Type Checking (mypy)"),
         ("python -m pytest tests/ -v", "Unit Tests (pytest)"),
     ]

@@ -14,13 +14,12 @@ test:
 
 # Run linter
 lint:
-	uv run flake8 src tests
+	uv run ruff check src tests
 	uv run mypy src
 
 # Format code
 format:
-	uv run black src tests
-	uv run isort src tests
+	uv run ruff format src tests
 
 # Run the training pipeline
 run:
