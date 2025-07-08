@@ -1,0 +1,28 @@
+[
+  {
+    "batch_id": "prod_batch_001",
+    "timestamp": "2025-07-08T21:05:30.995101",
+    "batch_size": 100,
+    "monitoring_type": "comprehensive",
+    "drift_monitoring": {
+      "timestamp": "2025-07-08T21:05:30.996737",
+      "dataset_drift": false,
+      "drift_share": 0,
+      "drifted_features": [],
+      "total_features_tested": 0,
+      "drift_threshold": 0.1,
+      "alert_triggered": false,
+      "feature_drift_details": {},
+      "report_path": "evaluation_reports/drift_report_20250708_210530.json",
+      "batch_id": "prod_batch_001",
+      "batch_size": 100
+    },
+    "performance_monitoring": {
+      "message": "No labels provided for performance evaluation"
+    },
+    "alerts": [],
+    "recommendations": [],
+    "overall_status": "healthy",
+    "alert_count": 0
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-07-08T21:05:30.813191",
+  "drift_threshold": 0.1,
+  "feature_results": {},
+  "summary": {
+    "timestamp": "2025-07-08T21:05:30.813194",
+    "dataset_drift": false,
+    "drift_share": 0,
+    "drifted_features": [],
+    "total_features_tested": 0,
+    "drift_threshold": 0.1,
+    "alert_triggered": false,
+    "feature_drift_details": {}
+  }
+}
