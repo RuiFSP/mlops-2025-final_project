@@ -108,8 +108,8 @@ indent-style = "space"
 # Like Black, respect magic trailing commas.
 skip-magic-trailing-comma = false
 
-# Like Black, automatically detect the appropriate line ending.
-line-ending = "auto"
+# Like Black, use Unix line endings for consistency.
+line-ending = "lf"
 
 [tool.ruff.lint.isort]
 known-third-party = ["mlflow"]
