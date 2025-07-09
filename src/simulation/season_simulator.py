@@ -34,6 +34,8 @@ class SeasonSimulator:
         output_dir: str = "data/simulation_output",
         retraining_threshold: float = 0.05,
         retraining_frequency: int = 5,  # weeks
+        use_prefect: bool = True,
+        prefect_deployment_name: str = "simulation-triggered-retraining",
     ):
         """
         Initialize the season simulator.
@@ -45,6 +47,8 @@ class SeasonSimulator:
             output_dir: Directory to save simulation outputs
             retraining_threshold: Performance drop threshold for retraining
             retraining_frequency: Number of weeks between automatic retraining checks
+            use_prefect: Whether to use Prefect deployments for retraining
+            prefect_deployment_name: Name of the Prefect deployment to trigger
         """
         self.simulation_data_path = simulation_data_path
         self.match_calendar_path = match_calendar_path
@@ -52,6 +56,7 @@ class SeasonSimulator:
         self.output_dir = Path(output_dir)
         self.retraining_threshold = retraining_threshold
         self.retraining_frequency = retraining_frequency
+        self.use_prefect = use_prefect
 
         # Initialize components
         self.scheduler = MatchScheduler(match_calendar_path)
@@ -60,6 +65,8 @@ class SeasonSimulator:
             model_path=model_path,
             threshold=retraining_threshold,
             frequency=retraining_frequency,
+            use_prefect=use_prefect,
+            prefect_deployment_name=prefect_deployment_name,
         )
 
         # Load simulation data

@@ -96,6 +96,19 @@ simulation-run:
 monitoring-demo:
 	uv run python scripts/monitoring/demo_monitoring.py
 
+# Prefect deployment targets
+prefect-deploy:
+	@echo "🚀 Deploying Prefect retraining flows..."
+	python deployments/deploy_retraining_flow.py
+
+prefect-demo:
+	@echo "🎯 Running Prefect deployment integration demo..."
+	python scripts/automation/demo_prefect_deployments.py
+
+prefect-demo-full:
+	@echo "🎯 Running full Prefect deployment demo (requires deployments)..."
+	python scripts/automation/demo_prefect_deployments.py --full
+
 # Help target
 help:
 	@echo "Available targets:"
@@ -124,6 +137,8 @@ help:
 	@echo "  simulation-run   - Run interactive season simulation"
 	@echo "  monitoring-demo  - Run monitoring system demo"
 	@echo ""
+	@echo "  prefect-deploy   - Deploy Prefect retraining flows"
+	@echo "  prefect-demo     - Demo Prefect deployment integration"
 	@echo "  mlflow-server    - Start MLflow server"
 	@echo "  prefect-server   - Start Prefect server"
 	@echo "  docker-build     - Build Docker image"

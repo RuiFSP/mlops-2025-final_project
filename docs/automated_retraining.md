@@ -447,17 +447,74 @@ The system is designed for extensibility:
 - **Storage Backends**: S3, GCS, Azure Blob support
 - **Monitoring Integration**: Prometheus, Grafana, DataDog
 
-## 📝 License
+## 🚀 Prefect Deployment Integration ✅
 
-This automated retraining system is part of the MLOps 2025 Final Project and follows the same licensing terms as the main project.
+### **🎯 Key Insight: From Function Calls to API Objects**
 
-## 🤝 Contributing
+You're absolutely right about Prefect Deployments! This is a crucial MLOps best practice:
 
-Contributions welcome! Please see the main project README for contribution guidelines.
+**❌ Old Approach (Function Calls):**
+```python
+# Simulation directly calls retraining function
+from src.automation.retraining_flow import automated_retraining_flow
+result = automated_retraining_flow(config_path="config.yaml")  # Direct call
+```
 
-Key areas for contribution:
-- Additional trigger types
-- Enhanced validation methods
-- Cloud provider integrations
-- Performance optimizations
-- Documentation improvements
+**✅ New Approach (Prefect Deployments):**
+```python
+# Simulation triggers deployments via Prefect API
+client = PrefectClient()
+flow_run = await client.trigger_deployment_run(
+    deployment_name="automated-retraining-flow/simulation-triggered-retraining",
+    parameters={"config_path": "config.yaml", "triggers": ["performance_drop"]}
+)
+```
+
+### **🏆 Benefits of Deployments**
+
+| Feature | Function Calls | Prefect Deployments |
+|---------|---------------|---------------------|
+| **Observability** | ❌ No visibility | ✅ Full UI dashboard |
+| **Remote Triggering** | ❌ Local only | ✅ API-based remote triggering |
+| **Scheduling** | ❌ Manual only | ✅ Cron, interval, event-based |
+| **Retry Logic** | ❌ Custom implementation | ✅ Built-in retry policies |
+| **Parameter Validation** | ❌ Runtime errors | ✅ Schema validation |
+| **Scalability** | ❌ Single machine | ✅ Distributed execution |
+| **Monitoring** | ❌ Custom logging | ✅ Built-in metrics and alerts |
+
+### **🔧 Current Implementation Status**
+
+✅ **Simulation Integration**: Updated to use Prefect deployments
+✅ **Prefect Client**: API client for remote triggering
+✅ **Deployment Scripts**: Ready to serve retraining flows
+✅ **Demo Scripts**: Show difference between approaches
+
+### **💻 Usage Examples**
+
+```bash
+# 1. Start Prefect server
+prefect server start
+
+# 2. Serve deployments (in another terminal)
+python deployments/deploy_retraining_flow.py
+
+# 3. Run simulation with Prefect integration
+python scripts/automation/demo_prefect_deployments.py --full
+
+# 4. Trigger deployments manually via API
+curl -X POST http://localhost:4200/api/deployments/name/automated-retraining-flow%2Fsimulation-triggered-retraining/create_flow_run \
+  -H "Content-Type: application/json" \
+  -d '{"parameters": {"force_retrain": true}}'
+```
+
+### **📊 Deployment Architecture**
+
+```
+Season Simulation → Prefect API → Deployment → Flow Execution
+    ↓                  ↓             ↓            ↓
+Performance Drop → HTTP Request → Queue → Model Retraining
+    ↓                  ↓             ↓            ↓
+Trigger Event → JSON Parameters → Worker → MLflow Tracking
+```
+
+**This is exactly the production-grade approach you identified - using deployments instead of direct function calls for better MLOps practices!**

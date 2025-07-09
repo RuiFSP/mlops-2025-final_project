@@ -66,7 +66,10 @@ class ModelTrainer:
             date_col = "Date" if "Date" in df.columns else "date"
             # Add day of week (weekend vs weekday effect)
             df = df.copy()  # Ensure we're working with a copy to avoid SettingWithCopyWarning
-            df["day_of_week"] = pd.to_datetime(df[date_col]).dt.dayofweek
+            # Handle different date formats with dayfirst=True for UK format
+            df["day_of_week"] = pd.to_datetime(
+                df[date_col], dayfirst=True, errors="coerce"
+            ).dt.dayofweek
             feature_columns.append("day_of_week")
 
         # Use only columns that exist in the DataFrame
@@ -157,7 +160,11 @@ class ModelTrainer:
         """
         logger.info(f"Starting model training with {self.model_type}")
 
+        # Configure MLflow tracking URI
+        mlflow.set_tracking_uri("http://localhost:5000")
+
         # Start MLflow run
+        mlflow.set_experiment("premier-league-predictor")
         with mlflow.start_run():
             # Prepare features
             X_train = self.prepare_features(train_data)

@@ -615,7 +615,7 @@ class TestAPIIntegration:
         # Mock the retraining imports to avoid initialization issues
         with patch("src.deployment.api.RETRAINING_AVAILABLE", True), patch(
             "src.deployment.api.AutomatedRetrainingScheduler"
-        ), patch("src.deployment.api.RetrainingConfig"):
+        ):
             from src.deployment.api import app
 
             # Mock scheduler instance

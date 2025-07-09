@@ -3,38 +3,38 @@ Model Evaluation Report
 
 Overall Metrics:
 --------------------
-accuracy: 0.5526
-precision_macro: 0.5217
-recall_macro: 0.5346
-f1_macro: 0.5234
-precision_H: 0.6751
-recall_H: 0.5517
-f1_H: 0.6072
-precision_D: 0.3103
-recall_D: 0.3285
-f1_D: 0.3191
-precision_A: 0.5796
-recall_A: 0.7238
-f1_A: 0.6437
-brier_score_A: 0.1612
-brier_score_D: 0.1806
-brier_score_H: 0.2225
-brier_score_avg: 0.1881
+accuracy: 0.6003
+precision_macro: 0.4280
+recall_macro: 0.4860
+f1_macro: 0.4379
+precision_H: 0.5675
+recall_H: 0.9276
+f1_H: 0.7042
+precision_D: 0.0000
+recall_D: 0.0000
+f1_D: 0.0000
+precision_A: 0.7164
+recall_A: 0.5304
+f1_A: 0.6095
+brier_score_A: 0.1921
+brier_score_D: 0.1773
+brier_score_H: 0.2381
+brier_score_avg: 0.2025
 odds_brier_A: 0.1576
 odds_brier_D: 0.1716
 odds_brier_H: 0.2041
 odds_brier_avg: 0.1778
-brier_improvement: -0.0103
-brier_improvement_pct: -5.8121
+brier_improvement: -0.0247
+brier_improvement_pct: -13.8955
 
 Classification Report:
 --------------------
               precision    recall  f1-score   support
 
-           A       0.58      0.72      0.64       181
-           D       0.31      0.33      0.32       137
-           H       0.68      0.55      0.61       290
+           A       0.72      0.53      0.61       181
+           D       0.00      0.00      0.00       137
+           H       0.57      0.93      0.70       290
 
-    accuracy                           0.55       608
-   macro avg       0.52      0.53      0.52       608
-weighted avg       0.56      0.55      0.55       608
+    accuracy                           0.60       608
+   macro avg       0.43      0.49      0.44       608
+weighted avg       0.48      0.60      0.52       608

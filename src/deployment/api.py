@@ -24,7 +24,7 @@ from src.model_training.trainer import ModelTrainer  # noqa: E402
 
 # Import automation components
 try:
-    from src.automation.retraining_scheduler import AutomatedRetrainingScheduler, RetrainingConfig
+    from src.automation.retraining_scheduler import AutomatedRetrainingScheduler
 
     RETRAINING_AVAILABLE = True
 except ImportError:
@@ -91,7 +91,8 @@ app = FastAPI(
 class MatchInput(BaseModel):
     home_team: str
     away_team: str
-    date: str | None = None
+    month: int | None = None  # Match month (1-12)
+    date: str | None = None  # Format: YYYY-MM-DD
     season: str | None = "2023-24"
     home_odds: float | None = 2.0
     draw_odds: float | None = 3.0
@@ -166,35 +167,51 @@ async def predict_match(match: MatchInput) -> MatchPrediction:
         raise HTTPException(status_code=503, detail="Model not loaded")
 
     try:
+        # Parse date to extract month
+        from datetime import datetime
+
+        try:
+            if match.month:
+                month = match.month
+            elif match.date:
+                parsed_date = datetime.strptime(match.date, "%Y-%m-%d")
+                month = parsed_date.month
+            else:
+                month = 3  # Default to March
+        except ValueError:
+            month = 3  # Default to March if date parsing fails
+
         # Create DataFrame from input
         match_data = pd.DataFrame(
             [
                 {
                     "home_team": match.home_team,
                     "away_team": match.away_team,
-                    "date": match.date or "2024-01-01",
+                    "month": month,
+                    "Date": match.date
+                    or "15/03/2024",  # Use UK date format (DD/MM/YYYY) to match training data
                     "season": match.season,
                     "home_score": 0,  # Placeholder
                     "away_score": 0,  # Placeholder
-                    "home_odds": match.home_odds,
-                    "draw_odds": match.draw_odds,
-                    "away_odds": match.away_odds,
+                    "home_odds": match.home_odds or 2.0,
+                    "draw_odds": match.draw_odds or 3.0,
+                    "away_odds": match.away_odds or 2.5,
                 }
             ]
         )
 
-        # Preprocess data
-        data_loader = DataLoader("")
-        processed_data = data_loader.preprocess_data(match_data)
+        # Debug: Log the input data
+        logger.info(f"Input data: {match_data.to_dict('records')[0]}")
 
-        # Debug: Log the processed data columns
-        logger.info(f"Processed data columns: {processed_data.columns.tolist()}")
-        logger.info(f"Processed data shape: {processed_data.shape}")
-
-        # Make prediction and get probabilities
-        predictions = trainer.predict(processed_data)
-        probabilities = trainer.predict_proba(processed_data)
+        # Make prediction directly with raw data (trainer will handle feature preparation)
+        # Note: trainer.predict() calls prepare_features() internally
+        predictions = trainer.predict(match_data)
+        probabilities = trainer.predict_proba(match_data)
         class_order = trainer.get_class_order()
+
+        # Debug: Log successful prediction
+        logger.info(f"Prediction successful: {predictions}")
+        logger.info(f"Probabilities: {probabilities}")
 
         # Record prediction for retraining tracking
         if retraining_scheduler:
@@ -367,7 +384,7 @@ async def start_retraining_scheduler() -> dict[str, Any]:
         return {"message": "Automated retraining scheduler started", "status": "running"}
     except Exception as e:
         logger.error(f"Error starting retraining scheduler: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to start scheduler: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to start scheduler: {str(e)}") from e
 
 
 @app.post("/retraining/stop")
@@ -381,7 +398,7 @@ async def stop_retraining_scheduler() -> dict[str, Any]:
         return {"message": "Automated retraining scheduler stopped", "status": "stopped"}
     except Exception as e:
         logger.error(f"Error stopping retraining scheduler: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to stop scheduler: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to stop scheduler: {str(e)}") from e
 
 
 @app.post("/retraining/trigger")
@@ -412,7 +429,9 @@ async def trigger_retraining(request: RetrainingTriggerRequest) -> dict[str, Any
             }
     except Exception as e:
         logger.error(f"Error triggering retraining: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to trigger retraining: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to trigger retraining: {str(e)}"
+        ) from e
 
 
 @app.get("/retraining/history")
@@ -433,7 +452,7 @@ async def get_retraining_history() -> dict[str, Any]:
         }
     except Exception as e:
         logger.error(f"Error getting retraining history: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get history: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get history: {str(e)}") from e
 
 
 @app.post("/retraining/config")
@@ -468,7 +487,7 @@ async def update_retraining_config(config_update: RetrainingConfigUpdate) -> dic
         }
     except Exception as e:
         logger.error(f"Error updating retraining config: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to update config: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update config: {str(e)}") from e
 
 
 @app.get("/retraining/config")
@@ -504,7 +523,7 @@ async def export_retraining_report(
         }
     except Exception as e:
         logger.error(f"Error exporting retraining report: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to export report: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to export report: {str(e)}") from e
 
 
 if __name__ == "__main__":
