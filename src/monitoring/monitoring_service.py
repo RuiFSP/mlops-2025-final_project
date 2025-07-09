@@ -375,3 +375,45 @@ class MLOpsMonitoringService:
             health_check["monitoring_service_status"] = "warning"
 
         return health_check
+
+    def generate_drift_report(
+        self, data: pd.DataFrame, reference_window_days: int = 30
+    ) -> dict[str, Any]:
+        """Generate a comprehensive drift report."""
+        try:
+            logger.info(f"Generating drift report for {len(data)} data points")
+
+            # Use drift detector to detect drift
+            drift_result = self.drift_detector.detect_drift(data)
+
+            report = {
+                "timestamp": datetime.now().isoformat(),
+                "data_samples": len(data),
+                "reference_window_days": reference_window_days,
+                "drift_detected": drift_result.get("drift_detected", False),
+                "drift_score": drift_result.get("drift_score", 0.0),
+                "drift_threshold": drift_result.get("threshold", 0.1),
+                "features_analyzed": drift_result.get("features_analyzed", []),
+                "feature_drift_scores": drift_result.get("feature_drift_scores", {}),
+                "summary": {
+                    "overall_status": "drift_detected"
+                    if drift_result.get("drift_detected")
+                    else "stable",
+                    "recommendation": "retrain_model"
+                    if drift_result.get("drift_detected")
+                    else "monitor",
+                    "confidence": drift_result.get("confidence", 0.0),
+                },
+            }
+
+            logger.info(f"Drift report generated: {report['summary']['overall_status']}")
+            return report
+
+        except Exception as e:
+            logger.error(f"Failed to generate drift report: {e}")
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+                "drift_detected": False,
+                "summary": {"overall_status": "error", "recommendation": "investigate"},
+            }

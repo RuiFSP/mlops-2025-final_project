@@ -2,6 +2,8 @@
 
 import logging
 import sys
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -20,11 +22,68 @@ logger = logging.getLogger(__name__)
 from src.data_preprocessing.data_loader import DataLoader  # noqa: E402
 from src.model_training.trainer import ModelTrainer  # noqa: E402
 
+# Import automation components
+try:
+    from src.automation.retraining_scheduler import AutomatedRetrainingScheduler, RetrainingConfig
+
+    RETRAINING_AVAILABLE = True
+except ImportError:
+    RETRAINING_AVAILABLE = False
+    logger.warning("Automated retraining components not available")
+
+# Global variables
+trainer: ModelTrainer | None = None
+retraining_scheduler = None
+
+
+async def load_model() -> None:
+    """Load the trained model on startup."""
+    global trainer, retraining_scheduler
+    try:
+        model_path = Path("models")
+        if model_path.exists() and any(model_path.glob("*.pkl")):
+            trainer = ModelTrainer()
+            trainer.load_model(str(model_path))
+            logger.info("Model loaded successfully")
+        else:
+            logger.warning("No trained model found. Please train a model first.")
+
+        # Initialize retraining scheduler if available
+        if RETRAINING_AVAILABLE:
+            try:
+                config_path = "config/retraining_config.yaml"
+                if Path(config_path).exists():
+                    retraining_scheduler = AutomatedRetrainingScheduler(config_path=config_path)
+                else:
+                    retraining_scheduler = AutomatedRetrainingScheduler()
+
+                # Don't auto-start scheduler on API startup for safety
+                logger.info("Retraining scheduler initialized (not started)")
+            except Exception as e:
+                logger.error(f"Error initializing retraining scheduler: {e}")
+
+    except Exception as e:
+        logger.error(f"Error loading model: {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Manage application lifespan."""
+    # Startup
+    await load_model()
+    yield
+    # Shutdown
+    global retraining_scheduler
+    if retraining_scheduler and hasattr(retraining_scheduler, "stop"):
+        retraining_scheduler.stop()
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Premier League Match Predictor API",
     description="API for predicting Premier League match outcomes",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 
@@ -57,24 +116,30 @@ class BulkMatchPrediction(BaseModel):
     predictions: list[MatchPrediction]
 
 
-# Global model trainer instance
-trainer: ModelTrainer | None = None
+# Additional Pydantic models for retraining endpoints
+class RetrainingTriggerRequest(BaseModel):
+    reason: str = "manual_trigger"
+    force: bool = False
 
 
-@app.on_event("startup")
-async def load_model() -> None:
-    """Load the trained model on startup."""
-    global trainer
-    try:
-        model_path = Path("models")
-        if model_path.exists() and any(model_path.glob("*.pkl")):
-            trainer = ModelTrainer()
-            trainer.load_model(str(model_path))
-            logger.info("Model loaded successfully")
-        else:
-            logger.warning("No trained model found. Please train a model first.")
-    except Exception as e:
-        logger.error(f"Error loading model: {e}")
+class RetrainingConfigUpdate(BaseModel):
+    performance_threshold: float | None = None
+    drift_threshold: float | None = None
+    max_days_without_retraining: int | None = None
+    min_days_between_retraining: int | None = None
+    check_interval_minutes: int | None = None
+    enable_automatic_deployment: bool | None = None
+
+
+class RetrainingStatus(BaseModel):
+    is_running: bool
+    retraining_in_progress: bool
+    last_check_time: str | None
+    last_retraining_time: str | None
+    prediction_count_since_retraining: int
+    days_since_last_retraining: int | None
+    total_trigger_events: int
+    config: dict
 
 
 @app.get("/")
@@ -131,6 +196,19 @@ async def predict_match(match: MatchInput) -> MatchPrediction:
         probabilities = trainer.predict_proba(processed_data)
         class_order = trainer.get_class_order()
 
+        # Record prediction for retraining tracking
+        if retraining_scheduler:
+            try:
+                retraining_scheduler.record_prediction(
+                    {
+                        "home_team": match.home_team,
+                        "away_team": match.away_team,
+                        "prediction": predictions[0] if len(predictions) > 0 else None,
+                    }
+                )
+            except Exception as e:
+                logger.debug(f"Could not record prediction for retraining: {e}")
+
         if len(predictions) == 0:
             raise HTTPException(status_code=400, detail="Could not make prediction")
 
@@ -170,9 +248,7 @@ async def predict_match(match: MatchInput) -> MatchPrediction:
 
     except Exception as e:
         logger.error(f"Error making prediction: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Prediction error: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}") from e
 
 
 @app.post("/predict/bulk", response_model=BulkMatchPrediction)
@@ -228,9 +304,7 @@ async def predict_matches_bulk(matches: BulkMatchInput) -> BulkMatchPrediction:
 
     except Exception as e:
         logger.error(f"Error making bulk predictions: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Bulk prediction error: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Bulk prediction error: {str(e)}") from e
 
 
 @app.get("/teams")
@@ -269,6 +343,168 @@ async def get_model_info() -> dict[str, Any]:
             "total_goals",
         ],
     }
+
+
+# Automated Retraining Endpoints
+@app.get("/retraining/status", response_model=RetrainingStatus)
+async def get_retraining_status() -> RetrainingStatus:
+    """Get current status of the automated retraining system."""
+    if not RETRAINING_AVAILABLE or retraining_scheduler is None:
+        raise HTTPException(status_code=503, detail="Retraining system not available")
+
+    status = retraining_scheduler.get_status()
+    return RetrainingStatus(**status)
+
+
+@app.post("/retraining/start")
+async def start_retraining_scheduler() -> dict[str, Any]:
+    """Start the automated retraining scheduler."""
+    if not RETRAINING_AVAILABLE or retraining_scheduler is None:
+        raise HTTPException(status_code=503, detail="Retraining system not available")
+
+    try:
+        retraining_scheduler.start_scheduler()
+        return {"message": "Automated retraining scheduler started", "status": "running"}
+    except Exception as e:
+        logger.error(f"Error starting retraining scheduler: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start scheduler: {str(e)}")
+
+
+@app.post("/retraining/stop")
+async def stop_retraining_scheduler() -> dict[str, Any]:
+    """Stop the automated retraining scheduler."""
+    if not RETRAINING_AVAILABLE or retraining_scheduler is None:
+        raise HTTPException(status_code=503, detail="Retraining system not available")
+
+    try:
+        retraining_scheduler.stop_scheduler()
+        return {"message": "Automated retraining scheduler stopped", "status": "stopped"}
+    except Exception as e:
+        logger.error(f"Error stopping retraining scheduler: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to stop scheduler: {str(e)}")
+
+
+@app.post("/retraining/trigger")
+async def trigger_retraining(request: RetrainingTriggerRequest) -> dict[str, Any]:
+    """Manually trigger model retraining."""
+    if not RETRAINING_AVAILABLE or retraining_scheduler is None:
+        raise HTTPException(status_code=503, detail="Retraining system not available")
+
+    try:
+        if request.force:
+            success = retraining_scheduler.force_retraining(request.reason)
+        else:
+            # Check if retraining should be triggered based on current conditions
+            # For manual triggers, we'll force it unless explicitly told not to
+            success = retraining_scheduler.force_retraining(request.reason)
+
+        if success:
+            return {
+                "message": "Retraining triggered successfully",
+                "reason": request.reason,
+                "forced": request.force,
+            }
+        else:
+            return {
+                "message": "Retraining could not be triggered (already in progress)",
+                "reason": request.reason,
+                "forced": request.force,
+            }
+    except Exception as e:
+        logger.error(f"Error triggering retraining: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to trigger retraining: {str(e)}")
+
+
+@app.get("/retraining/history")
+async def get_retraining_history() -> dict[str, Any]:
+    """Get history of retraining events."""
+    if not RETRAINING_AVAILABLE or retraining_scheduler is None:
+        raise HTTPException(status_code=503, detail="Retraining system not available")
+
+    try:
+        trigger_history = retraining_scheduler.get_trigger_history()
+        retraining_history = retraining_scheduler.retraining_orchestrator.get_retraining_history()
+
+        return {
+            "trigger_events": trigger_history,
+            "retraining_events": retraining_history,
+            "total_triggers": len(trigger_history),
+            "total_retrainings": len(retraining_history),
+        }
+    except Exception as e:
+        logger.error(f"Error getting retraining history: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get history: {str(e)}")
+
+
+@app.post("/retraining/config")
+async def update_retraining_config(config_update: RetrainingConfigUpdate) -> dict[str, Any]:
+    """Update retraining configuration."""
+    if not RETRAINING_AVAILABLE or retraining_scheduler is None:
+        raise HTTPException(status_code=503, detail="Retraining system not available")
+
+    try:
+        current_config = retraining_scheduler.config
+
+        # Update only provided fields
+        if config_update.performance_threshold is not None:
+            current_config.performance_threshold = config_update.performance_threshold
+        if config_update.drift_threshold is not None:
+            current_config.drift_threshold = config_update.drift_threshold
+        if config_update.max_days_without_retraining is not None:
+            current_config.max_days_without_retraining = config_update.max_days_without_retraining
+        if config_update.min_days_between_retraining is not None:
+            current_config.min_days_between_retraining = config_update.min_days_between_retraining
+        if config_update.check_interval_minutes is not None:
+            current_config.check_interval_minutes = config_update.check_interval_minutes
+        if config_update.enable_automatic_deployment is not None:
+            current_config.enable_automatic_deployment = config_update.enable_automatic_deployment
+
+        # Apply updated configuration
+        retraining_scheduler.update_config(current_config)
+
+        return {
+            "message": "Retraining configuration updated successfully",
+            "updated_config": retraining_scheduler.get_status()["config"],
+        }
+    except Exception as e:
+        logger.error(f"Error updating retraining config: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update config: {str(e)}")
+
+
+@app.get("/retraining/config")
+async def get_retraining_config() -> dict[str, Any]:
+    """Get current retraining configuration."""
+    if not RETRAINING_AVAILABLE or retraining_scheduler is None:
+        raise HTTPException(status_code=503, detail="Retraining system not available")
+
+    return {
+        "config": retraining_scheduler.get_status()["config"],
+        "retraining_available": True,
+    }
+
+
+@app.post("/retraining/export")
+async def export_retraining_report(
+    output_path: str = "evaluation_reports/retraining_status_report.json",
+) -> dict[str, Any]:
+    """Export detailed retraining status report."""
+    if not RETRAINING_AVAILABLE or retraining_scheduler is None:
+        raise HTTPException(status_code=503, detail="Retraining system not available")
+
+    try:
+        # Ensure output directory exists
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
+        retraining_scheduler.export_status_report(output_path)
+
+        return {
+            "message": "Retraining report exported successfully",
+            "output_path": output_path,
+            "export_time": pd.Timestamp.now().isoformat(),
+        }
+    except Exception as e:
+        logger.error(f"Error exporting retraining report: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to export report: {str(e)}")
 
 
 if __name__ == "__main__":
