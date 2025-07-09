@@ -65,7 +65,11 @@ class ModelTrainer:
         if "Date" in df.columns or "date" in df.columns:
             date_col = "Date" if "Date" in df.columns else "date"
             # Add day of week (weekend vs weekday effect)
-            df["day_of_week"] = pd.to_datetime(df[date_col]).dt.dayofweek
+            df = df.copy()  # Ensure we're working with a copy to avoid SettingWithCopyWarning
+            # Handle different date formats with dayfirst=True for UK format
+            df["day_of_week"] = pd.to_datetime(
+                df[date_col], dayfirst=True, errors="coerce"
+            ).dt.dayofweek
             feature_columns.append("day_of_week")
 
         # Use only columns that exist in the DataFrame
@@ -113,9 +117,7 @@ class ModelTrainer:
         df["away_prob_raw"] = 1 / df["away_odds"]
 
         # Calculate total probability (includes margin)
-        df["total_prob"] = (
-            df["home_prob_raw"] + df["draw_prob_raw"] + df["away_prob_raw"]
-        )
+        df["total_prob"] = df["home_prob_raw"] + df["draw_prob_raw"] + df["away_prob_raw"]
 
         # Remove margin by normalizing
         df["home_prob_adj"] = df["home_prob_raw"] / df["total_prob"]
@@ -124,9 +126,7 @@ class ModelTrainer:
 
         return df
 
-    def _encode_with_unknown(
-        self, series: pd.Series, encoder: LabelEncoder
-    ) -> pd.Series:
+    def _encode_with_unknown(self, series: pd.Series, encoder: LabelEncoder) -> pd.Series:
         """Encode series with label encoder, handling unknown categories.
 
         Args:
@@ -160,7 +160,11 @@ class ModelTrainer:
         """
         logger.info(f"Starting model training with {self.model_type}")
 
+        # Configure MLflow tracking URI
+        mlflow.set_tracking_uri("http://localhost:5000")
+
         # Start MLflow run
+        mlflow.set_experiment("premier-league-predictor")
         with mlflow.start_run():
             # Prepare features
             X_train = self.prepare_features(train_data)
@@ -168,15 +172,9 @@ class ModelTrainer:
 
             # Prepare target
             y_train = (
-                train_data["result"]
-                if "result" in train_data.columns
-                else pd.Series([], dtype=str)
+                train_data["result"] if "result" in train_data.columns else pd.Series([], dtype=str)
             )
-            y_val = (
-                val_data["result"]
-                if "result" in val_data.columns
-                else pd.Series([], dtype=str)
-            )
+            y_val = val_data["result"] if "result" in val_data.columns else pd.Series([], dtype=str)
 
             if X_train.empty or y_train.empty:
                 logger.warning("Training data is empty, returning None")
@@ -207,9 +205,7 @@ class ModelTrainer:
 
             # Scale features
             X_train_scaled = self.scaler.fit_transform(X_train)
-            X_val_scaled = (
-                self.scaler.transform(X_val) if not X_val.empty else np.array([])
-            )
+            X_val_scaled = self.scaler.transform(X_val) if not X_val.empty else np.array([])
 
             # Train model
             if self.model is not None:
@@ -221,9 +217,7 @@ class ModelTrainer:
             # Log parameters
             mlflow.log_param("model_type", self.model_type)
             if hasattr(self.model, "n_estimators"):
-                mlflow.log_param(
-                    "n_estimators", getattr(self.model, "n_estimators", "N/A")
-                )
+                mlflow.log_param("n_estimators", getattr(self.model, "n_estimators", "N/A"))
             mlflow.log_param("train_size", len(X_train))
             mlflow.log_param("val_size", len(X_val))
 

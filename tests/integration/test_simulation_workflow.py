@@ -22,7 +22,7 @@ from src.simulation import (
 
 def test_match_scheduler():
     """Test MatchScheduler basic functionality."""
-    base_dir = Path(__file__).parent.parent
+    base_dir = Path(__file__).parent.parent.parent  # Go up to project root
     match_calendar_path = base_dir / "data/simulation/match_calendar.parquet"
 
     if not match_calendar_path.exists():
@@ -39,7 +39,7 @@ def test_match_scheduler():
 
 def test_odds_generator():
     """Test OddsGenerator basic functionality."""
-    base_dir = Path(__file__).parent.parent
+    base_dir = Path(__file__).parent.parent.parent  # Go up to project root
     simulation_data_path = base_dir / "data/simulation/simulation_data_2023_24.parquet"
 
     if not simulation_data_path.exists():
@@ -57,7 +57,7 @@ def test_odds_generator():
 
 def test_retraining_orchestrator():
     """Test RetrainingOrchestrator basic functionality."""
-    base_dir = Path(__file__).parent.parent
+    base_dir = Path(__file__).parent.parent.parent  # Go up to project root
     model_path = base_dir / "models/model.pkl"
 
     if not model_path.exists():
@@ -75,7 +75,7 @@ def test_retraining_orchestrator():
 
 def test_season_simulator_integration():
     """Test SeasonSimulator integration."""
-    base_dir = Path(__file__).parent.parent
+    base_dir = Path(__file__).parent.parent.parent  # Go up to project root
 
     required_files = [
         base_dir / "data/simulation/simulation_data_2023_24.parquet",

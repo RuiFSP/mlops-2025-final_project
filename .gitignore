@@ -39,6 +39,9 @@ models/*.onnx
 # Keep for demo/testing
 !models/.gitkeep
 
+# Model backups (generated during automated retraining)
+models/backups/
+
 # MLflow (exclude run data but keep structure)
 mlruns/*/
 mlflow/artifacts/
@@ -49,6 +52,9 @@ mlflow.db
 evaluation_reports/*.png
 evaluation_reports/*.pdf
 evaluation_reports/*.html
+evaluation_reports/drift_report_*.json
+evaluation_reports/demo_retraining_report.json
+evidently_reports/
 
 # Logs
 logs/
@@ -70,3 +76,7 @@ htmlcov/
 *.temp
 *~
 # CI/CD test
+
+# Simulation outputs (generated during testing)
+data/simulation_output/
+data/test_simulation/

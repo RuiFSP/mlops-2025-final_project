@@ -51,6 +51,370 @@
       "retraining_method": "automated_incremental",
       "status": "success",
       "duration_seconds": 0.587287
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:01:06.285500",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.6334005461931261,
+      "performance_improvement": 0.06840054619312619,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.777551785432269,
+        "validation_accuracy": 0.6334005461931261,
+        "training_loss": 0.5510851605592346,
+        "validation_loss": 0.6984707938426672,
+        "epochs": 20,
+        "training_samples": 1139
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.917844
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:04:48.061153",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.6288651744747148,
+      "performance_improvement": 0.06386517447471485,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.7575464740829744,
+        "validation_accuracy": 0.6288651744747148,
+        "training_loss": 0.47388620839693985,
+        "validation_loss": 0.7449579176020589,
+        "epochs": 32,
+        "training_samples": 2716
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.842972
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:08:10.355936",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.609451840438864,
+      "performance_improvement": 0.044451840438864076,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.8798321686037175,
+        "validation_accuracy": 0.609451840438864,
+        "training_loss": 0.6314001072288264,
+        "validation_loss": 0.4509798174988397,
+        "epochs": 49,
+        "training_samples": 2752
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.819779
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:12:03.097068",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.6076035855877749,
+      "performance_improvement": 0.042603585587774995,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.8225874485524656,
+        "validation_accuracy": 0.6076035855877749,
+        "training_loss": 0.5072580766814521,
+        "validation_loss": 0.5091771560036409,
+        "epochs": 13,
+        "training_samples": 2313
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.401155
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:14:41.038620",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.6008946351956224,
+      "performance_improvement": 0.035894635195622415,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.8030701517753578,
+        "validation_accuracy": 0.6008946351956224,
+        "training_loss": 0.6360149018399283,
+        "validation_loss": 0.4936466480123431,
+        "epochs": 37,
+        "training_samples": 2997
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.925255
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:20:58.739926",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.5682914741322735,
+      "performance_improvement": 0.0032914741322735974,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.789443276274191,
+        "validation_accuracy": 0.5682914741322735,
+        "training_loss": 0.3147232568787485,
+        "validation_loss": 0.6206554355434779,
+        "epochs": 44,
+        "training_samples": 1227
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.85525
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:22:21.017823",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.5894355046896328,
+      "performance_improvement": 0.024435504689632848,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.9485368971373539,
+        "validation_accuracy": 0.5894355046896328,
+        "training_loss": 0.5824267623913614,
+        "validation_loss": 0.8387853451569839,
+        "epochs": 49,
+        "training_samples": 2311
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.63957
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:25:28.106022",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.6106701014033257,
+      "performance_improvement": 0.045670101403325725,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.7959275157311638,
+        "validation_accuracy": 0.6106701014033257,
+        "training_loss": 0.6880536884997,
+        "validation_loss": 0.7544163615449988,
+        "epochs": 28,
+        "training_samples": 1104
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.78057
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:28:49.701131",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.5619015665349175,
+      "performance_improvement": -0.0030984334650824286,
+      "deployment_decision": "keep_current",
+      "training_metrics": {
+        "training_accuracy": 0.9224278960158285,
+        "validation_accuracy": 0.5619015665349175,
+        "training_loss": 0.34385500139593606,
+        "validation_loss": 0.8265306982763,
+        "epochs": 34,
+        "training_samples": 2325
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.242344
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:38:38.041970",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.5720772412550568,
+      "performance_improvement": 0.007077241255056821,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.825766837639519,
+        "validation_accuracy": 0.5720772412550568,
+        "training_loss": 0.5838047611208121,
+        "validation_loss": 0.6673305088800359,
+        "epochs": 42,
+        "training_samples": 2670
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.277675
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:40:34.259109",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.6372141140335572,
+      "performance_improvement": 0.07221411403355726,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.8133812729272237,
+        "validation_accuracy": 0.6372141140335572,
+        "training_loss": 0.5886040881239296,
+        "validation_loss": 0.5211138567430553,
+        "epochs": 31,
+        "training_samples": 2108
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.530663
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:43:33.745107",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.5981466335497121,
+      "performance_improvement": 0.033146633549712146,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.9175880173746889,
+        "validation_accuracy": 0.5981466335497121,
+        "training_loss": 0.7770838468792849,
+        "validation_loss": 0.4122253158336342,
+        "epochs": 44,
+        "training_samples": 2715
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.224314
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:44:51.823748",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.5914701928827142,
+      "performance_improvement": 0.02647019288271424,
+      "deployment_decision": "deploy",
+      "training_metrics": {
+        "training_accuracy": 0.8130435414048605,
+        "validation_accuracy": 0.5914701928827142,
+        "training_loss": 0.517649292116624,
+        "validation_loss": 0.8270865296876619,
+        "epochs": 47,
+        "training_samples": 1960
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.72191
+    },
+    {
+      "retraining_id": "retrain_4_1",
+      "week": 4,
+      "timestamp": "2025-07-09T20:48:11.287049",
+      "trigger_reasons": [
+        "performance_degradation"
+      ],
+      "performance_before": 0.565,
+      "data_points_used": 4,
+      "baseline_performance": 0.6,
+      "performance_after": 0.5631666966714719,
+      "performance_improvement": -0.0018333033285280464,
+      "deployment_decision": "keep_current",
+      "training_metrics": {
+        "training_accuracy": 0.8474318857077949,
+        "validation_accuracy": 0.5631666966714719,
+        "training_loss": 0.6793362448010304,
+        "validation_loss": 0.7620868067144739,
+        "epochs": 21,
+        "training_samples": 2830
+      },
+      "model_version": "v1_week4",
+      "retraining_method": "automated_incremental",
+      "status": "success",
+      "duration_seconds": 0.721546
     }
   ]
 }
