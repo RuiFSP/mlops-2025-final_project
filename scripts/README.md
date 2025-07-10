@@ -57,8 +57,8 @@ Manual testing scripts for API and model validation (not unit tests).
 
 | Script | Purpose | Usage |
 |--------|---------|-------|
-| `test_enhanced_api.py` | Manual API testing and validation | `python scripts/testing/test_enhanced_api.py` |
-| `test_enhanced_model.py` | Manual model testing and evaluation | `python scripts/testing/test_enhanced_model.py` |
+| `test_enhanced_api.py` | Manual API testing and validation | `python tests/e2e/test_enhanced_api.py` |
+| `test_enhanced_model.py` | Manual model testing and evaluation | `python tests/e2e/test_enhanced_model.py` |
 
 **Note:** These are integration/manual testing scripts. Unit tests are in `tests/unit/`.
 

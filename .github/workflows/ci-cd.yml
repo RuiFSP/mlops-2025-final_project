@@ -41,9 +41,24 @@ jobs:
       run: |
         uv run mypy src
 
-    - name: Run tests
+    # Fast unit tests first - fail fast if basic functionality is broken
+    - name: Run unit tests
       run: |
-        uv run python -m pytest tests/ -v --tb=short -q --cov=src --cov-report=xml
+        uv run python -m pytest tests/unit/ -v --tb=short -q --cov=src --cov-report=xml
+      timeout-minutes: 5
+
+    # Integration tests with timeout - only if unit tests pass
+    - name: Run integration tests
+      run: |
+        uv run python -m pytest tests/integration/ -v --tb=short -q --cov=src --cov-append --cov-report=xml
+      timeout-minutes: 15
+
+    # E2E tests only on main branch or when specifically requested
+    - name: Run E2E tests
+      if: github.ref == 'refs/heads/main' || contains(github.event.head_commit.message, '[run-e2e]')
+      run: |
+        uv run python -m pytest tests/e2e/ -v --tb=short -q --cov=src --cov-append --cov-report=xml
+      timeout-minutes: 30
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -71,3 +86,4 @@ jobs:
     - name: Test Docker image
       run: |
         docker run --rm premier-league-predictor:latest --help
+      timeout-minutes: 5

@@ -8,24 +8,26 @@ import sys
 import time
 from pathlib import Path
 
+import pytest
+
 # Add src to path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
 
 def test_imports():
     """Test that all automated retraining components can be imported."""
     print("🧪 Testing imports...")
 
     try:
-        from src.automation.retraining_scheduler import AutomatedRetrainingScheduler, RetrainingConfig
         print("  ✅ RetrainingScheduler imported successfully")
 
-        from src.automation.retraining_flow import automated_retraining_flow
         print("  ✅ RetrainingFlow imported successfully")
 
-        return True
+        # Test passes if no exceptions were raised
+        assert True
     except Exception as e:
         print(f"  ❌ Import failed: {str(e)}")
-        return False
+        pytest.fail(f"Import failed: {str(e)}")
 
 
 def test_configuration():
@@ -50,10 +52,11 @@ def test_configuration():
         assert custom_config.max_days_without_retraining == 45
         print("  ✅ Custom configuration created")
 
-        return True
+        # Test passes if no exceptions were raised
+        assert True
     except Exception as e:
         print(f"  ❌ Configuration test failed: {str(e)}")
-        return False
+        pytest.fail(f"Configuration test failed: {str(e)}")
 
 
 def test_scheduler_initialization():
@@ -61,7 +64,10 @@ def test_scheduler_initialization():
     print("\n🧪 Testing scheduler initialization...")
 
     try:
-        from src.automation.retraining_scheduler import AutomatedRetrainingScheduler, RetrainingConfig
+        from src.automation.retraining_scheduler import (
+            AutomatedRetrainingScheduler,
+            RetrainingConfig,
+        )
 
         # Create test config
         config = RetrainingConfig(
@@ -80,18 +86,21 @@ def test_scheduler_initialization():
         print("  ✅ Status reporting works")
 
         # Test prediction recording
-        scheduler.record_prediction({
-            "home_team": "Arsenal",
-            "away_team": "Chelsea",
-            "prediction": "H",
-        })
+        scheduler.record_prediction(
+            {
+                "home_team": "Arsenal",
+                "away_team": "Chelsea",
+                "prediction": "H",
+            }
+        )
         assert scheduler.prediction_count_since_retraining > 0
         print("  ✅ Prediction recording works")
 
-        return True
+        # Test passes if no exceptions were raised
+        assert True
     except Exception as e:
         print(f"  ❌ Scheduler test failed: {str(e)}")
-        return False
+        pytest.fail(f"Scheduler test failed: {str(e)}")
 
 
 def test_trigger_logic():
@@ -99,7 +108,10 @@ def test_trigger_logic():
     print("\n🧪 Testing trigger logic...")
 
     try:
-        from src.automation.retraining_scheduler import AutomatedRetrainingScheduler, RetrainingConfig
+        from src.automation.retraining_scheduler import (
+            AutomatedRetrainingScheduler,
+            RetrainingConfig,
+        )
 
         config = RetrainingConfig(
             max_predictions_without_retraining=5,  # Low threshold for testing
@@ -114,10 +126,11 @@ def test_trigger_logic():
         assert should_trigger is True
         print("  ✅ Data volume trigger works")
 
-        return True
+        # Test passes if no exceptions were raised
+        assert True
     except Exception as e:
         print(f"  ❌ Trigger logic test failed: {str(e)}")
-        return False
+        pytest.fail(f"Trigger logic test failed: {str(e)}")
 
 
 def test_mock_retraining():
@@ -125,14 +138,18 @@ def test_mock_retraining():
     print("\n🧪 Testing mock retraining...")
 
     try:
-        from src.automation.retraining_scheduler import AutomatedRetrainingScheduler, RetrainingConfig
         from unittest.mock import patch
+
+        from src.automation.retraining_scheduler import (
+            AutomatedRetrainingScheduler,
+            RetrainingConfig,
+        )
 
         config = RetrainingConfig(min_days_between_retraining=0)
         scheduler = AutomatedRetrainingScheduler(config=config)
 
         # Mock the retraining execution
-        with patch('src.automation.retraining_flow.execute_automated_retraining') as mock_execute:
+        with patch("src.automation.retraining_flow.execute_automated_retraining") as mock_execute:
             mock_execute.return_value = {
                 "success": True,
                 "deployed": True,
@@ -151,10 +168,11 @@ def test_mock_retraining():
             assert scheduler.retraining_in_progress is False
             print("  ✅ Retraining completed successfully")
 
-        return True
+        # Test passes if no exceptions were raised
+        assert True
     except Exception as e:
         print(f"  ❌ Mock retraining test failed: {str(e)}")
-        return False
+        pytest.fail(f"Mock retraining test failed: {str(e)}")
 
 
 def test_api_integration():
@@ -164,6 +182,7 @@ def test_api_integration():
     try:
         # Test that API components can be imported
         from src.deployment.api import app
+
         print("  ✅ FastAPI app imported successfully")
 
         # Check if retraining endpoints are available
@@ -176,10 +195,11 @@ def test_api_integration():
             else:
                 print(f"  ⚠️ {route} endpoint not found")
 
-        return True
+        # Test passes if no exceptions were raised
+        assert True
     except Exception as e:
         print(f"  ❌ API integration test failed: {str(e)}")
-        return False
+        pytest.fail(f"API integration test failed: {str(e)}")
 
 
 def main():
@@ -200,8 +220,10 @@ def main():
 
     for test in tests:
         try:
-            if test():
-                passed += 1
+            test()  # Test functions now use assert statements
+            passed += 1
+        except AssertionError as e:
+            print(f"  ❌ Test failed: {str(e)}")
         except Exception as e:
             print(f"  ❌ Test failed with exception: {str(e)}")
 

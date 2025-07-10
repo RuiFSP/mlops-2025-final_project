@@ -20,6 +20,8 @@ from src.simulation import (
 )
 
 
+@pytest.mark.e2e
+@pytest.mark.timeout(180)  # 3 minute timeout for simulation tests
 def test_match_scheduler():
     """Test MatchScheduler basic functionality."""
     base_dir = Path(__file__).parent.parent.parent  # Go up to project root
