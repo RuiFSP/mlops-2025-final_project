@@ -11,19 +11,19 @@ This script demonstrates the improved model that:
 import sys
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import seaborn as sns
-
-# Add project root to path
-sys.path.append("/home/ruifspinto/projects/mlops-2025-final_project")
+import pytest
 
 from src.data_preprocessing.data_loader import DataLoader
 from src.evaluation.evaluator import ModelEvaluator
 from src.model_training.trainer import ModelTrainer
 
+# Add project root to path
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
+
+@pytest.mark.e2e
+@pytest.mark.timeout(300)  # 5 minute timeout for model training
 def main():
     print("🚀 Enhanced Premier League Match Predictor")
     print("=" * 60)
@@ -50,7 +50,7 @@ def main():
         implied_probs = 1 / sample_odds
         total_prob = implied_probs.sum()
         margin = (total_prob - 1) * 100
-        print(f"\n🔍 Example odds analysis:")
+        print("\n🔍 Example odds analysis:")
         print(f"Original odds: {sample_odds.values}")
         print(f"Implied probabilities: {implied_probs.values}")
         print(f"Total probability: {total_prob:.3f}")
@@ -116,15 +116,15 @@ def main():
     print(f"📈 Probabilities: {probabilities[0]}")
 
     # Create probability mapping
-    prob_mapping = {cls: prob for cls, prob in zip(class_order, probabilities[0])}
-    print(f"\n📊 Model probability breakdown:")
+    prob_mapping = {cls: prob for cls, prob in zip(class_order, probabilities[0], strict=False)}
+    print("\n📊 Model probability breakdown:")
     for cls, prob in prob_mapping.items():
         result_name = {"H": "Home Win", "D": "Draw", "A": "Away Win"}[cls]
         print(f"  {result_name}: {prob:.3f} ({prob*100:.1f}%)")
 
     # Compare with betting odds
     if has_odds:
-        print(f"\n💰 Betting odds comparison:")
+        print("\n💰 Betting odds comparison:")
         sample_odds = sample_match[["home_odds", "draw_odds", "away_odds"]].iloc[0]
         implied_probs = 1 / sample_odds
         total_prob = implied_probs.sum()
@@ -134,13 +134,11 @@ def main():
             f"Original odds: H={sample_odds['home_odds']:.2f}, D={sample_odds['draw_odds']:.2f}, A={sample_odds['away_odds']:.2f}"
         )
         print(f"Bookmaker margin: {((total_prob - 1) * 100):.2f}%")
-        print(f"\n📊 Adjusted odds probabilities:")
+        print("\n📊 Adjusted odds probabilities:")
         print(
             f"  Home Win: {adjusted_probs['home_odds']:.3f} ({adjusted_probs['home_odds']*100:.1f}%)"
         )
-        print(
-            f"  Draw: {adjusted_probs['draw_odds']:.3f} ({adjusted_probs['draw_odds']*100:.1f}%)"
-        )
+        print(f"  Draw: {adjusted_probs['draw_odds']:.3f} ({adjusted_probs['draw_odds']*100:.1f}%)")
         print(
             f"  Away Win: {adjusted_probs['away_odds']:.3f} ({adjusted_probs['away_odds']*100:.1f}%)"
         )
@@ -158,7 +156,7 @@ def main():
             "Away Win": adjusted_probs["away_odds"],
         }
 
-        print(f"\n🔍 Model vs Odds Comparison:")
+        print("\n🔍 Model vs Odds Comparison:")
         for outcome in ["Home Win", "Draw", "Away Win"]:
             model_prob = model_probs[outcome]
             odds_prob = odds_probs[outcome]
@@ -182,15 +180,11 @@ def main():
         improvement = metrics["brier_improvement"]
         improvement_pct = metrics["brier_improvement_pct"]
         if improvement > 0:
-            print(f"\n🏆 Model BEATS the betting market!")
-            print(
-                f"   Brier score improvement: {improvement:.4f} ({improvement_pct:.2f}%)"
-            )
+            print("\n🏆 Model BEATS the betting market!")
+            print(f"   Brier score improvement: {improvement:.4f} ({improvement_pct:.2f}%)")
         else:
-            print(f"\n📊 Model performs similar to betting market")
-            print(
-                f"   Brier score difference: {improvement:.4f} ({improvement_pct:.2f}%)"
-            )
+            print("\n📊 Model performs similar to betting market")
+            print(f"   Brier score difference: {improvement:.4f} ({improvement_pct:.2f}%)")
 
 
 if __name__ == "__main__":

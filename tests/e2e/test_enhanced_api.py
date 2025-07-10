@@ -2,16 +2,18 @@
 Test script for the enhanced API with probability outputs
 """
 
-import json
 import sys
 from pathlib import Path
 
+import pytest
 import requests
 
 # Add project root to path
-sys.path.append("/home/ruifspinto/projects/mlops-2025-final_project")
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
 
+@pytest.mark.e2e
+@pytest.mark.timeout(120)  # 2 minute timeout for API tests
 def test_enhanced_api():
     """Test the enhanced API with probability outputs"""
     base_url = "http://localhost:8000"
@@ -79,9 +81,7 @@ def test_enhanced_api():
         print(f"\n🔍 Test Match {i}: {match['home_team']} vs {match['away_team']}")
 
         # Calculate odds probabilities for comparison
-        odds_sum = (
-            1 / match["home_odds"] + 1 / match["draw_odds"] + 1 / match["away_odds"]
-        )
+        odds_sum = 1 / match["home_odds"] + 1 / match["draw_odds"] + 1 / match["away_odds"]
         margin = (odds_sum - 1) * 100
         home_odds_prob = (1 / match["home_odds"]) / odds_sum
         draw_odds_prob = (1 / match["draw_odds"]) / odds_sum
@@ -105,7 +105,7 @@ def test_enhanced_api():
             if response.status_code == 200:
                 prediction = response.json()
                 print(f"  🎯 Prediction: {prediction['predicted_result']}")
-                print(f"  📊 Model probabilities:")
+                print("  📊 Model probabilities:")
                 print(f"    Home Win: {prediction['home_win_probability']:.3f}")
                 print(f"    Draw: {prediction['draw_probability']:.3f}")
                 print(f"    Away Win: {prediction['away_win_probability']:.3f}")
@@ -116,7 +116,7 @@ def test_enhanced_api():
                 model_draw = prediction["draw_probability"] or 0
                 model_away = prediction["away_win_probability"] or 0
 
-                print(f"  📈 Model vs Odds comparison:")
+                print("  📈 Model vs Odds comparison:")
                 print(
                     f"    Home: Model={model_home:.3f} vs Odds={home_odds_prob:.3f} (diff: {model_home-home_odds_prob:+.3f})"
                 )

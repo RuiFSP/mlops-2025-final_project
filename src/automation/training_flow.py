@@ -1,6 +1,5 @@
 """Prefect flow for Premier League match prediction pipeline."""
 
-import os
 import sys
 from pathlib import Path
 
@@ -8,12 +7,12 @@ import pandas as pd
 from prefect import flow, task
 from prefect.logging import get_run_logger
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
-
 from src.data_preprocessing.data_loader import DataLoader
 from src.evaluation.evaluator import ModelEvaluator
 from src.model_training.trainer import ModelTrainer
+
+# Add src to path
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
 
 @task
@@ -25,9 +24,7 @@ def load_data(data_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     data_loader = DataLoader(data_path)
     train_data, val_data = data_loader.load_and_split()
 
-    logger.info(
-        f"Train set size: {len(train_data)}, Validation set size: {len(val_data)}"
-    )
+    logger.info(f"Train set size: {len(train_data)}, Validation set size: {len(val_data)}")
     return train_data, val_data
 
 
@@ -40,7 +37,7 @@ def train_model(
     logger.info(f"Training {model_type} model")
 
     trainer = ModelTrainer(model_type=model_type)
-    model = trainer.train(train_data, val_data)
+    trainer.train(train_data, val_data)
 
     logger.info("Model training completed")
     return trainer
@@ -55,9 +52,7 @@ def evaluate_model(trainer: ModelTrainer, test_data: pd.DataFrame) -> dict:
     evaluator = ModelEvaluator()
     metrics = evaluator.evaluate(trainer, test_data)
 
-    logger.info(
-        f"Model evaluation completed. Accuracy: {metrics.get('accuracy', 0):.4f}"
-    )
+    logger.info(f"Model evaluation completed. Accuracy: {metrics.get('accuracy', 0):.4f}")
     return metrics
 
 
@@ -66,7 +61,7 @@ def training_pipeline(
     data_path: str = "data/",
     model_type: str = "random_forest",
     experiment_name: str = "premier_league_prediction",
-):
+) -> dict:
     """Main training pipeline for Premier League match prediction."""
     logger = get_run_logger()
     logger.info(f"Starting training pipeline for {experiment_name}")
@@ -87,7 +82,7 @@ def training_pipeline(
 @flow(name="prediction-pipeline")
 def prediction_pipeline(
     model_path: str, input_data_path: str, output_path: str = "predictions.csv"
-):
+) -> str:
     """Prediction pipeline for making match predictions."""
     logger = get_run_logger()
     logger.info(f"Starting prediction pipeline with model: {model_path}")

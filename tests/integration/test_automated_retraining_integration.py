@@ -70,9 +70,9 @@ class TestAutomatedRetrainingIntegration:
             model_path = models_dir / "model.pkl"  # This will be created by save_model
             mock_trainer = ModelTrainer()
             # Train a simple model for testing with mocked MLflow
-            with patch("mlflow.start_run"), patch("mlflow.log_param"), patch(
-                "mlflow.log_metric"
-            ), patch("mlflow.sklearn.log_model"):
+            with patch("mlflow.set_experiment"), patch("mlflow.start_run"), patch(
+                "mlflow.log_param"
+            ), patch("mlflow.log_metric"), patch("mlflow.sklearn.log_model"):
                 mock_trainer.train(mock_data.iloc[:80], mock_data.iloc[80:])
                 mock_trainer.save_model(str(models_dir))  # Pass directory, not file
 
@@ -112,6 +112,7 @@ class TestAutomatedRetrainingIntegration:
                 "mock_data": mock_data,
             }
 
+    @pytest.mark.slow
     def test_end_to_end_retraining_flow(self, temp_workspace):
         """Test complete end-to-end retraining flow."""
         workspace_data = temp_workspace
@@ -345,6 +346,7 @@ class TestAutomatedRetrainingIntegration:
             success3 = scheduler.force_retraining("concurrent_test_3")
             assert success3 is True
 
+    @pytest.mark.slow
     def test_performance_monitoring_integration(self, temp_workspace):
         """Test integration with performance monitoring system."""
         workspace_data = temp_workspace
@@ -479,9 +481,9 @@ class TestRetrainingFlowIntegration:
 
             # Create initial model
             trainer = ModelTrainer()
-            with patch("mlflow.start_run"), patch("mlflow.log_param"), patch(
-                "mlflow.log_metric"
-            ), patch("mlflow.sklearn.log_model"):
+            with patch("mlflow.set_experiment"), patch("mlflow.start_run"), patch(
+                "mlflow.log_param"
+            ), patch("mlflow.log_metric"), patch("mlflow.sklearn.log_model"):
                 trainer.train(mock_data.iloc[:150], mock_data.iloc[150:])
                 trainer.save_model(str(model_dir))  # Pass directory
 
@@ -502,6 +504,7 @@ class TestRetrainingFlowIntegration:
                 "mock_data": mock_data,
             }
 
+    @pytest.mark.slow
     def test_retraining_flow_with_improvement(self, mock_training_environment):
         """Test retraining flow when new model improves performance."""
         env = mock_training_environment
@@ -534,9 +537,9 @@ class TestRetrainingFlowIntegration:
         assert data_stats["total_samples"] == len(env["mock_data"])
 
         # Test model training
-        with patch("mlflow.start_run"), patch("mlflow.log_param"), patch(
-            "mlflow.log_metric"
-        ), patch("mlflow.sklearn.log_model"):
+        with patch("mlflow.set_experiment"), patch("mlflow.start_run"), patch(
+            "mlflow.log_param"
+        ), patch("mlflow.log_metric"), patch("mlflow.sklearn.log_model"):
             new_trainer, training_metrics = train_new_model(
                 train_data=train_data, val_data=val_data, model_type="random_forest"
             )
@@ -565,6 +568,7 @@ class TestRetrainingFlowIntegration:
             assert validation_results["should_deploy"] is True
             assert validation_results["improvement"] > 0
 
+    @pytest.mark.slow
     def test_retraining_flow_with_insufficient_improvement(self, mock_training_environment):
         """Test retraining flow when new model doesn't improve enough."""
         env = mock_training_environment
@@ -576,9 +580,9 @@ class TestRetrainingFlowIntegration:
         val_data = env["mock_data"].iloc[150:]
 
         # Train new model
-        with patch("mlflow.start_run"), patch("mlflow.log_param"), patch(
-            "mlflow.log_metric"
-        ), patch("mlflow.sklearn.log_model"):
+        with patch("mlflow.set_experiment"), patch("mlflow.start_run"), patch(
+            "mlflow.log_param"
+        ), patch("mlflow.log_metric"), patch("mlflow.sklearn.log_model"):
             new_trainer, _ = train_new_model(
                 train_data=train_data, val_data=val_data, model_type="random_forest"
             )

@@ -212,13 +212,13 @@ python -m pytest tests/integration/ -v             # Integration tests only
 python -m pytest tests/ -v --tb=short              # All tests with coverage
 
 # Test automated retraining system
-python scripts/automation/test_retraining_system.py
+python tests/integration/test_retraining_system.py
 
 # Test season simulation
 python scripts/simulation/demo_simulation.py
 
 # Test API endpoints (requires running server)
-python scripts/testing/test_enhanced_api.py
+python tests/e2e/test_enhanced_api.py
 ```
 
 ## 📊 Data Pipeline
@@ -427,7 +427,7 @@ Safe Retraining Process:
 ```bash
 # Start Prefect server and serve deployments
 prefect server start &
-python deployments/deploy_retraining_flow.py &
+python scripts/deployment/deploy_retraining_flow.py &
 
 # Start automated retraining scheduler
 python scripts/automation/manage_retraining.py start
