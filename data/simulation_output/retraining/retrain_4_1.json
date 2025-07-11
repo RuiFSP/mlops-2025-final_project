@@ -1,27 +1,22 @@
 {
   "retraining_id": "retrain_4_1",
   "week": 4,
-  "timestamp": "2025-07-09T22:26:09.041564",
+  "timestamp": "2025-07-11T00:27:28.367777",
   "trigger_reasons": [
-    "performance_degradation"
+    "time_based"
   ],
-  "performance_before": 0.565,
+  "performance_before": 0.6166666666666667,
   "data_points_used": 4,
   "baseline_performance": 0.6,
   "method": "prefect_deployment",
-  "performance_after": 0.6170147354287566,
-  "performance_improvement": 0.052014735428756675,
+  "performance_after": 0.6366666666666667,
+  "performance_improvement": 0.02,
   "deployment_decision": "deploy",
-  "training_metrics": {
-    "training_accuracy": 0.8692942006119261,
-    "validation_accuracy": 0.6170147354287566,
-    "training_loss": 0.42591439077018717,
-    "validation_loss": 0.5789613939992568,
-    "epochs": 14,
-    "training_samples": 1659
-  },
+  "prefect_flow_run_id": "bc3441df-2214-43de-a869-b20a0079dadc",
+  "prefect_deployment": "simulation-triggered-retraining",
   "model_version": "v1_week4",
-  "retraining_method": "automated_incremental",
+  "retraining_method": "prefect_automated",
+  "flow_state": "StateType.COMPLETED",
   "status": "success",
-  "duration_seconds": 279.598993
+  "duration_seconds": 23.236041
 }

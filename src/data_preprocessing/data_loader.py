@@ -29,9 +29,7 @@ class DataLoader:
         try:
             # Look for CSV files in the data directory and subdirectories
             csv_files = list(self.data_path.glob("*.csv"))
-            csv_files.extend(
-                list(self.data_path.glob("*/*.csv"))
-            )  # Include subdirectories
+            csv_files.extend(list(self.data_path.glob("*/*.csv")))  # Include subdirectories
 
             if not csv_files:
                 logger.warning(f"No CSV files found in {self.data_path}")
@@ -102,9 +100,7 @@ class DataLoader:
                 )
 
             combined_df = pd.concat(dataframes, ignore_index=True)
-            logger.info(
-                f"Loaded {len(combined_df)} matches from {len(dataframes)} files"
-            )
+            logger.info(f"Loaded {len(combined_df)} matches from {len(dataframes)} files")
 
             return combined_df
 
@@ -136,11 +132,7 @@ class DataLoader:
                 df["date"] = pd.to_datetime(df["date"], format="mixed", dayfirst=True)
 
         # Create result column if it doesn't exist
-        if (
-            "result" not in df.columns
-            and "home_score" in df.columns
-            and "away_score" in df.columns
-        ):
+        if "result" not in df.columns and "home_score" in df.columns and "away_score" in df.columns:
             df["result"] = df.apply(self._determine_result, axis=1)
 
         # Add derived features
@@ -191,9 +183,7 @@ class DataLoader:
 
         return df
 
-    def load_and_split(
-        self, test_size: float = 0.2
-    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    def load_and_split(self, test_size: float = 0.2) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Load data and split into train/validation sets.
 
         Args:
