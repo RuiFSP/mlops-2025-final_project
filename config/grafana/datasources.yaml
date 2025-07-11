@@ -1,0 +1,149 @@
+apiVersion: 1
+
+datasources:
+  # Prometheus datasource for metrics
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://localhost:9090
+    basicAuth: false
+    isDefault: true
+    editable: true
+    jsonData:
+      httpMethod: POST
+      queryTimeout: 60s
+      timeInterval: 5s
+      prometheusType: Prometheus
+      prometheusVersion: 2.40.0
+      cacheLevel: 'High'
+      disableMetricsLookup: false
+      customQueryParameters: ''
+      scrapeInterval: 15s
+      queryType: ''
+      exemplarTraceIdDestinations: []
+      httpHeaderName1: 'X-Custom-Header'
+    secureJsonData:
+      httpHeaderValue1: 'HeaderValue'
+    uid: prometheus
+    version: 1
+
+  # InfluxDB datasource for time-series data
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://localhost:8086
+    basicAuth: false
+    isDefault: false
+    editable: true
+    jsonData:
+      version: Flux
+      organization: mlops
+      defaultBucket: ml_monitoring
+      tlsSkipVerify: false
+      httpMode: POST
+      httpHeaderName1: 'X-Custom-Header'
+      queryTimeout: 60s
+      maxSeries: 1000
+      retentionPolicy: ''
+      httpHeaderName2: 'X-Trace-Id'
+    secureJsonData:
+      token: 'your-influxdb-token-here'
+      httpHeaderValue1: 'HeaderValue'
+      httpHeaderValue2: 'TraceValue'
+    uid: influxdb
+    version: 1
+
+  # Loki datasource for logs (optional)
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://localhost:3100
+    basicAuth: false
+    isDefault: false
+    editable: true
+    jsonData:
+      maxLines: 1000
+      timeout: 60s
+      httpHeaderName1: 'X-Custom-Header'
+      derivedFields:
+        - name: 'TraceID'
+          matcherRegex: 'trace_id=([a-f0-9]+)'
+          matcherType: 'regex'
+          url: 'http://localhost:16686/trace/${__value.raw}'
+    secureJsonData:
+      httpHeaderValue1: 'HeaderValue'
+    uid: loki
+    version: 1
+
+  # Alertmanager datasource for alert management
+  - name: Alertmanager
+    type: alertmanager
+    access: proxy
+    url: http://localhost:9093
+    basicAuth: false
+    isDefault: false
+    editable: true
+    jsonData:
+      implementation: prometheus
+      handleGrafanaManagedAlerts: true
+      httpHeaderName1: 'X-Custom-Header'
+    secureJsonData:
+      httpHeaderValue1: 'HeaderValue'
+    uid: alertmanager
+    version: 1
+
+  # TestData datasource for testing
+  - name: TestData
+    type: testdata
+    access: proxy
+    isDefault: false
+    editable: true
+    jsonData:
+      csvContent: ''
+      csvFileName: ''
+      csvWave:
+        timeStep: 60
+        valuesCSV: '0,0,2,2,1,1'
+      lines: 10
+      points: []
+      pulseWave:
+        timeStep: 60
+        onCount: 3
+        onValue: 2
+        offCount: 3
+        offValue: 1
+      rawFrameContent: ''
+      seriesCount: 1
+      stringInput: ''
+      stream:
+        bands: 1
+        noise: 2.2
+        speed: 250
+        spread: 3.5
+        type: signal
+        url: ''
+    uid: testdata
+    version: 1
+
+  # MLflow datasource (if using MLflow plugin)
+  - name: MLflow
+    type: mlflow-datasource
+    access: proxy
+    url: http://localhost:5000
+    basicAuth: false
+    isDefault: false
+    editable: true
+    jsonData:
+      timeout: 60s
+      httpHeaderName1: 'X-Custom-Header'
+      tracking_uri: 'http://localhost:5000'
+    secureJsonData:
+      httpHeaderValue1: 'HeaderValue'
+    uid: mlflow
+    version: 1
+
+deleteDatasources:
+  - name: old-prometheus
+    orgId: 1
+  - name: old-influxdb
+    orgId: 1
