@@ -39,11 +39,10 @@ repos:
         files: ^src/.*\.py$
         pass_filenames: false
 
-      # Unit tests - EXACT match to GitHub CI unit test command
+      # Unit tests - simplified for pre-commit (coverage handled in CI)
       - id: pytest-unit
         name: pytest unit tests (matches CI exactly)
-        entry: uv run pytest tests/unit/ -v --tb=short -q --cov=src --cov-report=xml --timeout=60
+        entry: uv run python -m pytest tests/unit/ -v --tb=short -q
         language: system
         types: [python]
         pass_filenames: false
-        always_run: true

@@ -1,9 +1,7 @@
 """
 Simple deployment trigger using subprocess to avoid event loop issues.
 
-This module pro                if updated_run.state.is_final():
-                    print(f"COMPLETED: Flow run {flow_run.id} finished with state {updated_run.state.type}")
-                    return str(updated_run.state.type).upper() == "COMPLETED"es a clean way to trigger Prefect deployments from synchronous
+This module provides a clean way to trigger Prefect deployments from synchronous
 contexts without dealing with async/await complexities.
 """
 
@@ -11,9 +9,7 @@ import json
 import logging
 import subprocess
 import sys
-import time
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +28,7 @@ class DeploymentTrigger:
     def trigger_deployment(
         self,
         deployment_name: str,
-        parameters: Optional[Dict[str, Any]] = None,
+        parameters: Optional[dict[str, Any]] = None,
         wait_for_completion: bool = False,
         timeout_seconds: int = 300,
     ) -> bool:
@@ -183,7 +179,7 @@ if __name__ == "__main__":
         Returns:
             True if successful, False otherwise
         """
-        parameters: Dict[str, Any] = {}
+        parameters: dict[str, Any] = {}
 
         if week is not None:
             parameters["week"] = week

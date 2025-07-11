@@ -148,7 +148,7 @@ class MLOpsDemo:
 
             if demo_mode:
                 cmd.append("--demo")
-            
+
             # Always pass weeks parameter if specified
             cmd.extend(["--weeks", str(weeks)])
 
