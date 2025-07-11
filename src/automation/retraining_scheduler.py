@@ -12,7 +12,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -84,8 +84,8 @@ class AutomatedRetrainingScheduler:
 
     def __init__(
         self,
-        config: Optional[RetrainingConfig] = None,
-        config_path: Optional[str] = None,
+        config: RetrainingConfig | None = None,
+        config_path: str | None = None,
     ):
         """
         Initialize the automated retraining scheduler.
@@ -123,9 +123,9 @@ class AutomatedRetrainingScheduler:
 
         # State management
         self.is_running = False
-        self.scheduler_thread: Optional[threading.Thread] = None
-        self.last_check_time: Optional[datetime] = None
-        self.last_retraining_time: Optional[datetime] = None
+        self.scheduler_thread: threading.Thread | None = None
+        self.last_check_time: datetime | None = None
+        self.last_retraining_time: datetime | None = None
         self.retraining_in_progress = False
         self.retraining_lock = threading.Lock()
 
@@ -437,7 +437,7 @@ class AutomatedRetrainingScheduler:
             logger.error(f"Error getting performance metrics: {str(e)}")
             return []
 
-    def _get_baseline_accuracy(self) -> Optional[float]:
+    def _get_baseline_accuracy(self) -> float | None:
         """Get baseline accuracy for comparison."""
         # This could be from initial model evaluation, target accuracy, etc.
         return self.retraining_orchestrator.baseline_performance or 0.55  # 55% baseline
@@ -520,7 +520,7 @@ class AutomatedRetrainingScheduler:
                     for k, v in obj.__dict__.items()
                     if not k.startswith("_")
                 }
-            elif isinstance(obj, (list, tuple)):
+            elif isinstance(obj, list | tuple):
                 return [make_serializable(item) for item in obj]
             elif isinstance(obj, dict):
                 return {k: make_serializable(v) for k, v in obj.items()}

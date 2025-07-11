@@ -7,22 +7,21 @@ across the MLOps project.
 
 import os
 from pathlib import Path
-from typing import Optional
 
 
-def load_environment(env_file: Optional[str] = None) -> bool:
+def load_environment(env_file: str | None = None) -> bool:
     """
     Load environment variables from .env file.
-    
+
     Args:
         env_file: Path to .env file. If None, looks for .env in project root.
-        
+
     Returns:
         bool: True if .env file was loaded successfully, False otherwise.
     """
     try:
         from dotenv import load_dotenv
-        
+
         if env_file is None:
             # Find project root (look for pyproject.toml)
             current_path = Path(__file__).parent
@@ -36,37 +35,37 @@ def load_environment(env_file: Optional[str] = None) -> bool:
                 env_path = Path(".env")
         else:
             env_path = Path(env_file)
-        
+
         if env_path.exists():
             load_dotenv(env_path)
             return True
         else:
             return False
-            
+
     except ImportError:
         return False
 
 
-def get_env_var(key: str, default: Optional[str] = None, required: bool = False) -> str:
+def get_env_var(key: str, default: str | None = None, required: bool = False) -> str:
     """
     Get environment variable with proper error handling.
-    
+
     Args:
         key: Environment variable name
         default: Default value if not found
         required: Whether the variable is required
-        
+
     Returns:
         str: Environment variable value
-        
+
     Raises:
         ValueError: If required variable is not found
     """
     value = os.environ.get(key, default)
-    
+
     if required and value is None:
         raise ValueError(f"Required environment variable '{key}' not found")
-    
+
     return value or ""
 
 

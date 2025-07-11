@@ -224,8 +224,6 @@ class TestAutomatedRetrainingIntegration:
         # Load scheduler with file-based config
         scheduler = AutomatedRetrainingScheduler(config_path=str(config_path))
 
-        original_threshold = scheduler.config.performance_threshold
-
         # Update configuration at runtime
         new_config = RetrainingConfig(
             performance_threshold=0.08,  # Different from original

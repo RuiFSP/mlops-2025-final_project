@@ -9,7 +9,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import joblib
 import pandas as pd
@@ -69,7 +69,7 @@ class RetrainingOrchestrator:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Initialize deployment trigger if using Prefect
-        self.deployment_trigger: Optional[Any] = None
+        self.deployment_trigger: Any | None = None
         if self.use_prefect:
             try:
                 # Set Prefect API URL to connect to the main server

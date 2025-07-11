@@ -9,7 +9,7 @@ import json
 import logging
 import subprocess
 import sys
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class DeploymentTrigger:
     """Simple deployment trigger using subprocess calls."""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """Initialize the deployment trigger.
 
         Args:
@@ -28,7 +28,7 @@ class DeploymentTrigger:
     def trigger_deployment(
         self,
         deployment_name: str,
-        parameters: Optional[dict[str, Any]] = None,
+        parameters: dict[str, Any] | None = None,
         wait_for_completion: bool = False,
         timeout_seconds: int = 300,
     ) -> bool:
@@ -156,11 +156,11 @@ if __name__ == "__main__":
     def trigger_retraining(
         self,
         deployment_name: str = "simulation-triggered-retraining",
-        week: Optional[int] = None,
-        performance_drop: Optional[float] = None,
-        baseline_score: Optional[float] = None,
-        current_score: Optional[float] = None,
-        training_data_path: Optional[str] = None,
+        week: int | None = None,
+        performance_drop: float | None = None,
+        baseline_score: float | None = None,
+        current_score: float | None = None,
+        training_data_path: str | None = None,
         wait_for_completion: bool = True,
         timeout_seconds: int = 300,
     ) -> bool:

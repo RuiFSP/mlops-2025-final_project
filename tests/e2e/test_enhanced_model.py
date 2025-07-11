@@ -65,7 +65,7 @@ def main():
     print("\n" + "=" * 60)
     print("🧠 Training improved model...")
     trainer = ModelTrainer(model_type="random_forest")
-    model = trainer.train(train_data, val_data)
+    trainer.train(train_data, val_data)
 
     # Evaluate model
     print("\n" + "=" * 60)
@@ -116,7 +116,7 @@ def main():
     print(f"📈 Probabilities: {probabilities[0]}")
 
     # Create probability mapping
-    prob_mapping = {cls: prob for cls, prob in zip(class_order, probabilities[0], strict=False)}
+    prob_mapping = dict(zip(class_order, probabilities[0], strict=False))
     print("\n📊 Model probability breakdown:")
     for cls, prob in prob_mapping.items():
         result_name = {"H": "Home Win", "D": "Draw", "A": "Away Win"}[cls]

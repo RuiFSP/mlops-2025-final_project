@@ -96,7 +96,7 @@ class PrefectClient:
                     deployments = await client.read_deployments()
                     available = [d.name for d in deployments]
                     logger.info(f"Available deployments: {available}")
-                except:
+                except Exception:
                     pass
                 raise ValueError(f"Deployment '{deployment_name}' not found")
 

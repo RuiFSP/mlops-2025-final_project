@@ -10,7 +10,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pandas as pd
 from prefect import flow, task
@@ -79,7 +79,7 @@ def backup_current_model(
 @task(name="prepare-retraining-data")
 def prepare_retraining_data(
     original_data_path: str,
-    new_data_path: Optional[str] = None,
+    new_data_path: str | None = None,
     data_window_days: int = 365,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     """Prepare data for retraining with new observations."""
@@ -159,7 +159,7 @@ def train_new_model(
     train_data: pd.DataFrame,
     val_data: pd.DataFrame,
     model_type: str = "random_forest",
-    hyperparameters: Optional[dict] = None,
+    hyperparameters: dict | None = None,
 ) -> tuple[str, dict]:
     """Train a new model with the prepared data."""
     logger = get_run_logger()
@@ -324,7 +324,7 @@ def deploy_new_model(
     model_file_path: str,
     model_path: str,
     validation_results: dict,
-    deployment_metadata: Optional[dict] = None,
+    deployment_metadata: dict | None = None,
 ) -> dict:
     """Deploy the new model if validation passed."""
     logger = get_run_logger()
@@ -467,12 +467,12 @@ def automated_retraining_flow(
     triggers: list[str],
     model_path: str = "models/model.pkl",
     training_data_path: str = "data/real_data/premier_league_matches.parquet",
-    new_data_path: Optional[str] = None,
+    new_data_path: str | None = None,
     backup_dir: str = "models/backups",
     model_type: str = "random_forest",
     min_accuracy_threshold: float = 0.45,
     improvement_threshold: float = 0.01,
-    hyperparameters: Optional[dict] = None,
+    hyperparameters: dict | None = None,
 ) -> dict[str, Any]:
     """
     Main automated retraining flow.
