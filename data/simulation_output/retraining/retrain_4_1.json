@@ -1,7 +1,7 @@
 {
   "retraining_id": "retrain_4_1",
   "week": 4,
-  "timestamp": "2025-07-11T00:27:28.367777",
+  "timestamp": "2025-07-11T11:10:19.452237",
   "trigger_reasons": [
     "time_based"
   ],
@@ -12,11 +12,10 @@
   "performance_after": 0.6366666666666667,
   "performance_improvement": 0.02,
   "deployment_decision": "deploy",
-  "prefect_flow_run_id": "bc3441df-2214-43de-a869-b20a0079dadc",
   "prefect_deployment": "simulation-triggered-retraining",
   "model_version": "v1_week4",
   "retraining_method": "prefect_automated",
-  "flow_state": "StateType.COMPLETED",
+  "flow_state": "COMPLETED",
   "status": "success",
-  "duration_seconds": 23.236041
+  "duration_seconds": 21.11124
 }
