@@ -56,7 +56,6 @@ class PrefectClient:
             client = await self.get_client()
 
             # Format deployment name if needed
-            original_name = deployment_name
             logger.info(f"🔍 DEBUG: Received deployment_name: '{deployment_name}'")
 
             if "/" not in deployment_name:
@@ -87,7 +86,7 @@ class PrefectClient:
                     )
                     raise ValueError(
                         f"Event loop closed while accessing deployment '{deployment_name}'"
-                    )
+                    ) from e
                 else:
                     logger.error(f"Could not find deployment '{deployment_name}': {error_msg}")
 
@@ -98,7 +97,7 @@ class PrefectClient:
                     logger.info(f"Available deployments: {available}")
                 except Exception:
                     pass
-                raise ValueError(f"Deployment '{deployment_name}' not found")
+                raise ValueError(f"Deployment '{deployment_name}' not found") from e
 
             # Create a flow run
             flow_run = await client.create_flow_run_from_deployment(

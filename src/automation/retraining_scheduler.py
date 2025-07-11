@@ -454,12 +454,6 @@ class AutomatedRetrainingScheduler:
         """Record a new prediction for volume tracking."""
         self.prediction_count_since_retraining += 1
 
-        # Optionally store prediction data for analysis
-        prediction_record = {
-            "timestamp": datetime.now().isoformat(),
-            "data": prediction_data,
-        }
-
         # Could store to database or file for analysis
         logger.debug(
             f"Recorded prediction. Total since retraining: {self.prediction_count_since_retraining}"

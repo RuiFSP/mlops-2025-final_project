@@ -34,15 +34,6 @@ from src.data_preprocessing.data_loader import DataLoader
 from src.evaluation.evaluator import ModelEvaluator
 from src.model_training.trainer import ModelTrainer
 
-# Import RetrainingConfig for type annotations
-if sys.version_info >= (3, 10):
-    from typing import TYPE_CHECKING
-else:
-    TYPE_CHECKING = False
-
-if TYPE_CHECKING:
-    pass
-
 logger = logging.getLogger(__name__)
 
 
@@ -177,7 +168,7 @@ def train_new_model(
             trainer.model_params.update(hyperparameters)
 
     # Train the model
-    model = trainer.train(train_data, val_data)
+    trainer.train(train_data, val_data)
 
     # Debug: Check the trainer state after training
     logger.info(f"After training - Trainer model is None: {trainer.model is None}")
@@ -515,7 +506,7 @@ def automated_retraining_flow(
             logger.info(f"✅ Training data validation passed: {len(df)} rows")
 
         except Exception as e:
-            raise ValueError(f"Invalid training data: {str(e)}")
+            raise ValueError(f"Invalid training data: {str(e)}") from e
 
         # 1. Backup current model
         backup_path = backup_current_model(
