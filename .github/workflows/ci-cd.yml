@@ -35,6 +35,7 @@ jobs:
       run: |
         # Run Ruff linter and formatter - replaces black, isort, flake8
         uv run ruff check src tests
+        uv run ruff format src tests
         uv run ruff format --check src tests
 
     - name: Run type checking
