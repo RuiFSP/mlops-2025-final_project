@@ -20,6 +20,16 @@ from prefect.logging import get_run_logger
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent.parent / "src"))
 
+# Import configuration to ensure MLflow is properly configured
+try:
+    from src.config import config
+    # Ensure MLflow environment is set
+    if hasattr(config, 'mlflow_tracking_uri'):
+        os.environ['MLFLOW_TRACKING_URI'] = config.mlflow_tracking_uri
+except ImportError:
+    # Fallback configuration
+    os.environ['MLFLOW_TRACKING_URI'] = 'http://127.0.0.1:5000'
+
 from src.data_preprocessing.data_loader import DataLoader
 from src.evaluation.evaluator import ModelEvaluator
 from src.model_training.trainer import ModelTrainer

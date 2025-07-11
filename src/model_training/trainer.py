@@ -1,6 +1,7 @@
 """Model trainer for Premier League match prediction."""
 
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -160,8 +161,10 @@ class ModelTrainer:
         """
         logger.info(f"Starting model training with {self.model_type}")
 
-        # Configure MLflow tracking URI
-        mlflow.set_tracking_uri("http://localhost:5000")
+        # Configure MLflow tracking URI from environment or default
+        mlflow_uri = os.environ.get('MLFLOW_TRACKING_URI', 'http://127.0.0.1:5000')
+        mlflow.set_tracking_uri(mlflow_uri)
+        logger.info(f"MLflow tracking URI set to: {mlflow_uri}")
 
         # Start MLflow run
         mlflow.set_experiment("premier-league-predictor")

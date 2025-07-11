@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Set environment
 os.environ["PREFECT_API_URL"] = "http://127.0.0.1:4200/api"
-sys.path.append(str(Path(__file__).parent / "src"))
+sys.path.append(str(Path(__file__).parent.parent.parent / "src"))
 
 from src.automation.prefect_client import PrefectClient
 

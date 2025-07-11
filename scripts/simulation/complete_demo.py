@@ -148,8 +148,9 @@ class MLOpsDemo:
 
             if demo_mode:
                 cmd.append("--demo")
-            else:
-                cmd.extend(["--weeks", str(weeks)])
+            
+            # Always pass weeks parameter if specified
+            cmd.extend(["--weeks", str(weeks)])
 
             # Run the simulation
             result = subprocess.run(cmd, cwd=self.project_root)
@@ -181,7 +182,7 @@ class MLOpsDemo:
         print("5. 🔄 Show automated retraining in action")
         print("6. 📊 Display results in Prefect UI")
         if demo_mode:
-            print("🎮 Demo Mode: 10 weeks, 5 second intervals")
+            print(f"🎮 Demo Mode: {weeks} weeks, 5 second intervals")
         else:
             print(f"📅 Full Mode: {weeks} weeks, 10 second intervals")
         print("="*80)
@@ -286,7 +287,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Complete MLOps Demo")
-    parser.add_argument("--demo", action="store_true", help="Run quick demo mode (5 weeks, 5 second intervals)")
+    parser.add_argument("--demo", action="store_true", help="Run quick demo mode (fast 5 second intervals)")
     parser.add_argument("--weeks", type=int, default=10, help="Number of weeks to simulate (default: 10)")
 
     args = parser.parse_args()

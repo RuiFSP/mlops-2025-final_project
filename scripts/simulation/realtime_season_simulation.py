@@ -265,10 +265,11 @@ def main():
 
     # Demo mode settings
     if args.demo:
-        weeks = 10
+        # Demo mode: fast interval, but respect custom weeks if specified
+        weeks = args.weeks  # Use the specified weeks, not hardcoded 10
         interval = 5
         start_week = 1
-        print("🎮 Demo Mode: 10 weeks, 5 second intervals")
+        print(f"🎮 Demo Mode: {weeks} weeks, 5 second intervals")
     else:
         weeks = args.weeks
         interval = args.interval

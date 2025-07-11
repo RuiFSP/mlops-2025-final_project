@@ -145,7 +145,7 @@ nano .env
 ### 3. Start MLOps Environment
 ```bash
 # Option A: Use the automated setup script
-python setup_mlops_env.py
+python scripts/setup/setup_mlops_env.py
 
 # Option B: Manual setup (for development)
 # Start individual services as needed

@@ -6,7 +6,7 @@ This script sets up the complete MLOps environment using configuration from .env
 It properly starts all services and ensures they're connected.
 
 Usage:
-    python setup_mlops_env.py [--stop] [--status]
+    python scripts/setup/setup_mlops_env.py [--stop] [--status]
 """
 
 import argparse
@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 
 # Add src to path
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
 try:
     from src.config import config

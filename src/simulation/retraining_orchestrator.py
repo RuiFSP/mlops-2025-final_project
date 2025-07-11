@@ -5,12 +5,11 @@ Monitors model performance and triggers retraining when performance degrades
 or at regular intervals, simulating realistic MLOps retraining workflows.
 """
 
-import asyncio
 import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import joblib
 import pandas as pd
@@ -69,8 +68,8 @@ class RetrainingOrchestrator:
         # Create output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Initialize Prefect client if using Prefect
-        self.prefect_client: Any | None = None
+        # Initialize deployment trigger if using Prefect
+        self.deployment_trigger: Optional[Any] = None
         if self.use_prefect:
             try:
                 # Set Prefect API URL to connect to the main server
@@ -79,15 +78,15 @@ class RetrainingOrchestrator:
                 os.environ["PREFECT_API_URL"] = "http://127.0.0.1:4200/api"
 
                 # Import here to avoid circular dependency
-                from src.automation.prefect_client import PrefectClient
+                from src.automation.deployment_trigger import DeploymentTrigger
 
-                self.prefect_client = PrefectClient()
-                logger.info(f"Prefect client initialized for deployment: {prefect_deployment_name}")
+                self.deployment_trigger = DeploymentTrigger()
+                logger.info(f"Deployment trigger initialized for deployment: {prefect_deployment_name}")
             except Exception as e:
-                logger.warning(f"Failed to initialize Prefect client: {e}")
+                logger.warning(f"Failed to initialize deployment trigger: {e}")
                 logger.warning("Falling back to simulation mode")
                 self.use_prefect = False
-                self.prefect_client = None
+                self.deployment_trigger = None
 
         # Load current model for inspection
         self._load_current_model()
@@ -233,7 +232,7 @@ class RetrainingOrchestrator:
         }
 
         try:
-            if self.use_prefect and self.prefect_client:
+            if self.use_prefect and self.deployment_trigger:
                 # Trigger actual Prefect retraining flow
                 retraining_results = self._trigger_prefect_retraining(week, reasons)
             else:
@@ -291,96 +290,21 @@ class RetrainingOrchestrator:
             logger.info(f"🚀 Triggering Prefect deployment: {self.prefect_deployment_name}")
             logger.info(f"📋 Flow parameters: {flow_parameters}")
 
-            # Add small delay to prevent rapid-fire event loop issues
-            import time
-
-            time.sleep(2)  # 2 second delay before Prefect call
-
-            # Use a longer timeout for retraining flow (demo mode)
-            timeout = 180  # 3 minute timeout for demo
-
-            # Handle event loop management more robustly
-            try:
-                # Try to get existing event loop
-                loop = asyncio.get_running_loop()
-                logger.debug("Found running event loop, using ThreadPoolExecutor")
-
-                # Use ThreadPoolExecutor to run async function in separate thread
-                import concurrent.futures
-
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    # Run the async function in a separate thread with its own event loop
-                    def run_async_trigger() -> Any:
-                        # Create new event loop for this thread
-                        new_loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(new_loop)
-                        try:
-                            if self.prefect_client is None:
-                                raise RuntimeError("Prefect client not initialized")
-                            return new_loop.run_until_complete(
-                                self.prefect_client.trigger_deployment_run(
-                                    deployment_name=self.prefect_deployment_name,
-                                    parameters=flow_parameters,
-                                    wait_for_completion=True,
-                                    timeout_seconds=timeout,
-                                )
-                            )
-                        finally:
-                            new_loop.close()
-
-                    future = executor.submit(run_async_trigger)
-                    flow_run = future.result(
-                        timeout=timeout + 30
-                    )  # Extra buffer for thread overhead
-
-            except RuntimeError as e:
-                logger.warning(
-                    f"Event loop error while accessing deployment '{self.prefect_deployment_name}': {e}"
+            # Use the deployment trigger (much simpler and more reliable!)
+            if self.deployment_trigger is not None:
+                success = self.deployment_trigger.trigger_deployment(
+                    deployment_name=self.prefect_deployment_name,
+                    parameters=flow_parameters,
+                    wait_for_completion=True,
+                    timeout_seconds=180,  # 3 minute timeout for demo
                 )
-                if (
-                    "no running event loop" in str(e).lower()
-                    or "event loop is closed" in str(e).lower()
-                ):
-                    logger.debug("No running or closed event loop, creating new one")
-                    # Add extra delay for event loop cleanup
-                    import time
-
-                    time.sleep(1)
-
-                    # No existing event loop, create new one
-                    try:
-                        if self.prefect_client is None:
-                            raise RuntimeError("Prefect client not initialized")
-                        flow_run = asyncio.run(
-                            self.prefect_client.trigger_deployment_run(
-                                deployment_name=self.prefect_deployment_name,
-                                parameters=flow_parameters,
-                                wait_for_completion=True,
-                                timeout_seconds=timeout,
-                            )
-                        )
-                    except Exception as direct_error:
-                        logger.error(f"Direct asyncio.run failed: {direct_error}")
-                        flow_run = None
-                else:
-                    logger.error(
-                        f"Failed to trigger deployment {self.prefect_deployment_name}: Event loop closed while accessing deployment '{self.prefect_deployment_name}'"
-                    )
-                    flow_run = None
-
-            except Exception as loop_error:
-                logger.error(
-                    f"📊 Prefect integration issue (using simulation fallback): {loop_error}"
-                )
-                logger.info(f"   Error type: {type(loop_error).__name__}")
-                logger.info("   This doesn't affect the demo - retraining simulation will proceed")
-                # Fall back to simulation mode
-                flow_run = None
+            else:
+                logger.warning("⚠️ No deployment trigger available, using fallback")
+                success = False
 
             # Extract results from the flow run or simulate if Prefect failed
-            if flow_run and hasattr(flow_run, "state") and flow_run.state.is_completed():
+            if success:
                 logger.info("✅ Prefect retraining flow completed successfully!")
-                logger.info(f"   Flow Run ID: {flow_run.id}")
                 # For now, simulate realistic results since extracting from Prefect is complex
                 # In production, you'd parse the actual flow results
                 current_performance = self._calculate_recent_performance()
@@ -393,21 +317,20 @@ class RetrainingOrchestrator:
                     "performance_after": new_performance,
                     "performance_improvement": improvement,
                     "deployment_decision": "deploy",
-                    "prefect_flow_run_id": str(flow_run.id),
                     "prefect_deployment": self.prefect_deployment_name,
                     "model_version": f"v{self.retraining_count + 1}_week{week}",
                     "retraining_method": "prefect_automated",
-                    "flow_state": str(flow_run.state.type),
+                    "flow_state": "COMPLETED",
                 }
             else:
-                # Prefect flow didn't complete successfully, use simulation
-                logger.info("📊 Prefect flow not completed, using simulation mode")
+                # Prefect deployment failed, use simulation
+                logger.warning("❌ Prefect deployment failed, falling back to simulation mode")
                 return self._simulate_retraining(week)
 
         except Exception as e:
-            logger.error(f"Prefect retraining failed: {e}")
+            logger.error(f"Deployment trigger failed: {e}")
             logger.info(f"📊 Error details: {type(e).__name__}: {str(e)}")
-            # Fallback to simulation if Prefect fails
+            # Fallback to simulation if deployment fails
             logger.info("Falling back to simulation mode for this retraining")
             return self._simulate_retraining(week)
 
