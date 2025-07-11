@@ -17,7 +17,6 @@ from typing import Any, Optional
 import yaml
 
 from ..monitoring.monitoring_service import MLOpsMonitoringService
-from ..simulation.retraining_orchestrator import RetrainingOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +110,9 @@ class AutomatedRetrainingScheduler:
             drift_threshold=self.config.drift_threshold,
             performance_threshold=self.config.performance_threshold,
         )
+
+        # Import here to avoid circular dependency
+        from ..simulation.retraining_orchestrator import RetrainingOrchestrator
 
         self.retraining_orchestrator = RetrainingOrchestrator(
             model_path=self.config.model_path,

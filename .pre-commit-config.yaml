@@ -1,4 +1,5 @@
 repos:
+  # Basic file checks (keep these - they're useful for development)
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -8,22 +9,40 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.15
-    hooks:
-      # Run the linter.
-      - id: ruff
-        args: [--fix]
-        files: ^(src|tests)/.*\.py$
-      # Run the formatter.
-      - id: ruff-format
-        files: ^(src|tests)/.*\.py$
-
+  # ALL QUALITY CHECKS - Match GitHub CI exactly using local tools
   - repo: local
     hooks:
-      - id: pytest-core
-        name: pytest (core tests only)
-        entry: bash -c 'cd /home/ruifspinto/projects/mlops-2025-final_project && uv run python -m pytest tests/ -v --tb=short -q'
+      # Ruff linting - EXACT match to GitHub CI: "uv run ruff check src tests"
+      - id: ruff-check
+        name: ruff linting (matches CI exactly)
+        entry: uv run ruff check src tests
+        language: system
+        types: [python]
+        files: ^(src|tests)/.*\.py$
+        pass_filenames: false
+
+      # Ruff formatting - EXACT match to GitHub CI: "uv run ruff format --check src tests"
+      - id: ruff-format-check
+        name: ruff formatting check (matches CI exactly)
+        entry: uv run ruff format --check src tests
+        language: system
+        types: [python]
+        files: ^(src|tests)/.*\.py$
+        pass_filenames: false
+
+      # MyPy type checking - EXACT match to GitHub CI: "uv run mypy src"
+      - id: mypy
+        name: mypy type checking (matches CI exactly)
+        entry: uv run mypy src
+        language: system
+        types: [python]
+        files: ^src/.*\.py$
+        pass_filenames: false
+
+      # Unit tests - EXACT match to GitHub CI unit test command
+      - id: pytest-unit
+        name: pytest unit tests (matches CI exactly)
+        entry: uv run pytest tests/unit/ -v --tb=short -q --cov=src --cov-report=xml --timeout=60
         language: system
         types: [python]
         pass_filenames: false

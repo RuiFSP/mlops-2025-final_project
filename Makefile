@@ -84,6 +84,49 @@ clean:
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
 
+# Stop all running services
+stop-all:
+	@echo "🛑 Stopping all MLOps services..."
+	@pkill -f "mlflow server" || echo "MLflow not running"
+	@pkill -f "prefect server" || echo "Prefect server not running"
+	@pkill -f "prefect worker" || echo "Prefect worker not running"
+	@pkill -f "uvicorn.*api" || echo "API server not running"
+	@pkill -f "python.*deployment.*api" || echo "API server not running"
+	@echo "✅ All services stopped"
+
+# Stop services and clean up everything
+clean-all: stop-all clean
+	@echo "🧹 Cleaning up additional files..."
+	@rm -rf mlruns/ || echo "No MLruns directory"
+	@rm -rf .prefect/ || echo "No Prefect cache"
+	@rm -rf logs/*.log || echo "No log files"
+	@rm -rf data/simulation_output/ || echo "No simulation output"
+	@echo "✅ Complete cleanup finished"
+
+# Check what services are running
+status:
+	@echo "📊 Checking service status..."
+	@echo ""
+	@echo "🔍 MLflow (port 5000):"
+	@curl -s http://localhost:5000/health >/dev/null 2>&1 && echo "  ✅ Running" || echo "  ❌ Not running"
+	@echo ""
+	@echo "🔍 Prefect (port 4200):"
+	@curl -s http://localhost:4200/api/health >/dev/null 2>&1 && echo "  ✅ Running" || echo "  ❌ Not running"
+	@echo ""
+	@echo "🔍 API Server (port 8000):"
+	@curl -s http://localhost:8000/health >/dev/null 2>&1 && echo "  ✅ Running" || echo "  ❌ Not running"
+	@echo ""
+	@echo "🔍 Running processes:"
+	@ps aux | grep -E "(mlflow|prefect|uvicorn)" | grep -v grep || echo "  ❌ No services running"
+
+# Kill processes by port (nuclear option)
+kill-ports:
+	@echo "💥 Force killing processes on service ports..."
+	@lsof -ti:5000 | xargs kill -9 2>/dev/null || echo "Port 5000 clear"
+	@lsof -ti:4200 | xargs kill -9 2>/dev/null || echo "Port 4200 clear"
+	@lsof -ti:8000 | xargs kill -9 2>/dev/null || echo "Port 8000 clear"
+	@echo "✅ All ports cleared"
+
 # Setup development environment
 setup-dev: install-dev
 	uv run pre-commit install
@@ -194,6 +237,10 @@ help:
 	@echo "  format           - Format code"
 	@echo "  format-check     - Check formatting (fails if not formatted)"
 	@echo "  clean            - Clean up generated files"
+	@echo "  clean-all        - Stop services and clean everything"
+	@echo "  stop-all         - Stop all running services"
+	@echo "  status           - Check service status"
+	@echo "  kill-ports       - Force kill processes on service ports"
 	@echo ""
 	@echo "🏃‍♂️ Running:"
 	@echo "  run              - Run training pipeline"

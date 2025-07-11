@@ -89,9 +89,19 @@ def prepare_retraining_data(
 
     logger.info(f"Original training data: {len(original_data)} samples")
 
+    # Preprocess data: create 'result' column from 'FTR' if needed
+    if "FTR" in original_data.columns and "result" not in original_data.columns:
+        original_data["result"] = original_data["FTR"]
+        logger.info("Created 'result' column from 'FTR' column")
+
     # Combine with new data if available
     if new_data_path and os.path.exists(new_data_path):
         new_data = pd.read_parquet(new_data_path)
+
+        # Preprocess new data: create 'result' column from 'FTR' if needed
+        if "FTR" in new_data.columns and "result" not in new_data.columns:
+            new_data["result"] = new_data["FTR"]
+            logger.info("Created 'result' column from 'FTR' column in new data")
 
         # Filter to recent data within window
         if "date" in new_data.columns:
@@ -140,7 +150,7 @@ def train_new_model(
     val_data: pd.DataFrame,
     model_type: str = "random_forest",
     hyperparameters: Optional[dict] = None,
-) -> tuple[ModelTrainer, dict]:
+) -> tuple[str, dict]:
     """Train a new model with the prepared data."""
     logger = get_run_logger()
 
@@ -159,12 +169,27 @@ def train_new_model(
     # Train the model
     model = trainer.train(train_data, val_data)
 
+    # Debug: Check the trainer state after training
+    logger.info(f"After training - Trainer model is None: {trainer.model is None}")
+    if trainer.model is not None:
+        logger.info(f"Trainer model class: {type(trainer.model)}")
+
+    # Save the trained model to a temporary directory using trainer's save method
+    import tempfile
+
+    temp_model_dir = tempfile.mkdtemp()
+
+    # Use the trainer's built-in save method which properly saves all components
+    trainer.save_model(temp_model_dir)
+    logger.info(f"Trained model saved to temporary directory: {temp_model_dir}")
+
     # Get training metrics
     training_metrics = {
         "model_type": model_type,
         "training_samples": len(train_data),
         "validation_samples": len(val_data),
         "training_time": datetime.now().isoformat(),
+        "temp_model_path": temp_model_dir,
     }
 
     # Add model-specific metrics if available
@@ -172,12 +197,12 @@ def train_new_model(
         training_metrics.update(trainer.training_history)
 
     logger.info(f"Model training completed: {training_metrics}")
-    return trainer, training_metrics
+    return temp_model_dir, training_metrics
 
 
 @task(name="validate-new-model")
 def validate_new_model(
-    new_trainer: ModelTrainer,
+    temp_model_path: str,
     validation_data: pd.DataFrame,
     current_model_path: str,
     min_accuracy_threshold: float = 0.45,
@@ -187,6 +212,26 @@ def validate_new_model(
     logger = get_run_logger()
 
     logger.info("Validating new model performance")
+
+    # Load the trained model using ModelTrainer's load method
+    import os
+
+    if not os.path.exists(temp_model_path):
+        raise FileNotFoundError(f"Temporary model directory not found: {temp_model_path}")
+
+    # Create a new trainer instance and load the saved model
+    new_trainer = ModelTrainer()
+    new_trainer.load_model(temp_model_path)
+    logger.info(f"Loaded trained model from: {temp_model_path}")
+
+    # Debug: Check the state of the loaded trainer
+    logger.info(f"Trainer model type: {new_trainer.model_type}")
+    logger.info(f"Trainer model is None: {new_trainer.model is None}")
+    if new_trainer.model is not None:
+        logger.info(f"Trainer model class: {type(new_trainer.model)}")
+        if hasattr(new_trainer.model, "n_estimators"):
+            logger.info(f"Model n_estimators: {new_trainer.model.n_estimators}")
+    logger.info(f"Trainer scaler fitted: {hasattr(new_trainer.scaler, 'mean_')}")
 
     # Evaluate new model
     evaluator = ModelEvaluator()
@@ -266,7 +311,7 @@ def validate_new_model(
 
 @task(name="deploy-new-model")
 def deploy_new_model(
-    new_trainer: ModelTrainer,
+    model_file_path: str,
     model_path: str,
     validation_results: dict,
     deployment_metadata: Optional[dict] = None,
@@ -283,6 +328,10 @@ def deploy_new_model(
         }
 
     try:
+        # Load the trained model using ModelTrainer's load method
+        new_trainer = ModelTrainer()
+        new_trainer.load_model(model_file_path)
+
         # Save the new model
         new_trainer.save_model(model_path)
 
@@ -436,6 +485,28 @@ def automated_retraining_flow(
     logger.info(f"Starting automated retraining flow. Triggers: {triggers}")
 
     try:
+        # 0. Pre-flight validation
+        logger.info("🔍 Performing pre-flight validation...")
+
+        # Check if training data exists and is not empty
+        if not os.path.exists(training_data_path):
+            raise ValueError(f"Training data not found: {training_data_path}")
+
+        # Quick check if data is loadable and not empty
+        try:
+            if training_data_path.endswith(".parquet"):
+                df = pd.read_parquet(training_data_path)
+            else:
+                df = pd.read_csv(training_data_path)
+
+            if len(df) == 0:
+                raise ValueError("Training data is empty")
+
+            logger.info(f"✅ Training data validation passed: {len(df)} rows")
+
+        except Exception as e:
+            raise ValueError(f"Invalid training data: {str(e)}")
+
         # 1. Backup current model
         backup_path = backup_current_model(
             model_path=model_path, backup_dir=backup_dir, backup_reason="_".join(triggers)
@@ -448,7 +519,7 @@ def automated_retraining_flow(
         )
 
         # 3. Train new model
-        new_trainer, training_metrics = train_new_model(
+        temp_model_path, training_metrics = train_new_model(
             train_data=train_data,
             val_data=val_data,
             model_type=model_type,
@@ -457,7 +528,7 @@ def automated_retraining_flow(
 
         # 4. Validate new model
         validation_results, should_deploy = validate_new_model(
-            new_trainer=new_trainer,
+            temp_model_path=temp_model_path,
             validation_data=val_data,
             current_model_path=model_path,
             min_accuracy_threshold=min_accuracy_threshold,
@@ -466,7 +537,7 @@ def automated_retraining_flow(
 
         # 5. Deploy if validation passed
         deployment_results = deploy_new_model(
-            new_trainer=new_trainer,
+            model_file_path=temp_model_path,
             model_path=model_path,
             validation_results=validation_results,
             deployment_metadata={

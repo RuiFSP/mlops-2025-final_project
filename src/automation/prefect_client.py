@@ -56,15 +56,48 @@ class PrefectClient:
             client = await self.get_client()
 
             # Format deployment name if needed
-            if "/" not in deployment_name:
-                # Assume it's a deployment name, prepend flow name
-                deployment_name = f"automated-retraining-flow/{deployment_name}"
+            original_name = deployment_name
+            logger.info(f"🔍 DEBUG: Received deployment_name: '{deployment_name}'")
 
-            logger.info(f"Triggering deployment: {deployment_name}")
+            if "/" not in deployment_name:
+                # If no '/' in deployment name, we need to find the flow name
+                # For our MLOps project, we know the flow name is "automated-retraining-flow"
+                full_deployment_name = f"automated-retraining-flow/{deployment_name}"
+                logger.info(
+                    f"🔧 Converting '{deployment_name}' to full path: '{full_deployment_name}'"
+                )
+                deployment_name = full_deployment_name
+            else:
+                # If it has a '/', it should be in the correct flow/deployment format
+                logger.debug(f"Using full deployment path: {deployment_name}")
+
+            logger.info(f"🚀 Triggering deployment: '{deployment_name}'")
 
             # Get the deployment
-            deployment = await client.read_deployment_by_name(deployment_name)
-            if not deployment:
+            try:
+                deployment = await client.read_deployment_by_name(deployment_name)
+                if not deployment:
+                    raise ValueError(f"Deployment '{deployment_name}' not found")
+            except Exception as e:
+                # Don't include the original error message if it contains confusing info
+                error_msg = str(e)
+                if "Event loop is closed" in error_msg:
+                    logger.warning(
+                        f"Event loop error while accessing deployment '{deployment_name}': {error_msg}"
+                    )
+                    raise ValueError(
+                        f"Event loop closed while accessing deployment '{deployment_name}'"
+                    )
+                else:
+                    logger.error(f"Could not find deployment '{deployment_name}': {error_msg}")
+
+                # List available deployments for debugging
+                try:
+                    deployments = await client.read_deployments()
+                    available = [d.name for d in deployments]
+                    logger.info(f"Available deployments: {available}")
+                except:
+                    pass
                 raise ValueError(f"Deployment '{deployment_name}' not found")
 
             # Create a flow run
