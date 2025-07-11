@@ -128,6 +128,7 @@ class AutomatedRetrainingScheduler:
         self.last_retraining_time: datetime | None = None
         self.retraining_in_progress = False
         self.retraining_lock = threading.Lock()
+        self._shutdown_event = threading.Event()  # For responsive shutdown
 
         # Metrics tracking
         self.prediction_count_since_retraining = 0
@@ -147,6 +148,7 @@ class AutomatedRetrainingScheduler:
             return
 
         self.is_running = True
+        self._shutdown_event.clear()  # Reset the event
         self.scheduler_thread = threading.Thread(
             target=self._scheduler_loop, daemon=True, name="RetrainingScheduler"
         )
@@ -164,9 +166,10 @@ class AutomatedRetrainingScheduler:
             return
 
         self.is_running = False
+        self._shutdown_event.set()  # Signal the thread to wake up
 
         if self.scheduler_thread and self.scheduler_thread.is_alive():
-            self.scheduler_thread.join(timeout=30)
+            self.scheduler_thread.join(timeout=5)  # Reduced timeout since we use event
 
         logger.info("Automated retraining scheduler stopped")
 
@@ -179,13 +182,22 @@ class AutomatedRetrainingScheduler:
                 self._check_retraining_triggers()
                 self.last_check_time = datetime.now()
 
-                # Sleep for the configured interval
-                time.sleep(self.config.check_interval_minutes * 60)
+                # Wait for the configured interval or until shutdown is signaled
+                sleep_time = self.config.check_interval_minutes * 60
+                if not self._shutdown_event.wait(timeout=sleep_time):
+                    # Timeout occurred (normal case), continue to next iteration
+                    continue
+                else:
+                    # Event was set (shutdown requested), exit loop
+                    break
 
             except Exception as e:
                 logger.error(f"Error in scheduler loop: {str(e)}")
                 # Continue running even if there's an error
-                time.sleep(60)  # Wait 1 minute before retrying
+                if not self._shutdown_event.wait(timeout=60):  # Wait 1 minute before retrying
+                    continue
+                else:
+                    break
 
     def _check_retraining_triggers(self) -> None:
         """Check all retraining triggers and initiate retraining if needed."""
