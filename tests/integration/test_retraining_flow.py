@@ -126,12 +126,12 @@ class TestRetrainingFlowTasks:
             mock_trainer.training_history = {"accuracy": 0.85, "loss": 0.3}  # Mock training history
             mock_trainer_class.return_value = mock_trainer
 
-            trainer, metrics = train_new_model(
+            temp_model_path, metrics = train_new_model(
                 train_data=train_data, val_data=val_data, model_type="random_forest"
             )
 
             # Check trainer was called correctly
-            assert trainer is mock_trainer
+            assert temp_model_path is not None  # Function returns temp_model_path, not trainer
             mock_trainer.train.assert_called_once_with(train_data, val_data)
 
             # Check metrics
@@ -153,6 +153,10 @@ class TestRetrainingFlowTasks:
             current_model_path = Path(temp_dir) / "current_model.pkl"
             current_model_path.write_text("dummy current model")
 
+            # Create temp model path
+            temp_model_path = Path(temp_dir) / "new_model"
+            temp_model_path.mkdir()
+
             with patch(
                 "src.automation.retraining_flow.ModelEvaluator"
             ) as mock_evaluator_class, patch(
@@ -172,10 +176,8 @@ class TestRetrainingFlowTasks:
                 mock_trainer = Mock()
                 mock_trainer_class.return_value = mock_trainer
 
-                new_trainer = Mock()
-
                 validation_results, should_deploy = validate_new_model(
-                    new_trainer=new_trainer,
+                    temp_model_path=str(temp_model_path),
                     validation_data=val_data,
                     current_model_path=str(current_model_path),
                     min_accuracy_threshold=0.45,
@@ -205,6 +207,10 @@ class TestRetrainingFlowTasks:
             current_model_path = Path(temp_dir) / "current_model.pkl"
             current_model_path.write_text("dummy current model")
 
+            # Create temp model path
+            temp_model_path = Path(temp_dir) / "new_model"
+            temp_model_path.mkdir()
+
             with patch(
                 "src.automation.retraining_flow.ModelEvaluator"
             ) as mock_evaluator_class, patch(
@@ -224,10 +230,8 @@ class TestRetrainingFlowTasks:
                 mock_trainer = Mock()
                 mock_trainer_class.return_value = mock_trainer
 
-                new_trainer = Mock()
-
                 validation_results, should_deploy = validate_new_model(
-                    new_trainer=new_trainer,
+                    temp_model_path=str(temp_model_path),
                     validation_data=val_data,
                     current_model_path=str(current_model_path),
                     min_accuracy_threshold=0.45,
@@ -247,6 +251,9 @@ class TestRetrainingFlowTasks:
         """Test successful model deployment."""
         with tempfile.TemporaryDirectory() as temp_dir:
             model_path = Path(temp_dir) / "model.pkl"
+            # Create a model file path (source)
+            model_file_path = Path(temp_dir) / "temp_model.pkl"
+            model_file_path.write_text("dummy model")
 
             # Mock trainer
             mock_trainer = Mock()
@@ -259,7 +266,7 @@ class TestRetrainingFlowTasks:
             }
 
             deployment_results = deploy_new_model(
-                new_trainer=mock_trainer,
+                model_file_path=str(model_file_path),
                 model_path=str(model_path),
                 validation_results=validation_results,
             )
@@ -267,12 +274,14 @@ class TestRetrainingFlowTasks:
             # Check deployment succeeded
             assert deployment_results["deployed"] is True
             assert "deployment_time" in deployment_results
-            mock_trainer.save_model.assert_called_once_with(str(model_path))
 
     def test_deploy_new_model_validation_failed(self):
         """Test model deployment when validation failed."""
         with tempfile.TemporaryDirectory() as temp_dir:
             model_path = Path(temp_dir) / "model.pkl"
+            # Create a model file path (source)
+            model_file_path = Path(temp_dir) / "temp_model.pkl"
+            model_file_path.write_text("dummy model")
 
             mock_trainer = Mock()
 
@@ -282,7 +291,7 @@ class TestRetrainingFlowTasks:
             }
 
             deployment_results = deploy_new_model(
-                new_trainer=mock_trainer,
+                model_file_path=str(model_file_path),
                 model_path=str(model_path),
                 validation_results=validation_results,
             )

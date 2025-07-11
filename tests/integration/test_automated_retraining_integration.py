@@ -538,11 +538,11 @@ class TestRetrainingFlowIntegration:
         with patch("mlflow.set_experiment"), patch("mlflow.start_run"), patch(
             "mlflow.log_param"
         ), patch("mlflow.log_metric"), patch("mlflow.sklearn.log_model"):
-            new_trainer, training_metrics = train_new_model(
+            temp_model_path, training_metrics = train_new_model(
                 train_data=train_data, val_data=val_data, model_type="random_forest"
             )
 
-        assert new_trainer is not None
+        assert temp_model_path is not None
         assert "model_type" in training_metrics
         assert training_metrics["model_type"] == "random_forest"
 
@@ -555,7 +555,7 @@ class TestRetrainingFlowIntegration:
             ]
 
             validation_results, should_deploy = validate_new_model(
-                new_trainer=new_trainer,
+                temp_model_path=temp_model_path,
                 validation_data=val_data,
                 current_model_path=str(env["model_path"]),
                 min_accuracy_threshold=0.50,
@@ -581,7 +581,7 @@ class TestRetrainingFlowIntegration:
         with patch("mlflow.set_experiment"), patch("mlflow.start_run"), patch(
             "mlflow.log_param"
         ), patch("mlflow.log_metric"), patch("mlflow.sklearn.log_model"):
-            new_trainer, _ = train_new_model(
+            temp_model_path, _ = train_new_model(
                 train_data=train_data, val_data=val_data, model_type="random_forest"
             )
 
@@ -594,7 +594,7 @@ class TestRetrainingFlowIntegration:
             ]
 
             validation_results, should_deploy = validate_new_model(
-                new_trainer=new_trainer,
+                temp_model_path=temp_model_path,
                 validation_data=val_data,
                 current_model_path=str(env["model_path"]),
                 min_accuracy_threshold=0.50,
