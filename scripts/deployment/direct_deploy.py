@@ -11,8 +11,26 @@ import os
 import sys
 from pathlib import Path
 
-# Set Prefect API URL
-os.environ["PREFECT_API_URL"] = "http://127.0.0.1:4200/api"
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+
+    # Load .env file from project root
+    env_path = Path(__file__).parent.parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"✅ Loaded environment from: {env_path}")
+    else:
+        print(f"⚠️  .env file not found, using defaults")
+        os.environ["PREFECT_API_URL"] = "http://127.0.0.1:4200/api"
+
+except ImportError:
+    print("⚠️  python-dotenv not available, using defaults")
+    os.environ["PREFECT_API_URL"] = "http://127.0.0.1:4200/api"
+
+# Set Prefect API URL (fallback if not in .env)
+if "PREFECT_API_URL" not in os.environ:
+    os.environ["PREFECT_API_URL"] = "http://127.0.0.1:4200/api"
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent.parent))

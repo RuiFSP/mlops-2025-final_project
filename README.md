@@ -125,7 +125,33 @@ uv sync
 source .venv/bin/activate
 ```
 
-### 2. Collect Data
+### 2. Configure Environment Variables
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env file to customize configuration (optional)
+# Default values work for local development
+nano .env
+```
+
+**Key Configuration Variables:**
+- `PREFECT_API_URL`: Prefect server URL (default: http://127.0.0.1:4200/api)
+- `MLFLOW_TRACKING_URI`: MLflow server URL (default: http://127.0.0.1:5000)
+- `PREFECT_WORK_POOL`: Work pool name (default: mlops-pool)
+- `SIMULATION_SPEED`: Demo speed in seconds (default: 5)
+- `RETRAINING_THRESHOLD`: Performance drop threshold (default: 0.05)
+
+### 3. Start MLOps Environment
+```bash
+# Option A: Use the automated setup script
+python setup_mlops_env.py
+
+# Option B: Manual setup (for development)
+# Start individual services as needed
+```
+
+### 4. Collect Data
 ```bash
 # Collect real Premier League data
 python scripts/data/collect_real_data.py
@@ -149,6 +175,30 @@ python -m src.deployment.api
 # Note: Model will only be loaded if model artifacts exist in ./models/
 # To train a model first, run: python -m src.main
 ```
+
+### 5. 🎮 Run Complete MLOps Demo
+```bash
+# Run the complete automation demo (recommended)
+python scripts/simulation/complete_demo.py --demo
+
+# This will:
+# - Start MLflow and Prefect servers automatically
+# - Create work pool and start worker
+# - Deploy automated retraining flows
+# - Run real-time season simulation
+# - Show automated retraining in action
+
+# Monitor the demo:
+# Prefect UI: http://localhost:4200
+# MLflow UI: http://localhost:5000
+```
+
+**Demo Features:**
+- ⚽ Real-time Premier League season simulation
+- 🚨 Automated retraining triggers based on performance drops
+- 🔄 Prefect workflow orchestration visible in UI
+- 📊 MLflow experiment tracking and model versioning
+- 📈 Performance monitoring and drift detection
 
 ## 🐳 Docker Quick Start
 

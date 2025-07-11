@@ -19,6 +19,35 @@ import signal
 from pathlib import Path
 import logging
 
+# Add src to path to import configuration
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
+try:
+    from src.config import config
+    logger = logging.getLogger(__name__)
+    logger.info(f"✅ Configuration loaded: {config}")
+
+    # Setup environment variables
+    config.setup_environment()
+
+except ImportError as e:
+    print(f"⚠️  Could not import configuration: {e}")
+    print("Using fallback configuration...")
+
+    # Fallback configuration
+    import os
+    os.environ["PREFECT_API_URL"] = "http://127.0.0.1:4200/api"
+    os.environ["MLFLOW_TRACKING_URI"] = "http://127.0.0.1:5000"
+
+    class FallbackConfig:
+        prefect_server_host = "127.0.0.1"
+        prefect_server_port = 4200
+        mlflow_server_host = "127.0.0.1"
+        mlflow_server_port = 5000
+        prefect_work_pool = "mlops-pool"
+
+    config = FallbackConfig()
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -162,10 +191,14 @@ class MLOpsDemo:
             print(f"\n📋 STEP 1: Starting Services")
             print("-" * 40)
 
-            if not self.start_service("MLflow", "uv run mlflow server --host 127.0.0.1 --port 5000"):
+            # Start MLflow using configuration
+            mlflow_cmd = f"uv run mlflow server --host {config.mlflow_server_host} --port {config.mlflow_server_port}"
+            if not self.start_service("MLflow", mlflow_cmd):
                 return False
 
-            if not self.start_service("Prefect", "uv run prefect server start --host 127.0.0.1 --port 4200"):
+            # Start Prefect using configuration
+            prefect_cmd = f"uv run prefect server start --host {config.prefect_server_host} --port {config.prefect_server_port}"
+            if not self.start_service("Prefect", prefect_cmd):
                 return False
 
             # Give services more time to fully start
@@ -176,11 +209,11 @@ class MLOpsDemo:
             print(f"\n📋 STEP 1.5: Setting up Prefect Work Pool")
             print("-" * 40)
 
-            # Create work pool
+            # Create work pool using configuration
             logger.info("🔧 Creating work pool...")
             try:
                 result = subprocess.run([
-                    "prefect", "work-pool", "create", "--type", "process", "mlops-pool"
+                    "prefect", "work-pool", "create", "--type", "process", config.prefect_work_pool
                 ], cwd=self.project_root, capture_output=True, text=True, timeout=30)
 
                 if result.returncode == 0:
@@ -190,8 +223,9 @@ class MLOpsDemo:
             except Exception as e:
                 logger.warning(f"⚠️  Work pool creation issue: {e}")
 
-            # Start worker
-            if not self.start_service("Prefect Worker", "uv run prefect worker start --pool mlops-pool"):
+            # Start worker using configuration
+            worker_cmd = f"uv run prefect worker start --pool {config.prefect_work_pool}"
+            if not self.start_service("Prefect Worker", worker_cmd):
                 logger.warning("⚠️  Worker failed to start, deployments may not execute")
 
             # Step 2: Deploy retraining flow
