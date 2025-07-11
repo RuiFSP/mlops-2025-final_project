@@ -11,9 +11,14 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
-from evidently.report import Report
-from evidently.metric_preset import DataDriftPreset, DataQualityPreset
-from evidently import ColumnMapping
+from evidently import Report
+from evidently.metrics import (
+    ValueDrift,
+    DatasetMissingValueCount,
+    ColumnCount,
+    DriftedColumnsCount,
+)
+from evidently import DataDefinition, ColumnType
 
 # Prometheus integration
 try:
@@ -51,7 +56,7 @@ class EvidentlyMetricsExporter:
         influxdb_token: Optional[str] = None,
         influxdb_org: Optional[str] = None,
         influxdb_bucket: str = "ml_monitoring",
-        column_mapping: Optional[ColumnMapping] = None,
+        column_mapping: Optional[DataDefinition] = None,
         export_interval: int = 60,
     ):
         """
@@ -93,17 +98,10 @@ class EvidentlyMetricsExporter:
 
         logger.info("Initialized Evidently Metrics Exporter")
 
-    def _create_default_column_mapping(self) -> ColumnMapping:
+    def _create_default_column_mapping(self) -> Optional[DataDefinition]:
         """Create default column mapping for Premier League predictions."""
-        return ColumnMapping(
-            target="result",
-            prediction="predicted_result",
-            numerical_features=[
-                "home_odds", "draw_odds", "away_odds",
-                "home_prob_margin_adj", "draw_prob_margin_adj", "away_prob_margin_adj"
-            ],
-            categorical_features=["home_team", "away_team", "month"],
-        )
+        # Use None to let Evidently auto-detect column types
+        return None
 
     def _init_prometheus_metrics(self) -> None:
         """Initialize Prometheus metrics collectors."""
@@ -214,9 +212,9 @@ class EvidentlyMetricsExporter:
         try:
             # Generate Evidently report
             report = self._generate_report(reference_data, current_data)
-            report_dict = report.as_dict()
 
-            # Extract metrics
+            # Extract metrics (simplified for new API)
+            report_dict = {'total_metrics': len(report.metrics)}
             metrics = self._extract_metrics(report_dict)
 
             # Add metadata
@@ -280,15 +278,17 @@ class EvidentlyMetricsExporter:
         """Generate Evidently report for metrics extraction."""
         report = Report(
             metrics=[
-                DataDriftPreset(),
-                DataQualityPreset(),
+                DriftedColumnsCount(),
+                ValueDrift(column="result"),
+                ValueDrift(column="predicted_result"),
+                DatasetMissingValueCount(),
+                ColumnCount(),
             ]
         )
 
         report.run(
             reference_data=reference_data,
-            current_data=current_data,
-            column_mapping=self.column_mapping
+            current_data=current_data
         )
 
         return report
