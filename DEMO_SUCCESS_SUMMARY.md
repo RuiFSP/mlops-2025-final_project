@@ -10,7 +10,7 @@
 
 ### 2. **Complete Automation Workflow**
 - ✅ MLflow server for model tracking
-- ✅ Prefect server for flow orchestration  
+- ✅ Prefect server for flow orchestration
 - ✅ Real-time simulation with performance monitoring
 - ✅ Automated retraining triggers based on performance degradation
 - ✅ All services managed automatically by the demo script

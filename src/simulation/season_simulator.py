@@ -139,12 +139,16 @@ class SeasonSimulator:
         # Get matches for the week
         week_matches = self.scheduler.get_matches_for_week(week_number)
         if week_matches is None or len(week_matches) == 0:
-            logger.warning(f"No matches found for week {week_number}")
+            logger.info(
+                f"No matches scheduled for week {week_number} - this is normal for some weeks"
+            )
             return {
                 "week": week_number,
                 "matches": [],
                 "predictions": [],
                 "results": [],
+                "performance": {},
+                "retraining_triggered": False,
             }
 
         # Generate predictions for the week
@@ -156,10 +160,12 @@ class SeasonSimulator:
         # Calculate performance metrics
         week_performance = self._calculate_week_performance(week_predictions, week_results)
 
-        # Check for retraining triggers
-        retraining_triggered = self.retraining_orchestrator.check_retraining_trigger(
-            week_number, week_performance
-        )
+        # Check for retraining triggers (only if we have matches and performance data)
+        retraining_triggered = False
+        if week_performance and week_performance.get("accuracy") is not None:
+            retraining_triggered = self.retraining_orchestrator.check_retraining_trigger(
+                week_number, week_performance
+            )
 
         # Save week data
         week_data = {

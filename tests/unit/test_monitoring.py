@@ -41,9 +41,7 @@ class TestModelDriftDetector:
         # Add margin-adjusted probabilities
         for outcome in ["home", "draw", "away"]:
             implied_prob = 1 / data[f"{outcome}_odds"]
-            total_implied = (
-                1 / data["home_odds"] + 1 / data["draw_odds"] + 1 / data["away_odds"]
-            )
+            total_implied = 1 / data["home_odds"] + 1 / data["draw_odds"] + 1 / data["away_odds"]
             data[f"{outcome}_prob_margin_adj"] = implied_prob / total_implied
 
         return data
@@ -145,9 +143,7 @@ class TestModelPerformanceMonitor:
             # Create properly normalized probabilities that sum to 1
             np.random.seed(42)  # For reproducible results
             raw_probs = np.random.rand(30, 3)
-            y_pred_proba = raw_probs / raw_probs.sum(
-                axis=1, keepdims=True
-            )  # Normalize to sum to 1
+            y_pred_proba = raw_probs / raw_probs.sum(axis=1, keepdims=True)  # Normalize to sum to 1
 
             metrics = monitor._calculate_metrics(y_true, y_pred, y_pred_proba)
 
@@ -173,9 +169,7 @@ class TestModelPerformanceMonitor:
         model_path = Path(temp_output_dir) / "test_model.pkl"
         joblib.dump(model, model_path)
 
-        monitor = ModelPerformanceMonitor(
-            model_path=str(model_path), output_dir=temp_output_dir
-        )
+        monitor = ModelPerformanceMonitor(model_path=str(model_path), output_dir=temp_output_dir)
 
         # Create test data with multiple classes to avoid confusion matrix warning
         X = pd.DataFrame(

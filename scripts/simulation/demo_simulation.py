@@ -11,9 +11,9 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-from simulation import SeasonSimulator, MatchScheduler, OddsGenerator, RetrainingOrchestrator
+from src.simulation import SeasonSimulator, MatchScheduler, OddsGenerator, RetrainingOrchestrator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +26,7 @@ def main():
     print("=" * 50)
 
     # Paths
-    base_dir = Path(__file__).parent.parent
+    base_dir = Path(__file__).parent.parent.parent
     simulation_data_path = base_dir / "data/simulation/simulation_data_2023_24.parquet"
     match_calendar_path = base_dir / "data/simulation/match_calendar.parquet"
     model_path = base_dir / "models/model.pkl"

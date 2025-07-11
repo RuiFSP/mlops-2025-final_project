@@ -74,7 +74,7 @@ class TestAutomatedRetrainingScheduler:
     def scheduler(self, temp_config):
         """Create a scheduler instance for testing."""
         with patch("src.automation.retraining_scheduler.MLOpsMonitoringService"), patch(
-            "src.automation.retraining_scheduler.RetrainingOrchestrator"
+            "src.simulation.retraining_orchestrator.RetrainingOrchestrator"
         ):
             scheduler = AutomatedRetrainingScheduler(config=temp_config)
             return scheduler
@@ -304,7 +304,7 @@ class TestRetrainingTriggers:
         )
 
         with patch("src.automation.retraining_scheduler.MLOpsMonitoringService"), patch(
-            "src.automation.retraining_scheduler.RetrainingOrchestrator"
+            "src.simulation.retraining_orchestrator.RetrainingOrchestrator"
         ):
             scheduler = AutomatedRetrainingScheduler(config=config)
             return scheduler

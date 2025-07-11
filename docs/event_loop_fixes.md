@@ -26,7 +26,7 @@ def check_retraining_trigger(self, week: int, performance_data: dict) -> bool:
     if not performance_data or not performance_data.get("accuracy"):
         logger.debug(f"Skipping retraining check for week {week} - no performance data")
         return False
-    
+
     # Only trigger time-based retraining if we have accumulated some data
     if self._check_time_based_trigger(week) and len(self.performance_buffer) >= 2:
         trigger_reasons.append("time_based")
@@ -39,10 +39,10 @@ try:
     # Try to get existing event loop
     loop = asyncio.get_running_loop()
     logger.debug("Found running event loop, using ThreadPoolExecutor")
-    
+
     # Use ThreadPoolExecutor to run async function in separate thread
     import concurrent.futures
-    
+
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Run the async function in a separate thread with its own event loop
         future = executor.submit(
@@ -51,14 +51,14 @@ try:
             )
         )
         flow_run = future.result(timeout=timeout + 10)
-        
+
 except RuntimeError as e:
     if "no running event loop" in str(e).lower():
         logger.debug("No running event loop, creating new one")
         # Create and manage our own event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        
+
         try:
             flow_run = loop.run_until_complete(...)
         finally:
@@ -77,7 +77,7 @@ if "/" not in deployment_name:
     # Use deployment name as-is (it's already the correct format)
     pass
 else:
-    # If it has a '/', take the part after '/' 
+    # If it has a '/', take the part after '/'
     deployment_name = deployment_name.split("/")[-1]
 ```
 

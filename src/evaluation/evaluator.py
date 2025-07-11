@@ -86,16 +86,12 @@ class ModelEvaluator:
 
         # Calculate Brier score if probabilities are available
         if probabilities is not None and class_order is not None:
-            brier_metrics = self._calculate_brier_score(
-                y_true, probabilities, class_order
-            )
+            brier_metrics = self._calculate_brier_score(y_true, probabilities, class_order)
             metrics.update(brier_metrics)
 
         # Compare with betting odds if available
         if probabilities is not None and self._has_odds_data(test_data):
-            odds_comparison = self._compare_with_odds(
-                y_true, probabilities, class_order, test_data
-            )
+            odds_comparison = self._compare_with_odds(y_true, probabilities, class_order, test_data)
             metrics.update(odds_comparison)
 
         # Log metrics to MLflow
@@ -103,16 +99,12 @@ class ModelEvaluator:
             mlflow.log_metric(f"test_{metric_name}", value)
 
         # Generate evaluation report
-        self._generate_evaluation_report(
-            y_true, predictions, metrics, probabilities, class_order
-        )
+        self._generate_evaluation_report(y_true, predictions, metrics, probabilities, class_order)
 
         logger.info(f"Evaluation completed. Accuracy: {metrics.get('accuracy', 0):.4f}")
         return metrics
 
-    def _calculate_metrics(
-        self, y_true: pd.Series, y_pred: np.ndarray
-    ) -> dict[str, float]:
+    def _calculate_metrics(self, y_true: pd.Series, y_pred: np.ndarray) -> dict[str, float]:
         """Calculate various evaluation metrics.
 
         Args:
@@ -129,9 +121,7 @@ class ModelEvaluator:
         metrics["precision_macro"] = precision_score(
             y_true, y_pred, average="macro", zero_division=0
         )
-        metrics["recall_macro"] = recall_score(
-            y_true, y_pred, average="macro", zero_division=0
-        )
+        metrics["recall_macro"] = recall_score(y_true, y_pred, average="macro", zero_division=0)
         metrics["f1_macro"] = f1_score(y_true, y_pred, average="macro", zero_division=0)
 
         # Class-specific metrics
@@ -210,9 +200,7 @@ class ModelEvaluator:
         # Generate metrics visualization
         self._plot_metrics(metrics, eval_dir)
 
-    def _plot_confusion_matrix(
-        self, y_true: pd.Series, y_pred: np.ndarray, save_dir: Path
-    ) -> None:
+    def _plot_confusion_matrix(self, y_true: pd.Series, y_pred: np.ndarray, save_dir: Path) -> None:
         """Plot and save confusion matrix.
 
         Args:
@@ -299,9 +287,7 @@ class ModelEvaluator:
         except Exception as e:
             logger.error(f"Error plotting metrics: {e}")
 
-    def compare_models(
-        self, model_results: dict[str, dict[str, float]]
-    ) -> pd.DataFrame:
+    def compare_models(self, model_results: dict[str, dict[str, float]]) -> pd.DataFrame:
         """Compare multiple models' performance.
 
         Args:
@@ -331,9 +317,7 @@ class ModelEvaluator:
 
         return comparison_df
 
-    def evaluate_prediction_confidence(
-        self, model: Any, test_data: pd.DataFrame
-    ) -> dict[str, Any]:
+    def evaluate_prediction_confidence(self, model: Any, test_data: pd.DataFrame) -> dict[str, Any]:
         """Evaluate prediction confidence and uncertainty.
 
         Args:
@@ -400,9 +384,7 @@ class ModelEvaluator:
             metrics[f"brier_score_{class_name}"] = brier_score
 
         # Calculate overall Brier score (average)
-        metrics["brier_score_avg"] = np.mean(
-            [metrics[f"brier_score_{cls}"] for cls in class_order]
-        )
+        metrics["brier_score_avg"] = np.mean([metrics[f"brier_score_{cls}"] for cls in class_order])
 
         return metrics
 

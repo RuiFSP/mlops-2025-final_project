@@ -34,18 +34,14 @@ class DataCollector:
             for season in seasons:
                 try:
                     url = f"https://www.football-data.co.uk/mmz4281/{season}/E0.csv"
-                    logger.info(
-                        f"Fetching data for season 20{season[:2]}-20{season[2:]}..."
-                    )
+                    logger.info(f"Fetching data for season 20{season[:2]}-20{season[2:]}...")
 
                     response = self.session.get(url, timeout=30)
                     response.raise_for_status()
 
                     # Clean response text - remove non-printable chars
                     clean_text = "".join(
-                        char
-                        for char in response.text
-                        if char.isprintable() or char in "\r\n\t"
+                        char for char in response.text if char.isprintable() or char in "\r\n\t"
                     )
                     csv_data = StringIO(clean_text)
 
@@ -60,16 +56,12 @@ class DataCollector:
                     time.sleep(1)  # Be respectful to the server
 
                 except Exception as e:
-                    logger.warning(
-                        f"Failed to load season 20{season[:2]}-20{season[2:]}: {e}"
-                    )
+                    logger.warning(f"Failed to load season 20{season[:2]}-20{season[2:]}: {e}")
                     continue
 
             if all_data:
                 combined_df = pd.concat(all_data, ignore_index=True)
-                logger.info(
-                    f"Combined {len(combined_df)} matches from {len(all_data)} seasons"
-                )
+                logger.info(f"Combined {len(combined_df)} matches from {len(all_data)} seasons")
                 return combined_df
             else:
                 logger.error("No data could be loaded from football-data.co.uk")
@@ -130,9 +122,7 @@ class DataCollector:
                 standardized["home_score"] - standardized["away_score"]
             )
 
-            logger.info(
-                f"Standardized {len(standardized)} matches from football-data.co.uk"
-            )
+            logger.info(f"Standardized {len(standardized)} matches from football-data.co.uk")
             return standardized
 
         except Exception as e:
@@ -153,8 +143,7 @@ class DataCollector:
             )
 
             logger.info(
-                f"Collected {len(standardized_data)} unique matches from "
-                f"football-data.co.uk"
+                f"Collected {len(standardized_data)} unique matches from " f"football-data.co.uk"
             )
             return standardized_data
         else:
@@ -190,9 +179,7 @@ class DataCollector:
                     f.write(f"Seasons: {', '.join(df['season'].unique())}\n")
 
                 if "home_team" in df.columns and "away_team" in df.columns:
-                    teams_count = len(
-                        set(df["home_team"].unique()) | set(df["away_team"].unique())
-                    )
+                    teams_count = len(set(df["home_team"].unique()) | set(df["away_team"].unique()))
                     f.write(f"Teams: {teams_count}\n")
 
                 f.write(f"Columns: {', '.join(df.columns)}\n\n")
