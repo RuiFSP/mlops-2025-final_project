@@ -283,8 +283,6 @@ class TestRetrainingFlowTasks:
             model_file_path = Path(temp_dir) / "temp_model.pkl"
             model_file_path.write_text("dummy model")
 
-            mock_trainer = Mock()
-
             validation_results = {
                 "should_deploy": False,
                 "new_accuracy": 0.40,
