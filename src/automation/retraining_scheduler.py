@@ -7,7 +7,6 @@ model performance and data drift to trigger retraining when needed.
 
 import logging
 import threading
-import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
