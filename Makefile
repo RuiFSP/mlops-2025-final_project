@@ -190,6 +190,10 @@ simulation-run:
 
 # Monitoring Commands
 monitoring-demo:
+	uv run python scripts/evidently_grafana_demo.py
+
+# Legacy monitoring demo
+monitoring-demo-legacy:
 	uv run python scripts/monitoring/demo_monitoring.py
 
 # Prefect deployment targets
@@ -262,7 +266,7 @@ help:
 	@echo "🎮 Simulation:"
 	@echo "  simulation-demo  - Run season simulation demo"
 	@echo "  simulation-run   - Run interactive season simulation"
-	@echo "  monitoring-demo  - Run monitoring system demo"
+	@echo "  monitoring-demo  - Run advanced ML monitoring demo (Evidently + Grafana)"
 	@echo ""
 	@echo "🐳 Docker & Services:"
 	@echo "  docker-build     - Build Docker image"

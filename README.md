@@ -29,6 +29,7 @@ This project successfully demonstrates a **fully operational, production-ready M
 - **Prefect Orchestration**: Automated workflow management ✅ **FULLY OPERATIONAL**
 - **Automated Retraining**: Enterprise-grade automated model updates ✅ **FULLY OPERATIONAL**
 - **Real-time Monitoring**: Drift detection and performance tracking ✅ **FULLY OPERATIONAL**
+- **Advanced ML Monitoring**: Evidently v0.7.9 + Grafana monitoring stack ✅ **FULLY OPERATIONAL**
 - **Market Competitive**: Within 6% of betting market performance
 - **Production Ready**: Docker support, proper testing, CI/CD workflows
 - **Code Quality**: Zero errors, comprehensive testing, security-hardened Docker container
@@ -45,6 +46,7 @@ This project successfully demonstrates a **fully operational, production-ready M
 | **Workflow Orchestration** | ✅ **OPERATIONAL** | 82% | Prefect-based automated workflows **WORKING** |
 | **Automated Retraining** | ✅ **OPERATIONAL** | 75-82% | Production-ready automated model retraining system **WORKING** |
 | **Real-time Monitoring** | ✅ **OPERATIONAL** | 45-76% | Statistical drift detection, performance monitoring **WORKING** |
+| **Advanced ML Monitoring** | ✅ **OPERATIONAL** | - | Evidently v0.7.9 + Grafana monitoring stack **WORKING** |
 | **Season Simulation** | ✅ Complete | 12-62% | Complete Premier League season simulation for MLOps testing |
 | **Testing** | ✅ Complete | **77/77** | **All 77 tests passing**, comprehensive unit & integration |
 | **Containerization** | ✅ Complete | - | Security-hardened Docker container |
@@ -68,6 +70,7 @@ This project successfully demonstrates a **fully operational, production-ready M
 
 ### 🎯 **Today's Major Achievements**
 - **✅ Full MLOps Automation**: Complete end-to-end automated retraining system with Prefect orchestration **FULLY OPERATIONAL**
+- **✅ Advanced ML Monitoring**: Complete Evidently + Grafana monitoring system with drift detection, data quality monitoring, and automated reporting **FULLY OPERATIONAL**
 - **✅ Realtime Simulation**: Working Premier League season simulation with intelligent rate limiting and performance monitoring
 - **✅ Event Loop Optimization**: Resolved async/sync boundary issues in retraining orchestrator with proper ThreadPoolExecutor handling
 - **✅ Prefect Flow Integration**: All Prefect flows executing successfully with COMPLETED status and proper error handling
@@ -75,6 +78,8 @@ This project successfully demonstrates a **fully operational, production-ready M
 
 ### 🔧 **Technical Improvements Completed**
 - **🤖 Automated Retraining System**: Enterprise-grade automated model retraining with performance monitoring, drift detection, and intelligent triggers
+- **📊 Evidently ML Monitoring**: Complete ML monitoring system with drift detection, data quality monitoring, and automated reporting
+- **📈 Grafana Dashboard Integration**: Interactive dashboards for ML monitoring, drift analysis, and performance tracking
 - **🏟️ Season Simulation Engine**: Complete Premier League season simulation for MLOps testing with optimized performance
 - **📈 Production MLOps Pipeline**: Full automation with Prefect flows, API management, and comprehensive monitoring
 - **⚡ Event Loop Management**: Robust async/sync boundary handling with ThreadPoolExecutor for concurrent operations
@@ -193,12 +198,31 @@ python scripts/simulation/complete_demo.py --demo
 # MLflow UI: http://localhost:5000
 ```
 
+### 6. 📊 Run Advanced ML Monitoring Demo
+```bash
+# Run the Evidently + Grafana monitoring demo
+python scripts/evidently_grafana_demo.py
+
+# This will:
+# - Demonstrate Evidently ML monitoring with drift detection
+# - Show metrics export to Prometheus and InfluxDB
+# - Generate interactive Grafana dashboards
+# - Run automated monitoring workflow
+# - Display real-time data quality monitoring
+
+# Generated files:
+# - evidently_reports/: JSON monitoring reports
+# - dashboards/: Grafana dashboard configurations
+# - config/grafana/: Datasource configurations
+```
+
 **Demo Features:**
 - ⚽ Real-time Premier League season simulation
 - 🚨 Automated retraining triggers based on performance drops
 - 🔄 Prefect workflow orchestration visible in UI
 - 📊 MLflow experiment tracking and model versioning
 - 📈 Performance monitoring and drift detection
+- 🎯 Advanced ML monitoring with Evidently + Grafana dashboards
 
 ## 🐳 Docker Quick Start
 
@@ -249,6 +273,9 @@ make retraining-demo
 
 # Run season simulation demo
 make simulation-demo
+
+# Run advanced ML monitoring demo
+make monitoring-demo
 
 # Start API server
 make api
@@ -539,6 +566,144 @@ Access retraining system status via API:
 - Performance trends and prediction volume tracking
 
 See [`docs/automated_retraining.md`](docs/automated_retraining.md) for complete documentation.
+
+## 📊 Advanced ML Monitoring with Evidently + Grafana
+
+### **🔍 Comprehensive ML Monitoring System**
+
+The project includes a **production-ready ML monitoring stack** using **Evidently v0.7.9** and **Grafana** for advanced drift detection, data quality monitoring, and automated reporting.
+
+### **✅ Monitoring Components**
+
+| Component | Status | Description |
+|-----------|--------|-------------|
+| **Evidently ML Monitor** | ✅ **OPERATIONAL** | Core ML monitoring with drift detection and data quality analysis |
+| **Metrics Exporter** | ✅ **OPERATIONAL** | Prometheus and InfluxDB integration for time-series metrics |
+| **Grafana Dashboards** | ✅ **OPERATIONAL** | Interactive dashboards for ML monitoring and drift analysis |
+| **Automated Reporting** | ✅ **OPERATIONAL** | Scheduled reports and automated alerting system |
+| **JSON Report Generation** | ✅ **OPERATIONAL** | Structured monitoring reports with API v0.7.9 compatibility |
+
+### **🚀 Quick Start - Monitoring Demo**
+
+```bash
+# Run the complete Evidently + Grafana monitoring demo
+python scripts/evidently_grafana_demo.py
+
+# This demonstration shows:
+# ✅ Evidently ML monitoring with drift detection
+# ✅ Metrics export to Prometheus and InfluxDB
+# ✅ Grafana dashboard generation
+# ✅ Automated monitoring workflow
+# ✅ Real-time data quality monitoring
+```
+
+### **📈 Monitoring Features**
+
+#### **1. ML Drift Detection**
+- **Statistical Drift Detection**: KS-test for numerical features, Chi-square for categorical
+- **Data Quality Monitoring**: Missing values, data type validation, feature distribution analysis
+- **Model Performance Tracking**: Accuracy degradation alerts and trend analysis
+- **Feature Drift Analysis**: Individual feature drift monitoring with threshold alerts
+
+#### **2. Automated Reporting**
+- **Daily Reports**: Comprehensive daily ML monitoring summaries
+- **Weekly Analysis**: Trend analysis and comparative performance reports
+- **Comparison Reports**: Side-by-side dataset analysis for A/B testing
+- **Alert Generation**: Automated alerts for drift detection and performance degradation
+
+#### **3. Grafana Integration**
+- **Interactive Dashboards**: Real-time ML monitoring dashboards
+- **Custom Panels**: Drift overview, data quality metrics, performance tracking
+- **Historical Analysis**: Time-series visualization of ML metrics
+- **Alert Management**: Grafana-based alerting and notification system
+
+### **🔧 Technical Implementation**
+
+#### **Evidently API v0.7.9 Compatibility**
+- **Modern API**: Updated to latest Evidently API with improved metrics and reporting
+- **Simplified Metrics**: Optimized metric selection for production monitoring
+- **JSON Output**: Structured reporting compatible with modern monitoring stacks
+- **Type Safety**: Full MyPy compliance with proper type annotations
+
+#### **Monitoring Architecture**
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   ML Pipeline   │───▶│  Evidently       │───▶│   Grafana       │
+│   (Predictions) │    │  Monitoring      │    │   Dashboards    │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                                │
+                                ▼
+                       ┌──────────────────┐
+                       │  Prometheus      │
+                       │  InfluxDB        │
+                       │  (Metrics)       │
+                       └──────────────────┘
+```
+
+### **📊 Available Dashboards**
+
+#### **1. ML Monitoring Dashboard**
+- **Drift Overview**: Visual drift detection across all features
+- **Data Quality**: Missing values, data type issues, distribution changes
+- **Performance Tracking**: Model accuracy trends and prediction volume
+- **Feature Analysis**: Individual feature drift and importance tracking
+
+#### **2. Drift Analysis Dashboard**
+- **Statistical Tests**: KS-test and Chi-square results visualization
+- **Threshold Monitoring**: Configurable drift thresholds and alerts
+- **Historical Trends**: Long-term drift patterns and seasonal analysis
+- **Comparative Analysis**: Reference vs. current data visualization
+
+### **🛠️ Configuration & Setup**
+
+#### **Environment Variables**
+```bash
+# Monitoring configuration
+EVIDENTLY_OUTPUT_DIR=evidently_reports
+GRAFANA_DASHBOARD_DIR=dashboards
+PROMETHEUS_URL=http://localhost:9090
+INFLUXDB_URL=http://localhost:8086
+```
+
+#### **Monitoring Services Setup**
+```bash
+# 1. Start monitoring infrastructure (optional for demo)
+docker-compose up -d prometheus influxdb grafana
+
+# 2. Run monitoring demo
+python scripts/evidently_grafana_demo.py
+
+# 3. Access dashboards
+# Grafana: http://localhost:3000
+# Prometheus: http://localhost:9090
+# InfluxDB: http://localhost:8086
+```
+
+### **📁 Generated Files**
+
+The monitoring system generates the following files:
+- **`evidently_reports/`**: JSON monitoring reports and summaries
+- **`dashboards/`**: Grafana dashboard configurations (JSON)
+- **`config/grafana/`**: Grafana datasource configurations
+- **`evaluation_reports/`**: Drift analysis and monitoring summaries
+
+### **🔍 Monitoring Workflow**
+
+1. **Data Collection**: Capture prediction data and feature distributions
+2. **Drift Detection**: Statistical analysis using Evidently metrics
+3. **Report Generation**: Automated daily, weekly, and comparison reports
+4. **Metrics Export**: Push metrics to Prometheus and InfluxDB
+5. **Visualization**: Real-time dashboards in Grafana
+6. **Alerting**: Automated alerts for drift and performance issues
+
+### **📚 Documentation**
+
+- **Evidently Integration**: Complete ML monitoring system documentation
+- **Grafana Setup**: Dashboard configuration and customization guide
+- **API Reference**: Monitoring API endpoints and configuration options
+- **Best Practices**: Production monitoring recommendations and troubleshooting
+
+**🎉 The monitoring system is production-ready and compatible with Evidently v0.7.9!**
 
 ## 🎉 Final Project Summary
 
