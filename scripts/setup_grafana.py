@@ -1,112 +1,117 @@
 #!/usr/bin/env python3
 """
-Script to set up Grafana data source and import basic dashboard.
+Grafana Setup Script
+Automatically configures Grafana with PostgreSQL data source and imports the MLOps dashboard
 """
 
 import json
+import time
+from pathlib import Path
 
 import requests
 
 # Grafana configuration
 GRAFANA_URL = "http://localhost:3000"
 GRAFANA_USER = "admin"
-GRAFANA_PASSWORD = "admin"
-
-# PostgreSQL data source configuration
-POSTGRES_DS = {
-    "name": "PostgreSQL",
-    "type": "postgres",
-    "access": "proxy",
-    "isDefault": True,
-    "url": "postgres:5432",
-    "database": "mlops_db",
-    "user": "mlops_user",
-    "basicAuth": False,
-    "secureJsonData": {"password": "mlops_password"},
-    "jsonData": {"sslmode": "disable"},
-}
+GRAFANA_PASS = "admin"
 
 
-def setup_grafana():
-    """Set up Grafana data source and dashboard."""
-    print("🚀 Setting up Grafana...")
+def wait_for_grafana():
+    """Wait for Grafana to be ready"""
+    print("🔄 Waiting for Grafana to be ready...")
+    for i in range(30):
+        try:
+            response = requests.get(f"{GRAFANA_URL}/api/health", timeout=5)
+            if response.status_code == 200:
+                print("✅ Grafana is ready!")
+                return True
+        except requests.exceptions.RequestException:
+            print(f"⏳ Attempt {i+1}/30: Grafana not ready yet...")
+            time.sleep(2)
+    return False
 
-    # Create session
-    session = requests.Session()
-    session.auth = (GRAFANA_USER, GRAFANA_PASSWORD)
 
-    # Test connection
+def create_postgresql_datasource():
+    """Create PostgreSQL data source in Grafana"""
+    print("🔗 Creating PostgreSQL data source...")
+
+    datasource_config = {
+        "name": "MLOps PostgreSQL",
+        "type": "postgres",
+        "url": "localhost:5432",
+        "database": "mlops_db",
+        "user": "mlops_user",
+        "secureJsonData": {"password": "mlops_password"},
+        "jsonData": {"sslmode": "disable", "postgresVersion": 1300, "timescaledb": False},
+        "access": "proxy",
+        "isDefault": True,
+    }
+
     try:
-        response = session.get(f"{GRAFANA_URL}/api/health")
-        if response.status_code == 200:
-            print("✅ Grafana is accessible")
-        else:
-            print(f"❌ Grafana health check failed: {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"❌ Cannot connect to Grafana: {e}")
-        return False
-
-    # Add PostgreSQL data source
-    print("📊 Adding PostgreSQL data source...")
-    try:
-        response = session.post(
+        response = requests.post(
             f"{GRAFANA_URL}/api/datasources",
-            json=POSTGRES_DS,
+            auth=(GRAFANA_USER, GRAFANA_PASS),
             headers={"Content-Type": "application/json"},
+            json=datasource_config,
+            timeout=10,
         )
 
         if response.status_code == 200:
-            print("✅ PostgreSQL data source added successfully")
+            print("✅ PostgreSQL data source created successfully!")
+            return True
         elif response.status_code == 409:
             print("ℹ️ PostgreSQL data source already exists")
+            return True
         else:
-            print(f"❌ Failed to add data source: {response.status_code} - {response.text}")
+            print(f"❌ Failed to create data source: {response.status_code} - {response.text}")
             return False
 
     except Exception as e:
-        print(f"❌ Error adding data source: {e}")
+        print(f"❌ Error creating data source: {e}")
         return False
 
-    # Import dashboard
-    print("📈 Importing basic dashboard...")
+
+def import_dashboard():
+    """Import the MLOps dashboard"""
+    print("📊 Importing MLOps dashboard...")
+
+    dashboard_path = (
+        Path(__file__).parent.parent / "grafana" / "dashboards" / "simple_mlops_dashboard.json"
+    )
+
+    if not dashboard_path.exists():
+        print(f"❌ Dashboard file not found: {dashboard_path}")
+        return False
+
     try:
-        with open("grafana/dashboards/basic_dashboard.json") as f:
+        with open(dashboard_path) as f:
             dashboard_config = json.load(f)
 
-        # Add data source reference
-        dashboard_config["dashboard"]["__inputs"] = [
-            {
-                "name": "DS_POSTGRES",
-                "label": "PostgreSQL",
-                "description": "",
-                "type": "datasource",
-                "pluginId": "postgres",
-                "pluginName": "PostgreSQL",
-            }
-        ]
+        # Prepare dashboard for import
+        import_payload = {
+            "dashboard": dashboard_config,
+            "overwrite": True,
+            "inputs": [
+                {
+                    "name": "DS_POSTGRES",
+                    "type": "datasource",
+                    "pluginId": "postgres",
+                    "value": "MLOps PostgreSQL",
+                }
+            ],
+        }
 
-        dashboard_config["dashboard"]["__requires"] = [
-            {"type": "grafana", "id": "grafana", "name": "Grafana", "version": "8.0.0"},
-            {"type": "datasource", "id": "postgres", "name": "PostgreSQL", "version": "1.0.0"},
-        ]
-
-        # Replace data source references
-        for panel in dashboard_config["dashboard"]["panels"]:
-            if "targets" in panel:
-                for target in panel["targets"]:
-                    if "datasource" in target:
-                        target["datasource"] = {"type": "postgres", "uid": "postgres"}
-
-        response = session.post(
-            f"{GRAFANA_URL}/api/dashboards/db",
-            json={"dashboard": dashboard_config["dashboard"], "overwrite": True},
+        response = requests.post(
+            f"{GRAFANA_URL}/api/dashboards/import",
+            auth=(GRAFANA_USER, GRAFANA_PASS),
             headers={"Content-Type": "application/json"},
+            json=import_payload,
+            timeout=10,
         )
 
         if response.status_code == 200:
             result = response.json()
-            dashboard_url = f"{GRAFANA_URL}{result['url']}"
+            dashboard_url = f"{GRAFANA_URL}/d/{result['uid']}"
             print("✅ Dashboard imported successfully!")
             print(f"🌐 Dashboard URL: {dashboard_url}")
             return True
@@ -119,13 +124,79 @@ def setup_grafana():
         return False
 
 
+def test_data_connection():
+    """Test the PostgreSQL connection"""
+    print("🔍 Testing PostgreSQL connection...")
+
+    try:
+        import psycopg2
+
+        conn = psycopg2.connect(
+            host="localhost", database="mlops_db", user="mlops_user", password="mlops_password"
+        )
+
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM model_metrics")
+        metrics_result = cursor.fetchone()
+        metrics_count = metrics_result[0] if metrics_result else 0
+
+        cursor.execute("SELECT COUNT(*) FROM model_predictions")
+        predictions_result = cursor.fetchone()
+        predictions_count = predictions_result[0] if predictions_result else 0
+
+        conn.close()
+
+        print("✅ Database connection successful!")
+        print(f"📊 Found {metrics_count} metrics and {predictions_count} predictions")
+        return True
+
+    except Exception as e:
+        print(f"❌ Database connection failed: {e}")
+        return False
+
+
+def main():
+    """Main setup function"""
+    print("\n" + "=" * 60)
+    print("🎯 GRAFANA SETUP FOR MLOPS MONITORING")
+    print("=" * 60)
+
+    # Step 1: Wait for Grafana
+    if not wait_for_grafana():
+        print("❌ Grafana is not accessible. Please check if it's running.")
+        return False
+
+    # Step 2: Test database
+    if not test_data_connection():
+        print("❌ Database connection failed. Please check PostgreSQL.")
+        return False
+
+    # Step 3: Create data source
+    if not create_postgresql_datasource():
+        print("❌ Failed to create PostgreSQL data source.")
+        return False
+
+    # Step 4: Import dashboard
+    if not import_dashboard():
+        print("❌ Failed to import dashboard.")
+        return False
+
+    print("\n" + "=" * 60)
+    print("🎉 GRAFANA SETUP COMPLETE!")
+    print("=" * 60)
+    print(f"🌐 Grafana URL: {GRAFANA_URL}")
+    print(f"🔐 Username: {GRAFANA_USER}")
+    print(f"🔐 Password: {GRAFANA_PASS}")
+    print("📊 Dashboard: Go to Dashboards -> MLOps Dashboard")
+    print("=" * 60)
+
+    return True
+
+
 if __name__ == "__main__":
-    success = setup_grafana()
-    if success:
-        print("\n🎉 Grafana setup completed successfully!")
-        print(f"📊 Access Grafana at: {GRAFANA_URL}")
-        print("👤 Username: admin")
-        print("🔑 Password: admin")
-    else:
-        print("\n❌ Grafana setup failed!")
+    success = main()
+    if not success:
+        print("\n❌ Setup failed. Please check the errors above.")
         exit(1)
+    else:
+        print("\n✅ You can now view your MLOps metrics in Grafana!")

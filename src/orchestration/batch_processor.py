@@ -33,7 +33,21 @@ class WeeklyBatchProcessor:
     """
 
     def __init__(self, data_path: str = "data/real_data/premier_league_matches.parquet"):
-        self.data_path = data_path
+        # Resolve path relative to project root
+        if not Path(data_path).is_absolute():
+            # Find project root (look for pyproject.toml or similar)
+            current_dir = Path(__file__).parent
+            while current_dir.parent != current_dir:
+                if (current_dir / "pyproject.toml").exists():
+                    self.data_path = str(current_dir / data_path)
+                    break
+                current_dir = current_dir.parent
+            else:
+                # Fallback to relative path
+                self.data_path = str(Path(__file__).parent.parent.parent / data_path)
+        else:
+            self.data_path = data_path
+
         self.df = None
         self.load_data()
 
