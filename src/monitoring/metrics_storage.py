@@ -189,5 +189,188 @@ class PostgreSQLMetricsStorage:
             logger.error(f"❌ Failed to cleanup old metrics: {e}")
 
 
+class MetricsStorage:
+    """Enhanced metrics storage with methods for MLOps orchestration."""
+
+    def __init__(self):
+        """Initialize the metrics storage."""
+        self.connection_params = {
+            "host": os.environ.get("POSTGRES_HOST", "localhost"),
+            "port": int(os.environ.get("POSTGRES_PORT", 5432)),
+            "database": os.environ.get("POSTGRES_DB", "mlops_db"),
+            "user": os.environ.get("POSTGRES_USER", "mlops_user"),
+            "password": os.environ.get("POSTGRES_PASSWORD", "mlops_password"),
+        }
+        self._init_tables()
+
+    def _get_connection(self):
+        """Get a database connection."""
+        return psycopg2.connect(**self.connection_params)
+
+    def _init_tables(self):
+        """Initialize the metrics and predictions tables."""
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cursor:
+                    # Create metrics table
+                    cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS model_metrics (
+                            id SERIAL PRIMARY KEY,
+                            metric_type VARCHAR(50) NOT NULL,
+                            value DOUBLE PRECISION NOT NULL,
+                            model_name VARCHAR(255) DEFAULT 'premier_league_predictor',
+                            timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                            metadata JSONB
+                        )
+                    """)
+
+                    # Create predictions table for drift analysis
+                    cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS model_predictions (
+                            id SERIAL PRIMARY KEY,
+                            home_team VARCHAR(255) NOT NULL,
+                            away_team VARCHAR(255) NOT NULL,
+                            prediction VARCHAR(10) NOT NULL,
+                            confidence DOUBLE PRECISION NOT NULL,
+                            probabilities JSONB,
+                            home_odds DOUBLE PRECISION,
+                            away_odds DOUBLE PRECISION,
+                            draw_odds DOUBLE PRECISION,
+                            actual_result VARCHAR(10),
+                            timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                        )
+                    """)
+
+                    conn.commit()
+                    logger.info("✅ Enhanced metrics tables initialized successfully")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize enhanced metrics tables: {e}")
+
+    def get_metrics_by_date_range(
+        self, start_date: datetime, end_date: datetime, metric_types: list[str] = None
+    ) -> list[dict[str, Any]]:
+        """Get metrics within a date range."""
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                    if metric_types:
+                        cursor.execute(
+                            """
+                            SELECT metric_type, value, model_name, timestamp, metadata
+                            FROM model_metrics
+                            WHERE timestamp >= %s AND timestamp <= %s
+                            AND metric_type = ANY(%s)
+                            ORDER BY timestamp ASC
+                            """,
+                            (start_date, end_date, metric_types),
+                        )
+                    else:
+                        cursor.execute(
+                            """
+                            SELECT metric_type, value, model_name, timestamp, metadata
+                            FROM model_metrics
+                            WHERE timestamp >= %s AND timestamp <= %s
+                            ORDER BY timestamp ASC
+                            """,
+                            (start_date, end_date),
+                        )
+
+                    return [dict(row) for row in cursor.fetchall()]
+
+        except Exception as e:
+            logger.error(f"❌ Failed to get metrics by date range: {e}")
+            return []
+
+    def get_predictions_by_date_range(
+        self, start_date: datetime, end_date: datetime
+    ) -> list[dict[str, Any]]:
+        """Get predictions within a date range for drift analysis."""
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute(
+                        """
+                        SELECT home_team, away_team, prediction, confidence, probabilities,
+                               home_odds, away_odds, draw_odds, actual_result, timestamp
+                        FROM model_predictions
+                        WHERE timestamp >= %s AND timestamp <= %s
+                        ORDER BY timestamp ASC
+                        """,
+                        (start_date, end_date),
+                    )
+
+                    return [dict(row) for row in cursor.fetchall()]
+
+        except Exception as e:
+            logger.error(f"❌ Failed to get predictions by date range: {e}")
+            return []
+
+    def store_model_metric(
+        self,
+        metric_type: str,
+        value: float,
+        model_name: str = "premier_league_predictor",
+        metadata: dict[str, Any] = None,
+    ):
+        """Store a model performance metric."""
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        INSERT INTO model_metrics (metric_type, value, model_name, metadata)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        (metric_type, value, model_name, metadata),
+                    )
+                    conn.commit()
+                    logger.debug(f"✅ Stored model metric {metric_type}={value}")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to store model metric {metric_type}: {e}")
+
+    def store_prediction(
+        self,
+        home_team: str,
+        away_team: str,
+        prediction: str,
+        confidence: float,
+        probabilities: dict[str, float],
+        home_odds: float = None,
+        away_odds: float = None,
+        draw_odds: float = None,
+        actual_result: str = None,
+    ):
+        """Store a prediction for drift analysis."""
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        INSERT INTO model_predictions
+                        (home_team, away_team, prediction, confidence, probabilities,
+                         home_odds, away_odds, draw_odds, actual_result)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            home_team,
+                            away_team,
+                            prediction,
+                            confidence,
+                            probabilities,
+                            home_odds,
+                            away_odds,
+                            draw_odds,
+                            actual_result,
+                        ),
+                    )
+                    conn.commit()
+                    logger.debug(f"✅ Stored prediction {home_team} vs {away_team}")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to store prediction: {e}")
+
+
 # Global instance
 metrics_storage = PostgreSQLMetricsStorage()

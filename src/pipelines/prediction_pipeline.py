@@ -39,6 +39,7 @@ class PredictionPipeline:
 
         # Load the latest model
         self.model = self._load_latest_model()
+        self.model_info = self._get_model_metadata()
 
     def _load_latest_model(self):
         """Load the latest model from MLflow."""
@@ -54,6 +55,61 @@ class PredictionPipeline:
         except Exception as e:
             logger.error(f"Failed to load model: {e}")
             return None
+
+    def _get_model_metadata(self) -> dict[str, Any]:
+        """Get model metadata from MLflow."""
+        try:
+            model_name = "premier_league_predictor"
+            client = mlflow.MlflowClient()
+
+            # Get the latest model version
+            latest_version = client.get_latest_versions(
+                model_name, stages=["Production", "Staging", "None"]
+            )
+
+            if latest_version:
+                version = latest_version[0]
+                # Get run info
+                run = client.get_run(version.run_id)
+
+                return {
+                    "model_name": model_name,
+                    "version": version.version,
+                    "stage": version.current_stage,
+                    "accuracy": run.data.metrics.get("accuracy", 0.0),
+                    "f1_score": run.data.metrics.get("f1_score", 0.0),
+                    "precision": run.data.metrics.get("precision", 0.0),
+                    "recall": run.data.metrics.get("recall", 0.0),
+                    "created_at": version.creation_timestamp,
+                    "run_id": version.run_id,
+                }
+            else:
+                return {
+                    "model_name": model_name,
+                    "version": "unknown",
+                    "stage": "unknown",
+                    "accuracy": 0.0,
+                    "f1_score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                }
+
+        except Exception as e:
+            logger.error(f"Failed to get model metadata: {e}")
+            return {
+                "model_name": "premier_league_predictor",
+                "version": "unknown",
+                "stage": "unknown",
+                "accuracy": 0.0,
+                "f1_score": 0.0,
+                "precision": 0.0,
+                "recall": 0.0,
+                "error": str(e),
+            }
+
+    def get_model_info(self) -> dict[str, Any]:
+        """Get model information for monitoring."""
+        return self.model_info
 
     def get_todays_matches(self) -> pd.DataFrame:
         """Get today's matches from real data or database."""
@@ -200,6 +256,71 @@ class PredictionPipeline:
             return obj.item()
         else:
             return obj
+
+    def predict_match(
+        self,
+        home_team: str,
+        away_team: str,
+        home_odds: float = None,
+        away_odds: float = None,
+        draw_odds: float = None,
+    ) -> dict[str, Any]:
+        """Predict a single match outcome."""
+        logger.info(f"Predicting match: {home_team} vs {away_team}")
+
+        # Create match data
+        match_data = {
+            "home_team": home_team,
+            "away_team": away_team,
+            "home_odds": home_odds or 2.0,  # Default odds if not provided
+            "away_odds": away_odds or 2.0,
+            "draw_odds": draw_odds or 3.0,
+        }
+
+        # Convert to DataFrame
+        matches_df = pd.DataFrame([match_data])
+
+        # Prepare features
+        features = self.prepare_features(matches_df)
+
+        # Make prediction
+        if self.model is not None:
+            prediction = self.model.predict(features)[0]
+            probabilities = self.model.predict_proba(features)[0]
+
+            # Map prediction to outcome
+            outcome_map = {0: "A", 1: "D", 2: "H"}  # Away, Draw, Home
+            predicted_outcome = outcome_map[prediction]
+
+            # Calculate confidence (max probability)
+            confidence = float(max(probabilities))
+
+            # Create probability dictionary
+            prob_dict = {
+                "H": float(probabilities[2]),
+                "D": float(probabilities[1]),
+                "A": float(probabilities[0]),
+            }
+
+            return {
+                "home_team": home_team,
+                "away_team": away_team,
+                "prediction": predicted_outcome,
+                "confidence": confidence,
+                "probabilities": prob_dict,
+                "created_at": datetime.now(),
+            }
+        else:
+            logger.error("Model not loaded, cannot make prediction")
+            return {
+                "home_team": home_team,
+                "away_team": away_team,
+                "prediction": "D",  # Default to draw
+                "confidence": 0.33,
+                "probabilities": {"H": 0.33, "D": 0.33, "A": 0.33},
+                "created_at": datetime.now(),
+                "error": "Model not loaded",
+            }
 
     def predict_single_match(self, match_data: dict[str, Any]) -> dict[str, Any]:
         """Make a prediction for a single match."""
