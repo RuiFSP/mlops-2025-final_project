@@ -128,7 +128,7 @@ def test_orchestration_components():
         logger.info("✅ Orchestration imports successful")
 
         # Test metrics storage
-        metrics_storage = MetricsStorage()
+        MetricsStorage()
         logger.info("✅ Metrics storage initialized")
 
         return True

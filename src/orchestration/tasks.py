@@ -125,7 +125,6 @@ def analyze_model_drift(
 
     try:
         # Initialize components
-        pipeline = PredictionPipeline()
         metrics_storage = MetricsStorage()
 
         # Get reference and current data
