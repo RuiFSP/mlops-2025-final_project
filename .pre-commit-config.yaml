@@ -1,5 +1,4 @@
 repos:
-  # Basic file checks (keep these - they're useful for development)
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -8,41 +7,20 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
       - id: check-merge-conflict
+      - id: debug-statements
 
-  # ALL QUALITY CHECKS - Match GitHub CI exactly using local tools
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
     hooks:
-      # Ruff linting - EXACT match to GitHub CI: "uv run ruff check src tests"
-      - id: ruff-check
-        name: ruff linting (matches CI exactly)
-        entry: uv run ruff check src tests
-        language: system
-        types: [python]
-        files: ^(src|tests)/.*\.py$
-        pass_filenames: false
+      # Run the linter
+      - id: ruff
+        args: [--fix]
+      # Run the formatter
+      - id: ruff-format
 
-      # Ruff formatting - EXACT match to GitHub CI: "uv run ruff format --check src tests"
-      - id: ruff-format-check
-        name: ruff formatting check (matches CI exactly)
-        entry: uv run ruff format --check src tests
-        language: system
-        types: [python]
-        files: ^(src|tests)/.*\.py$
-        pass_filenames: false
-
-      # MyPy type checking - EXACT match to GitHub CI: "uv run mypy src"
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
       - id: mypy
-        name: mypy type checking (matches CI exactly)
-        entry: uv run mypy src
-        language: system
-        types: [python]
-        files: ^src/.*\.py$
-        pass_filenames: false
-
-      # Unit tests - simplified for pre-commit (coverage handled in CI)
-      - id: pytest-unit
-        name: pytest unit tests (matches CI exactly)
-        entry: uv run python -m pytest tests/unit/ -v --tb=short -q
-        language: system
-        types: [python]
-        pass_filenames: false
+        additional_dependencies: [types-requests, types-PyYAML]
+        args: [--ignore-missing-imports, --disable-error-code=assignment]
