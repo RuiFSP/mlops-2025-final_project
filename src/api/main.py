@@ -20,6 +20,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 from betting_simulator.simulator import BettingSimulator
 from data_integration.real_data_fetcher import RealDataFetcher
 from pipelines.prediction_pipeline import PredictionPipeline
+from retraining.retraining_monitor import RetrainingMonitor, RetrainingConfig
+from retraining.scheduler import RetrainingScheduler
 
 # Configure logging
 logging.basicConfig(
@@ -31,12 +33,14 @@ logger = logging.getLogger(__name__)
 prediction_pipeline = None
 betting_simulator = None
 real_data_fetcher = None
+retraining_monitor = None
+retraining_scheduler = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for FastAPI startup and shutdown."""
-    global prediction_pipeline, betting_simulator, real_data_fetcher
+    global prediction_pipeline, betting_simulator, real_data_fetcher, retraining_monitor, retraining_scheduler
 
     # Startup
     logger.info("🚀 Starting Premier League Match Predictor API...")
@@ -44,6 +48,8 @@ async def lifespan(app: FastAPI):
         prediction_pipeline = PredictionPipeline()
         betting_simulator = BettingSimulator(initial_balance=1000.0)
         real_data_fetcher = RealDataFetcher()
+        retraining_monitor = RetrainingMonitor()
+        retraining_scheduler = RetrainingScheduler()
         logger.info("✅ All components initialized successfully")
     except Exception as e:
         logger.error(f"❌ Failed to initialize components: {e}")
@@ -164,6 +170,26 @@ def get_real_data_fetcher():
             detail="Real data fetcher not initialized",
         )
     return real_data_fetcher
+
+
+def get_retraining_monitor():
+    """Get the retraining monitor instance."""
+    if retraining_monitor is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Retraining monitor not initialized",
+        )
+    return retraining_monitor
+
+
+def get_retraining_scheduler():
+    """Get the retraining scheduler instance."""
+    if retraining_scheduler is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Retraining scheduler not initialized",
+        )
+    return retraining_scheduler
 
 
 # API Routes
@@ -416,6 +442,100 @@ async def get_model_info(pipeline: PredictionPipeline = Depends(get_prediction_p
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get model info: {str(e)}",
+        )
+
+
+# Retraining endpoints
+@app.get("/retraining/status", response_model=dict[str, Any])
+async def get_retraining_status(monitor: RetrainingMonitor = Depends(get_retraining_monitor)):
+    """Get retraining system status."""
+    try:
+        summary = monitor.get_monitoring_summary()
+        model_info = monitor.get_current_model_info()
+        
+        return {
+            "model_info": model_info,
+            "monitoring_summary": summary,
+            "config": {
+                "min_accuracy_threshold": monitor.config.min_accuracy_threshold,
+                "min_prediction_count": monitor.config.min_prediction_count,
+                "evaluation_window_days": monitor.config.evaluation_window_days,
+                "max_model_age_days": monitor.config.max_model_age_days,
+                "performance_degradation_threshold": monitor.config.performance_degradation_threshold,
+                "consecutive_poor_performance_limit": monitor.config.consecutive_poor_performance_limit,
+            },
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"❌ Failed to get retraining status: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get retraining status: {str(e)}",
+        )
+
+
+@app.post("/retraining/check", response_model=dict[str, Any])
+async def run_retraining_check(monitor: RetrainingMonitor = Depends(get_retraining_monitor)):
+    """Run an immediate retraining check."""
+    try:
+        logger.info("🔍 Running immediate retraining check...")
+        result = monitor.run_monitoring_cycle()
+        
+        return {
+            "check_result": result,
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"❌ Failed to run retraining check: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to run retraining check: {str(e)}",
+        )
+
+
+@app.post("/retraining/force", response_model=dict[str, Any])
+async def force_retraining(monitor: RetrainingMonitor = Depends(get_retraining_monitor)):
+    """Force an immediate retraining."""
+    try:
+        logger.info("🚨 Forcing immediate retraining...")
+        
+        # Create fake trigger to force retraining
+        fake_trigger = {
+            "should_retrain": True,
+            "triggers": ["Manual force retraining via API"],
+            "model_info": monitor.get_current_model_info()
+        }
+        
+        result = monitor.trigger_retraining(fake_trigger)
+        
+        return {
+            "retraining_result": result,
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"❌ Failed to force retraining: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to force retraining: {str(e)}",
+        )
+
+
+@app.get("/retraining/history", response_model=dict[str, Any])
+async def get_retraining_history(monitor: RetrainingMonitor = Depends(get_retraining_monitor)):
+    """Get retraining history."""
+    try:
+        summary = monitor.get_monitoring_summary()
+        
+        return {
+            "recent_evaluations": summary.get("recent_evaluations", []),
+            "recent_retraining": summary.get("recent_retraining", []),
+            "timestamp": datetime.now()
+        }
+    except Exception as e:
+        logger.error(f"❌ Failed to get retraining history: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get retraining history: {str(e)}",
         )
 
 

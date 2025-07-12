@@ -106,6 +106,14 @@ TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
 - **Interactive Documentation**: Swagger UI and ReDoc available
 - **Real-time Data**: Integration with live Premier League data
 
+### **🆕 Automated Retraining** ✅
+- **Performance Monitoring**: Continuous evaluation of model performance
+- **Intelligent Triggers**: Automatic retraining based on accuracy thresholds and model age
+- **MLflow Integration**: Seamless model versioning and experiment tracking
+- **API Control**: REST endpoints for monitoring and manual retraining
+- **Comprehensive Logging**: Detailed retraining history and performance metrics
+- **Configurable Thresholds**: Customizable triggers for different deployment scenarios
+
 ## 🏗️ **Architecture**
 
 ### **Complete MLOps Pipeline with REST API**
@@ -144,6 +152,12 @@ TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
 - `GET /model/info` - Model information
 - `GET /matches/upcoming` - Upcoming matches
 
+### **🆕 Automated Retraining**
+- `GET /retraining/status` - Retraining system status
+- `POST /retraining/check` - Run immediate performance check
+- `POST /retraining/force` - Force immediate retraining
+- `GET /retraining/history` - Retraining history and metrics
+
 **📖 Full API Documentation**: See [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 
 ## 📝 **Available Scripts**
@@ -155,6 +169,11 @@ TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
 ### **🆕 API Operations**
 - `cd src/api && uv run python main.py` - Start API server
 - `uv run python scripts/test_api.py` - Test all API endpoints
+
+### **🆕 Automated Retraining**
+- `uv run python scripts/test_retraining.py` - Test retraining system
+- `uv run python -m src.retraining.scheduler` - Start retraining scheduler
+- `uv run python -m src.retraining.retraining_monitor` - Run single check
 
 ### **Testing & Debugging**
 - `uv run python scripts/test_betting_simulation.py` - Full betting simulation

@@ -226,6 +226,108 @@ Get information about the current prediction model.
 }
 ```
 
+### 6. 🆕 Automated Retraining
+
+#### GET `/retraining/status`
+Get the current status of the automated retraining system.
+
+**Response:**
+```json
+{
+  "model_info": {
+    "version": "1",
+    "accuracy": 0.618,
+    "creation_date": "2025-07-12T15:18:00.049000",
+    "status": "READY"
+  },
+  "monitoring_summary": {
+    "recent_evaluations": [],
+    "recent_retraining": []
+  },
+  "config": {
+    "min_accuracy_threshold": 0.55,
+    "min_prediction_count": 100,
+    "evaluation_window_days": 7,
+    "max_model_age_days": 30,
+    "performance_degradation_threshold": 0.05,
+    "consecutive_poor_performance_limit": 3
+  },
+  "timestamp": "2025-07-12T15:50:50.123456"
+}
+```
+
+#### POST `/retraining/check`
+Run an immediate retraining check to evaluate model performance.
+
+**Response:**
+```json
+{
+  "check_result": {
+    "status": "performance_acceptable",
+    "metrics": {
+      "accuracy": 0.618,
+      "precision": 0.610,
+      "recall": 0.605,
+      "f1_score": 0.608,
+      "prediction_count": 23
+    },
+    "message": "Model performance is acceptable"
+  },
+  "timestamp": "2025-07-12T15:50:50.123456"
+}
+```
+
+#### POST `/retraining/force`
+Force an immediate retraining of the model.
+
+**Response:**
+```json
+{
+  "retraining_result": {
+    "success": true,
+    "duration_seconds": 45.2,
+    "new_model_version": "2",
+    "new_accuracy": 0.625,
+    "message": "Retraining completed successfully"
+  },
+  "timestamp": "2025-07-12T15:50:50.123456"
+}
+```
+
+#### GET `/retraining/history`
+Get the history of retraining activities and performance evaluations.
+
+**Response:**
+```json
+{
+  "recent_evaluations": [
+    {
+      "model_version": "1",
+      "accuracy": 0.618,
+      "precision": 0.610,
+      "recall": 0.605,
+      "f1_score": 0.608,
+      "prediction_count": 23,
+      "evaluation_date": "2025-07-12T15:50:50.123456",
+      "requires_retraining": false
+    }
+  ],
+  "recent_retraining": [
+    {
+      "trigger_reason": "Manual force retraining via API",
+      "old_model_version": "1",
+      "new_model_version": "2",
+      "old_accuracy": 0.618,
+      "new_accuracy": 0.625,
+      "training_duration_seconds": 45,
+      "retraining_date": "2025-07-12T15:50:50.123456",
+      "success": true
+    }
+  ],
+  "timestamp": "2025-07-12T15:50:50.123456"
+}
+```
+
 ## Error Handling
 
 The API uses standard HTTP status codes:
