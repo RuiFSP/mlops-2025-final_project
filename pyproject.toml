@@ -53,4 +53,9 @@ select = [
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
-] 
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+]

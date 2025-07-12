@@ -4,17 +4,19 @@ Database setup script for the Premier League MLOps system.
 Creates all required tables and initializes the database schema.
 """
 
-import os
 import logging
+import os
+
 from sqlalchemy import create_engine, text
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def setup_database():
     """Set up the database schema with all required tables."""
-    
+
     # Database connection
     db_url = (
         f"postgresql://{os.getenv('POSTGRES_USER', 'mlops_user')}:"
@@ -23,12 +25,12 @@ def setup_database():
         f"{os.getenv('POSTGRES_PORT', '5432')}/"
         f"{os.getenv('POSTGRES_DB', 'mlops_db')}"
     )
-    
+
     engine = create_engine(db_url)
-    
+
     # Table creation SQL statements
     tables = {
-        'matches': """
+        "matches": """
             CREATE TABLE IF NOT EXISTS matches (
                 id SERIAL PRIMARY KEY,
                 match_id VARCHAR(100) UNIQUE NOT NULL,
@@ -57,8 +59,7 @@ def setup_database():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """,
-        
-        'predictions': """
+        "predictions": """
             CREATE TABLE IF NOT EXISTS predictions (
                 id SERIAL PRIMARY KEY,
                 match_id VARCHAR(100) NOT NULL,
@@ -77,8 +78,7 @@ def setup_database():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """,
-        
-        'bets': """
+        "bets": """
             CREATE TABLE IF NOT EXISTS bets (
                 id SERIAL PRIMARY KEY,
                 match_id VARCHAR(100) NOT NULL,
@@ -96,8 +96,7 @@ def setup_database():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """,
-        
-        'wallet': """
+        "wallet": """
             CREATE TABLE IF NOT EXISTS wallet (
                 id SERIAL PRIMARY KEY,
                 balance FLOAT NOT NULL,
@@ -108,8 +107,7 @@ def setup_database():
                 last_updated TIMESTAMP DEFAULT NOW()
             )
         """,
-        
-        'metrics': """
+        "metrics": """
             CREATE TABLE IF NOT EXISTS metrics (
                 id SERIAL PRIMARY KEY,
                 metric_name VARCHAR(255) NOT NULL,
@@ -119,9 +117,9 @@ def setup_database():
                 timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             )
-        """
+        """,
     }
-    
+
     try:
         with engine.begin() as conn:
             # Create all tables
@@ -131,41 +129,67 @@ def setup_database():
                     conn.execute(text(create_sql))
                 except Exception as e:
                     logger.error(f"❌ Failed to create table {table_name}: {e}\nSQL: {create_sql}")
-            
+
             # Create indexes for better performance
             indexes = [
-                ("idx_matches_date", "CREATE INDEX IF NOT EXISTS idx_matches_date ON matches(match_date)"),
-                ("idx_matches_teams", "CREATE INDEX IF NOT EXISTS idx_matches_teams ON matches(home_team, away_team)"),
-                ("idx_predictions_match_id", "CREATE INDEX IF NOT EXISTS idx_predictions_match_id ON predictions(match_id)"),
-                ("idx_predictions_date", "CREATE INDEX IF NOT EXISTS idx_predictions_date ON predictions(prediction_date)"),
-                ("idx_bets_match_id", "CREATE INDEX IF NOT EXISTS idx_bets_match_id ON bets(match_id)"),
-                ("idx_bets_date", "CREATE INDEX IF NOT EXISTS idx_bets_date ON bets(bet_date)")
+                (
+                    "idx_matches_date",
+                    "CREATE INDEX IF NOT EXISTS idx_matches_date ON matches(match_date)",
+                ),
+                (
+                    "idx_matches_teams",
+                    "CREATE INDEX IF NOT EXISTS idx_matches_teams ON matches(home_team, away_team)",
+                ),
+                (
+                    "idx_predictions_match_id",
+                    "CREATE INDEX IF NOT EXISTS idx_predictions_match_id ON predictions(match_id)",
+                ),
+                (
+                    "idx_predictions_date",
+                    "CREATE INDEX IF NOT EXISTS idx_predictions_date ON predictions(prediction_date)",
+                ),
+                (
+                    "idx_bets_match_id",
+                    "CREATE INDEX IF NOT EXISTS idx_bets_match_id ON bets(match_id)",
+                ),
+                ("idx_bets_date", "CREATE INDEX IF NOT EXISTS idx_bets_date ON bets(bet_date)"),
             ]
-            
+
             for index_name, index_sql in indexes:
                 try:
                     conn.execute(text(index_sql))
                 except Exception as e:
                     logger.error(f"❌ Failed to create index {index_name}: {e}\nSQL: {index_sql}")
-            
+
             # Create metrics indexes only if metrics table exists and has the right columns
             try:
                 conn.execute(text("SELECT metric_name FROM metrics LIMIT 1"))
                 metrics_indexes = [
-                    ("idx_metrics_name_timestamp", "CREATE INDEX IF NOT EXISTS idx_metrics_name_timestamp ON metrics(metric_name, timestamp)"),
-                    ("idx_metrics_labels", "CREATE INDEX IF NOT EXISTS idx_metrics_labels ON metrics USING GIN(labels)")
+                    (
+                        "idx_metrics_name_timestamp",
+                        "CREATE INDEX IF NOT EXISTS idx_metrics_name_timestamp ON metrics(metric_name, timestamp)",
+                    ),
+                    (
+                        "idx_metrics_labels",
+                        "CREATE INDEX IF NOT EXISTS idx_metrics_labels ON metrics USING GIN(labels)",
+                    ),
                 ]
                 for index_name, index_sql in metrics_indexes:
                     try:
                         conn.execute(text(index_sql))
                     except Exception as e:
-                        logger.error(f"❌ Failed to create metrics index {index_name}: {e}\nSQL: {index_sql}")
+                        logger.error(
+                            f"❌ Failed to create metrics index {index_name}: {e}\nSQL: {index_sql}"
+                        )
             except Exception as e:
-                logger.warning(f"Metrics table not found or has different schema, skipping metrics indexes: {e}")
+                logger.warning(
+                    f"Metrics table not found or has different schema, skipping metrics indexes: {e}"
+                )
         # End of first transaction
 
         # Short delay to ensure all tables are committed
         import time
+
         time.sleep(1)
 
         # Wallet initialization in a separate transaction
@@ -182,10 +206,11 @@ def setup_database():
                 logger.error(f"❌ Failed to initialize wallet: {e}\nSQL: {wallet_init_sql}")
 
         logger.info("✅ Database schema setup completed successfully!")
-            
+
     except Exception as e:
         logger.error(f"❌ Failed to setup database: {e}")
         raise
 
+
 if __name__ == "__main__":
-    setup_database() 
+    setup_database()

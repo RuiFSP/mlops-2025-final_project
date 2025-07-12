@@ -3,21 +3,23 @@
 Script to test connectivity to all Docker services.
 """
 
-import requests
-import psycopg2
-import mlflow
 import os
+
+import mlflow
+import psycopg2
+import requests
+
 
 def test_postgres():
     """Test PostgreSQL connectivity."""
     print("🔍 Testing PostgreSQL...")
     try:
         conn = psycopg2.connect(
-            host=os.getenv('POSTGRES_HOST', 'postgres'),
-            port=int(os.getenv('POSTGRES_PORT', 5432)),
-            database=os.getenv('POSTGRES_DB', 'mlops_db'),
-            user=os.getenv('POSTGRES_USER', 'mlops_user'),
-            password=os.getenv('POSTGRES_PASSWORD', 'mlops_password')
+            host=os.getenv("POSTGRES_HOST", "postgres"),
+            port=int(os.getenv("POSTGRES_PORT", 5432)),
+            database=os.getenv("POSTGRES_DB", "mlops_db"),
+            user=os.getenv("POSTGRES_USER", "mlops_user"),
+            password=os.getenv("POSTGRES_PASSWORD", "mlops_password"),
         )
         cursor = conn.cursor()
         cursor.execute("SELECT version();")
@@ -28,6 +30,7 @@ def test_postgres():
     except Exception as e:
         print(f"❌ PostgreSQL: Connection failed - {e}")
         return False
+
 
 def test_mlflow():
     """Test MLflow connectivity."""
@@ -41,6 +44,7 @@ def test_mlflow():
     except Exception as e:
         print(f"❌ MLflow: Connection failed - {e}")
         return False
+
 
 def test_grafana():
     """Test Grafana connectivity."""
@@ -57,6 +61,7 @@ def test_grafana():
         print(f"❌ Grafana: Connection failed - {e}")
         return False
 
+
 def test_prefect():
     """Test Prefect connectivity."""
     print("🔍 Testing Prefect...")
@@ -72,27 +77,29 @@ def test_prefect():
         print(f"❌ Prefect: Connection failed - {e}")
         return False
 
+
 def main():
     """Test all services."""
     print("🚀 Testing Docker Service Connectivity\n")
-    
+
     results = {
-        'postgres': test_postgres(),
-        'mlflow': test_mlflow(),
-        'grafana': test_grafana(),
-        'prefect': test_prefect()
+        "postgres": test_postgres(),
+        "mlflow": test_mlflow(),
+        "grafana": test_grafana(),
+        "prefect": test_prefect(),
     }
-    
-    print(f"\n📊 Results Summary:")
+
+    print("\n📊 Results Summary:")
     for service, status in results.items():
         status_icon = "✅" if status else "❌"
         print(f"  {status_icon} {service.upper()}")
-    
+
     all_good = all(results.values())
     if all_good:
         print("\n🎉 All services are accessible!")
     else:
         print("\n⚠️  Some services have connectivity issues.")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

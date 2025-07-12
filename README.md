@@ -42,6 +42,23 @@ A complete end-to-end MLOps pipeline for predicting Premier League match outcome
    uv run python scripts/debug_bets_table.py
    ```
 
+### **🆕 REST API (NEW!)**
+4. **Start the API server:**
+   ```bash
+   cd src/api
+   uv run python main.py
+   ```
+
+5. **Access the API:**
+   - **API Base URL**: `http://localhost:8000`
+   - **Interactive Docs**: `http://localhost:8000/docs`
+   - **Health Check**: `http://localhost:8000/health`
+
+6. **Test the API:**
+   ```bash
+   uv run python scripts/test_api.py
+   ```
+
 ## 🔧 **Configuration**
 
 ### **Environment Variables (.env)**
@@ -63,8 +80,8 @@ TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
 
 ### **Betting Configuration**
 - **Initial Balance**: £1000.0
-- **Confidence Threshold**: 0.35 (testing) / 0.6 (production)
-- **Margin Threshold**: 0.05 (testing) / 0.1 (production)
+- **Confidence Threshold**: 0.6 (production) ✅
+- **Margin Threshold**: 0.1 (production) ✅
 - **Max Bet Percentage**: 5% of balance
 
 ## 📊 **System Performance**
@@ -72,12 +89,26 @@ TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
 ### **Model Performance**
 - **Accuracy**: 61.84% (excellent for football prediction)
 - **Model Type**: Random Forest with 15 features
-- **Training Data**: 3,040 Premier League matches
+- **Training Data**: 3,040 Premier League matches (2017-2023)
 - **Features**: Betting odds + match statistics
+
+### **Real Data Integration** ✅
+- **Upcoming Matches**: Fetches real Premier League fixtures via football-data.org API
+- **Fallback System**: Intelligent fallback with realistic team matchups when API unavailable
+- **Team Mapping**: Normalized team names consistent with training data
+- **Realistic Odds**: Generated based on team strength ratings
+
+### **🆕 REST API** ✅
+- **FastAPI Framework**: High-performance API with automatic OpenAPI documentation
+- **Prediction Endpoints**: Single and batch match predictions
+- **Betting Simulation**: API-based betting simulation with real-time statistics
+- **Health Monitoring**: Comprehensive health checks and component status
+- **Interactive Documentation**: Swagger UI and ReDoc available
+- **Real-time Data**: Integration with live Premier League data
 
 ## 🏗️ **Architecture**
 
-### **Local Development Pipeline**
+### **Complete MLOps Pipeline with REST API**
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Training      │    │   MLflow        │    │   Model         │
@@ -89,13 +120,41 @@ TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
 │   Prediction    │    │   PostgreSQL    │    │   Betting       │
 │   Pipeline      │───▶│   Database      │───▶│   Simulation    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   🆕 REST API    │    │   Real Data     │    │   Interactive   │
+│   (FastAPI)     │───▶│   Integration   │───▶│   Documentation │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
+
+## 🔗 **API Endpoints**
+
+### **Predictions**
+- `POST /predict` - Single match prediction
+- `POST /predict/batch` - Batch predictions
+- `GET /predictions/upcoming` - Upcoming match predictions
+
+### **Betting Simulation**
+- `POST /betting/simulate` - Simulate betting on predictions
+- `GET /betting/statistics` - Get betting statistics
+
+### **Data & Status**
+- `GET /health` - API health check
+- `GET /model/info` - Model information
+- `GET /matches/upcoming` - Upcoming matches
+
+**📖 Full API Documentation**: See [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 
 ## 📝 **Available Scripts**
 
 ### **Core Pipeline**
 - `uv run python -m src.pipelines.training_pipeline` - Train and register model
 - `uv run python -m src.pipelines.prediction_pipeline` - Generate predictions
+
+### **🆕 API Operations**
+- `cd src/api && uv run python main.py` - Start API server
+- `uv run python scripts/test_api.py` - Test all API endpoints
 
 ### **Testing & Debugging**
 - `uv run python scripts/test_betting_simulation.py` - Full betting simulation

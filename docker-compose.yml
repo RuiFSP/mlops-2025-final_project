@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: mlops_postgres
+    environment:
+      POSTGRES_DB: mlops_db
+      POSTGRES_USER: mlops_user
+      POSTGRES_PASSWORD: mlops_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlops_user -d mlops_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mlflow:
+    image: python:3.10-slim
+    container_name: mlops_mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+      - ./models:/models
+    working_dir: /app
+    command: >
+      sh -c "
+        pip install mlflow==2.8.1 &&
+        mlflow server
+          --backend-store-uri /mlruns
+          --default-artifact-root /mlruns
+          --host 0.0.0.0
+          --port 5000
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
