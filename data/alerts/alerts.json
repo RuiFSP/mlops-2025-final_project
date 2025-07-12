@@ -66,5 +66,39 @@
         "analysis_timestamp": "2025-07-12T16:15:44.407955"
       }
     }
+  },
+  {
+    "alert_type": "test",
+    "message": "Test alert from orchestration system",
+    "severity": "info",
+    "timestamp": "2025-07-12T16:41:54.854685",
+    "data": {
+      "test_mode": true
+    }
+  },
+  {
+    "alert_type": "retraining",
+    "message": "Automated retraining triggered by monitoring",
+    "severity": "warning",
+    "timestamp": "2025-07-12T16:41:54.858759",
+    "data": {
+      "performance": {
+        "model_name": "premier_league_predictor",
+        "current_accuracy": 0.618421052631579,
+        "current_f1": 0.0,
+        "threshold_accuracy": 0.55,
+        "threshold_f1": 0.5,
+        "needs_retraining": true,
+        "check_timestamp": "2025-07-12T16:41:54.723967",
+        "metrics_period_days": 30,
+        "total_recent_predictions": 0
+      },
+      "drift": {
+        "drift_detected": false,
+        "drift_score": 0.0,
+        "error": "Insufficient data for drift analysis",
+        "analysis_timestamp": "2025-07-12T16:41:54.750498"
+      }
+    }
   }
 ]
