@@ -1,17 +1,17 @@
 # Premier League Match Predictor - TODO List
 
-## 🎉 **PROJECT STATUS: FULLY OPERATIONAL**
+## 🎉 **PROJECT STATUS: READY FOR LOCAL DEVELOPMENT**
 
 ### **✅ COMPLETED MILESTONES**
 - [x] **Complete MLOps Pipeline**: End-to-end training → prediction → betting
 - [x] **MLflow Integration**: Model tracking, versioning, and registration (61.84% accuracy)
 - [x] **PostgreSQL Database**: Schema setup, data persistence, optimized indexes
-- [x] **Docker Compose**: All services running (PostgreSQL, MLflow, Grafana, Prefect)
+- [x] **Local Development Setup**: All Docker references removed, `uv` package manager configured
 - [x] **Training Pipeline**: Automated model training with MLflow logging
 - [x] **Prediction Pipeline**: Model loading and prediction generation
 - [x] **Betting Simulation**: Automated betting decisions with risk management
-- [x] **Database Connectivity**: Fixed local vs Docker networking issues
-- [x] **Project Cleanup**: Removed unnecessary files (~135MB saved)
+- [x] **Environment Configuration**: `.env` file with `load_dotenv()` support
+- [x] **Project Cleanup**: Removed unnecessary files for local development
 
 ---
 
@@ -31,109 +31,96 @@
   - **Dependencies**: Data source setup
 
 ### **Medium Priority** 🟡
-- [ ] **Grafana Dashboards**: Create comprehensive monitoring dashboards
-  - **Current**: Basic Grafana setup
-  - **Target**: Custom dashboards for predictions, betting, model performance
-  - **Effort**: Medium
-  - **Dependencies**: None
-
 - [ ] **API Development**: Build REST API for predictions and betting simulation
   - **Current**: Command-line interface
   - **Target**: REST API with authentication and rate limiting
   - **Effort**: High
   - **Dependencies**: None
 
-- [ ] **Automated Retraining**: Implement performance-based model retraining
+- [ ] **Automated Retraining**: Set up automated model retraining pipeline
   - **Current**: Manual retraining
-  - **Target**: Automated retraining based on performance metrics
-  - **Effort**: High
-  - **Dependencies**: Prefect service (already running)
-
-### **Low Priority** 🟢
-- [ ] **Performance Optimization**: Optimize Docker containers and resource usage
-  - **Current**: Basic Docker setup
-  - **Target**: Optimized containers with health checks
+  - **Target**: Performance-based automatic retraining
   - **Effort**: Medium
   - **Dependencies**: None
 
-- [ ] **Testing**: Add unit tests and integration tests
-  - **Current**: No tests
-  - **Target**: Comprehensive test suite
+### **Low Priority** 🟢
+- [ ] **Advanced Monitoring**: Enhanced monitoring and alerting
+  - **Current**: Basic MLflow tracking
+  - **Target**: Comprehensive monitoring dashboard
+  - **Effort**: Medium
+  - **Dependencies**: None
+
+- [ ] **Testing**: Add comprehensive unit and integration tests
+  - **Current**: Basic testing
+  - **Target**: Full test coverage
   - **Effort**: High
   - **Dependencies**: None
 
-- [ ] **CI/CD Pipeline**: Implement automated deployment pipeline
-  - **Current**: Manual deployment
-  - **Target**: Automated CI/CD with testing and deployment
-  - **Effort**: High
-  - **Dependencies**: Testing
+---
+
+## 🔧 **Local Development Commands**
+
+### **Setup**
+```bash
+# Install dependencies
+uv sync
+
+# Configure environment
+cp config.env.example .env
+# Edit .env with your local settings
+```
+
+### **Core Pipeline**
+```bash
+# Train model
+uv run python -m src.pipelines.training_pipeline
+
+# Generate predictions
+uv run python -m src.pipelines.prediction_pipeline
+
+# Run betting simulation
+uv run python scripts/test_betting_simulation.py
+```
+
+### **Testing & Debugging**
+```bash
+# Check database state
+uv run python scripts/debug_bets_table.py
+
+# Clean database
+uv run python scripts/clean_postgres.py
+
+# Setup database schema
+uv run python scripts/setup_database.py
+```
 
 ---
 
-## 🎯 **IMMEDIATE NEXT STEPS**
+## 📊 **Current Performance**
 
-### **For Today** ✅ COMPLETED
-- [x] **Access MLflow UI**: http://localhost:5000 (experiments visible)
-- [x] **Access Grafana**: http://localhost:3000 (admin/admin)
-- [x] **Test Complete Pipeline**: End-to-end training → prediction → betting
+### **Model Performance**
+- **Accuracy**: 61.84% (excellent for football prediction)
+- **Model Type**: Random Forest with 15 features
+- **Training Data**: 3,040 Premier League matches
+- **Features**: Betting odds + match statistics
 
-### **For This Week**
-1. **Create Grafana Dashboards** for monitoring
-2. **Restore Production Betting Thresholds**
-3. **Start API Development**
-
-### **For Next Sprint**
-1. **Real Data Integration** for live Premier League data
-2. **Automated Retraining** pipeline
-3. **Production Deployment** preparation
+### **System Status**
+- ✅ **Local Development**: All Docker references removed
+- ✅ **Package Management**: Using `uv` for dependencies
+- ✅ **Environment**: `.env` file with `load_dotenv()` support
+- ✅ **Database**: PostgreSQL with optimized schema
+- ✅ **MLflow**: Local tracking and model registry
 
 ---
 
-## 📊 **CURRENT SYSTEM STATUS**
+## 🎯 **Next Steps**
 
-### **✅ Working Components**
-- **MLflow**: 1 experiment, 1 registered model (61.84% accuracy)
-- **PostgreSQL**: All tables created, data persistence working
-- **Training Pipeline**: Automated model training and registration
-- **Prediction Pipeline**: 5 predictions generated per run
-- **Docker Services**: All containers running smoothly
-- **Database Schema**: Optimized with proper indexes
-
-### **🎯 Success Metrics Achieved**
-- ✅ **End-to-end MLOps pipeline operational**
-- ✅ **61.84% model accuracy** (excellent for football prediction)
-- ✅ **Automated predictions and betting simulation**
-- ✅ **Complete monitoring infrastructure**
-- ✅ **Optimized project structure**
+1. **Test the complete local pipeline** with the updated commands
+2. **Verify betting simulation** works end-to-end
+3. **Implement production betting thresholds**
+4. **Add real data integration**
+5. **Develop REST API**
 
 ---
 
-## 🔗 **Quick Access Links**
-
-- **MLflow UI**: http://localhost:5000
-- **Grafana**: http://localhost:3000 (admin/admin)
-- **Prefect**: http://localhost:4200
-- **PostgreSQL**: localhost:5432
-
----
-
-## 🎉 **PROJECT SUCCESS**
-
-### **Minimum Viable Product** ✅ ACHIEVED
-- ✅ End-to-end MLOps pipeline operational
-- ✅ 61.84% model accuracy
-- ✅ Automated predictions and betting simulation
-- ✅ Complete monitoring infrastructure
-- ✅ Optimized project structure and file management
-
-### **Production Ready** 🎯 NEXT PHASE
-- 🎯 65%+ model accuracy
-- 🎯 Positive ROI in betting simulation
-- 🎯 Real-time data integration
-- 🎯 REST API for external access
-- 🎯 Automated retraining pipeline
-- 🎯 Comprehensive monitoring dashboards
-
----
-
-**🎉 The Premier League Match Predictor MLOps system is fully operational and ready for the next phase of development!** 
+**🎉 Ready for focused local development with `uv`!** 

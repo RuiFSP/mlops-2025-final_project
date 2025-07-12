@@ -8,6 +8,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import mlflow
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier

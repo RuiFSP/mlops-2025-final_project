@@ -7,8 +7,12 @@ import os
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import pandas as pd
 from sqlalchemy import create_engine, text
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +33,20 @@ class BettingSimulator:
             f"{os.getenv('POSTGRES_PORT', '5432')}/"
             f"{os.getenv('POSTGRES_DB', 'mlops_db')}"
         )
+        logger.info(f"[DEBUG] Betting simulator connecting to: {self.db_url}")
         self.engine = create_engine(self.db_url)
         
+        # Test connection and show current database
+        try:
+            with self.engine.connect() as conn:
+                result = conn.execute(text("SELECT current_database()")).scalar()
+                logger.info(f"[DEBUG] Connected to database: {result}")
+        except Exception as e:
+            logger.error(f"[DEBUG] Failed to get current database: {e}")
+        
         # Betting parameters
-        self.min_confidence = 0.35  # Lowered from 0.6 for testing
-        self.min_margin = 0.05  # Lowered from 0.1 for testing
+        self.min_confidence = 0.3  # Lowered for testing dashboard
+        self.min_margin = 0.01  # Lowered for testing dashboard
         self.max_bet_percentage = 0.05  # 5% of balance per bet
         
         # Initialize tables
@@ -79,6 +92,7 @@ class BettingSimulator:
                 conn.execute(text(bets_table_sql))
                 conn.execute(text(wallet_table_sql))
                 conn.commit()
+                logger.info(f"[DEBUG] Tables checked/created successfully.")
                 
             # Initialize wallet if empty
             self._init_wallet()
@@ -149,29 +163,41 @@ class BettingSimulator:
         b = odds - 1
         p = prediction_prob
         q = 1 - p
-        
         kelly_fraction = (b * p - q) / b if b > 0 else 0
-        
+        # Force minimum Kelly fraction for dashboard testing (REMOVE after testing!)
+        kelly_fraction = max(kelly_fraction, 0.01)
         # Apply risk management: cap at max_bet_percentage
         kelly_fraction = min(kelly_fraction, self.max_bet_percentage)
-        
         # Only bet if Kelly fraction is positive
         if kelly_fraction > 0:
             bet_amount = self.current_balance * kelly_fraction
             return round(bet_amount, 2)
-        
         return 0.0
+    
+    def _to_native(self, obj):
+        """Recursively convert numpy types to native Python types."""
+        import numpy as np
+        if isinstance(obj, dict):
+            return {k: self._to_native(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._to_native(v) for v in obj]
+        elif isinstance(obj, np.generic):
+            return obj.item()
+        elif hasattr(obj, 'item') and callable(obj.item):
+            try:
+                return obj.item()
+            except Exception:
+                return obj
+        else:
+            return obj
     
     def place_bet(self, prediction: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Place a bet if conditions are met."""
         if not self.should_place_bet(prediction):
             return None
-        
         bet_amount = self.calculate_bet_amount(prediction)
-        
         if bet_amount <= 0:
             return None
-        
         # Get the relevant odds
         if prediction['prediction'] == 'H':
             odds = prediction['home_odds']
@@ -179,7 +205,6 @@ class BettingSimulator:
             odds = prediction['draw_odds']
         else:  # 'A'
             odds = prediction['away_odds']
-        
         bet = {
             'match_id': prediction['match_id'],
             'home_team': prediction['home_team'],
@@ -194,23 +219,43 @@ class BettingSimulator:
             'payout': None,
             'roi': None
         }
-        
+        # Debug: print types before conversion
+        print("[DEBUG] Bet dict types before conversion:")
+        for k, v in bet.items():
+            print(f"  {k}: {type(v)} -> {v}")
+        # Convert all values to native types
+        bet = self._to_native(bet)
+        # Explicitly cast critical fields to float
+        bet['prediction_confidence'] = float(bet['prediction_confidence'])
+        bet['prediction_probability'] = float(bet['prediction_probability'])
+        # Debug: print bet after conversion
+        print("[DEBUG] Bet dict after conversion:")
+        for k, v in bet.items():
+            print(f"  {k}: {type(v)} -> {v}")
         # Save bet to database
         self._save_bet(bet)
-        
         # Update wallet
         self.current_balance -= bet_amount
         self._update_wallet()
-        
         logger.info(f"Placed bet: £{bet_amount} on {prediction['home_team']} vs {prediction['away_team']} - {prediction['prediction']} @ {odds}")
-        
         return bet
     
     def _save_bet(self, bet: Dict[str, Any]):
         """Save bet to database."""
         try:
+            logger.info(f"[DEBUG] Attempting to save bet: {bet}")
+
+            # Explicitly cast all float fields
+            for key in ['bet_amount', 'odds', 'prediction_confidence', 'prediction_probability']:
+                if key in bet:
+                    bet[key] = float(bet[key])
+
+            logger.info(f"[DEBUG] Bet after explicit float cast: {bet}")
+            for k, v in bet.items():
+                logger.info(f"[DEBUG] {k}: {type(v)} -> {v}")
+
             with self.engine.connect() as conn:
-                conn.execute(text("""
+                sql = """
                     INSERT INTO bets (
                         match_id, home_team, away_team, bet_type, bet_amount, odds,
                         prediction_confidence, prediction_probability, bet_date, result
@@ -218,11 +263,29 @@ class BettingSimulator:
                         :match_id, :home_team, :away_team, :bet_type, :bet_amount, :odds,
                         :prediction_confidence, :prediction_probability, :bet_date, :result
                     )
-                """), bet)
-                conn.commit()
+                """
+                logger.info(f"[DEBUG] Executing SQL: {sql}")
+                logger.info(f"[DEBUG] Parameters: {bet}")
                 
+                # Execute the insert
+                result = conn.execute(text(sql), bet)
+                logger.info(f"[DEBUG] Insert result: {result}")
+                
+                # Commit the transaction
+                conn.commit()
+                logger.info(f"[DEBUG] Transaction committed successfully!")
+                
+                # Verify the bet was actually inserted
+                verify_sql = "SELECT COUNT(*) FROM bets WHERE match_id = :match_id"
+                count = conn.execute(text(verify_sql), {"match_id": bet['match_id']}).scalar()
+                logger.info(f"[DEBUG] Verification: Found {count} bets with match_id {bet['match_id']}")
+
         except Exception as e:
             logger.error(f"Failed to save bet: {e}")
+            logger.error(f"[DEBUG] Bet data that failed: {bet}")
+            import traceback
+            logger.error(f"[DEBUG] Full traceback: {traceback.format_exc()}")
+            # Don't re-raise the exception to avoid stopping the pipeline
     
     def _update_wallet(self):
         """Update wallet balance in database."""

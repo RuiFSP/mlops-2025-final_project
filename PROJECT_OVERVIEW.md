@@ -29,6 +29,13 @@ A complete end-to-end MLOps pipeline for predicting Premier League match outcome
 
 ---
 
+## 🔧 **Configuration**
+
+- All services (PostgreSQL, MLflow, Grafana, Prefect) are expected to run locally.
+- Use `.env` for all environment variables.
+
+---
+
 ## 🔧 **Docker Services Status**
 
 ### ✅ **All Services Running**
@@ -68,7 +75,7 @@ A complete end-to-end MLOps pipeline for predicting Premier League match outcome
 
 ## 🏗️ **Architecture Overview**
 
-### **MLOps Pipeline Flow**
+### **MLOps Pipeline Flow (Local Only)**
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Training      │    │   MLflow        │    │   Model         │
@@ -180,4 +187,4 @@ A complete end-to-end MLOps pipeline for predicting Premier League match outcome
 
 ---
 
-**🎉 The Premier League Match Predictor MLOps system is fully operational and ready for production use!** 
+**🎉 The Premier League Match Predictor MLOps system is fully operational for local development!** 

@@ -7,9 +7,13 @@ import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Any
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import mlflow
 import pandas as pd
 from sqlalchemy import create_engine, text
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -150,6 +154,17 @@ class PredictionPipeline:
         
         return features_df
     
+    def _to_native(self, obj):
+        """Recursively convert numpy types to native Python types."""
+        if isinstance(obj, dict):
+            return {k: self._to_native(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._to_native(v) for v in obj]
+        elif isinstance(obj, np.generic):
+            return obj.item()
+        else:
+            return obj
+    
     def make_predictions(self, matches: pd.DataFrame) -> List[Dict[str, Any]]:
         """Make predictions for today's matches."""
         logger.info("Making predictions...")
@@ -165,27 +180,33 @@ class PredictionPipeline:
         predictions = self.model.predict(features)
         probabilities = self.model.predict_proba(features)
         
+        # Get class order from model
+        class_order = list(self.model.classes_)
+        
         # Format results
         results = []
         for i, (_, match) in enumerate(matches.iterrows()):
             prediction = predictions[i]
             proba = probabilities[i]
-            
+            # Map probabilities to correct outcomes
+            proba_dict = {c: float(proba[j]) for j, c in enumerate(class_order)}
             result = {
                 'match_id': match['match_id'],
                 'home_team': match['home_team'],
                 'away_team': match['away_team'],
-                'prediction': prediction,
-                'confidence': max(proba),
-                'home_win_prob': proba[0] if len(proba) > 0 else 0,
-                'draw_prob': proba[1] if len(proba) > 1 else 0,
-                'away_win_prob': proba[2] if len(proba) > 2 else 0,
-                'home_odds': match['home_odds'],
-                'draw_odds': match['draw_odds'],
-                'away_odds': match['away_odds'],
+                'prediction': str(prediction),
+                'confidence': float(max(proba)),
+                'home_win_prob': proba_dict.get('H', 0.0),
+                'draw_prob': proba_dict.get('D', 0.0),
+                'away_win_prob': proba_dict.get('A', 0.0),
+                'home_odds': float(match['home_odds']),
+                'draw_odds': float(match['draw_odds']),
+                'away_odds': float(match['away_odds']),
                 'prediction_date': datetime.now(),
                 'model_version': 'latest'
             }
+            # Convert all values to native types
+            result = self._to_native(result)
             results.append(result)
             
             logger.info(f"Prediction: {match['home_team']} vs {match['away_team']} -> {prediction} (confidence: {max(proba):.3f})")
