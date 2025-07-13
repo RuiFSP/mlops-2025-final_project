@@ -26,13 +26,7 @@ dependencies = [
     "schedule>=1.2.2",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "ruff>=0.12.0",
-    "mypy>=1.5.0"
-]
+
 
 [build-system]
 requires = ["hatchling"]
@@ -69,5 +63,9 @@ split-on-trailing-comma = true
 
 [dependency-groups]
 dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.12.0",
+    "mypy>=1.5.0",
     "pre-commit>=4.2.0",
 ]
