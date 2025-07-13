@@ -32,14 +32,12 @@ The goal was to build not just a model, but a complete MLOps system that could r
 - [✨ Features](#-features)
 - [🏗️ Architecture](#️-architecture)
 - [🚀 Quick Start](#-quick-start)
-- [🔧 Configuration](#-configuration)
 - [🧪 Testing](#-testing)
 - [📊 Monitoring & Orchestration](#-monitoring--orchestration)
 - [🚀 Cloud Deployment](#-cloud-deployment)
 - [🛠️ Development](#️-development)
 - [📡 API Endpoints](#-api-endpoints)
 - [📚 Documentation](#-documentation)
-- [🤝 Contributing](#-contributing)
 
 ## 🎯 Overview
 
@@ -83,6 +81,8 @@ This MLOps system provides a complete end-to-end pipeline for predicting Premier
   - **Daily Predictions** - Generate predictions for upcoming matches
   - **Weekly Retraining** - Automated model retraining evaluation
   - **Emergency Retraining** - Manual trigger for immediate model updates
+
+![alt text](images/prefect_weekly_batch_processing_flow.PNG)
 
 ## 🚀 Quick Start
 
@@ -180,6 +180,8 @@ make help
 - **MLflow Integration** - Model tracking and versioning
 - **PostgreSQL Database** - Complete data persistence
 
+![alt text](images/images_mlflow.PNG)
+
 ### Monitoring & Orchestration
 - **Prefect Workflows** - 4 automated flows for operational needs
 - **Grafana Dashboards** - Real-time monitoring with PostgreSQL data source
@@ -271,6 +273,7 @@ mlops-2025-final_project/
 │   ├── 📁 monitoring/             # Metrics collection & storage
 │   ├── 📁 orchestration/          # Prefect workflows
 │   └── 📁 data_integration/       # Data fetching & processing
+│   └── 📁 retraining/             # Entry point for the MLOps betting simulation system
 ├── 📁 tests/                      # Test suites
 │   ├── 📁 unit/                   # Unit tests
 │   └── 📁 integration/            # Integration tests
@@ -290,49 +293,6 @@ mlops-2025-final_project/
 └── 📄 README.md                  # This file
 ```
 
-## 🔧 Configuration
-
-### Environment Variables
-Key configurations in `.env`:
-```bash
-# Database Configuration
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=mlops_db
-POSTGRES_USER=mlops_user
-POSTGRES_PASSWORD=mlops_password
-
-# MLflow Configuration
-MLFLOW_TRACKING_URI=http://127.0.0.1:5000
-MLFLOW_ARTIFACT_ROOT=./mlruns
-
-# Model Configuration
-MODEL_REGISTRATION_THRESHOLD=0.6
-TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
-```
-
-### Service Ports
-- **API Server**: 8000
-- **MLflow**: 5000
-- **Prefect UI**: 4200
-- **Grafana**: 3000
-- **PostgreSQL**: 5432
-
-### Additional Configuration Options
-```bash
-# Prefect Configuration
-PREFECT_API_URL=http://localhost:4200/api
-PREFECT_LOGGING_LEVEL=INFO
-
-# Grafana Configuration
-GF_SECURITY_ADMIN_PASSWORD=admin
-GF_USERS_ALLOW_SIGN_UP=false
-
-# Model Configuration
-MODEL_RETRAIN_THRESHOLD=0.55
-DRIFT_DETECTION_THRESHOLD=0.5
-BETTING_INITIAL_BALANCE=1000.0
-```
 
 ## 🧪 Testing
 
@@ -589,15 +549,6 @@ curl http://localhost:8000/model/performance
 
 - **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
 - **[Cloud Deployment Guide](deployment/cloud-deployment.md)** - Detailed deployment instructions
-- **[Contributing Guide](CONTRIBUTING.md)** - Development guidelines
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- Development setup
-- Code style guidelines
-- Testing requirements
-- Pull request process
 
 ## 📄 License
 
@@ -610,8 +561,6 @@ This project was made possible thanks to:
 - **[DataTalks.Club](https://datatalks.club/)** for the excellent MLOps Zoomcamp course
 - **[Alexey Grigorev](https://github.com/alexeygrigorev)** and the course instructors for their comprehensive MLOps training
 - **MLOps Zoomcamp community** for support, discussions, and shared learning experiences
-- **Premier League** for providing the match data that powers this system
-- **Open source communities** behind MLflow, Prefect, FastAPI, and other tools that made this project possible
 
 ---
 

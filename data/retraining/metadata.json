@@ -1,0 +1,81 @@
+{
+  "reason": "performance_or_drift",
+  "training_results": {
+    "run_id": "5fd7cbea2f414f3bb749d2b66ac648dd",
+    "metrics": {
+      "accuracy": 0.618421052631579,
+      "feature_importance": {
+        "B365H": 0.12132695768256406,
+        "B365D": 0.06634620691211271,
+        "B365A": 0.13174749547184328,
+        "HS": 0.06994629848001126,
+        "AS": 0.07062494070235179,
+        "HST": 0.1158988491578005,
+        "AST": 0.11989593191525572,
+        "HC": 0.05670062770545622,
+        "AC": 0.05695177706816325,
+        "HF": 0.04964257803096027,
+        "AF": 0.04996201875170164,
+        "HY": 0.03688960715055232,
+        "AY": 0.03514143818720883,
+        "HR": 0.00917137127748126,
+        "AR": 0.009753901506536964
+      },
+      "classification_report": {
+        "A": {
+          "precision": 0.631336405529954,
+          "recall": 0.7025641025641025,
+          "f1-score": 0.6650485436893204,
+          "support": 195.0
+        },
+        "D": {
+          "precision": 0.23529411764705882,
+          "recall": 0.029197080291970802,
+          "f1-score": 0.05194805194805195,
+          "support": 137.0
+        },
+        "H": {
+          "precision": 0.6283422459893048,
+          "recall": 0.8514492753623188,
+          "f1-score": 0.7230769230769231,
+          "support": 276.0
+        },
+        "accuracy": 0.618421052631579,
+        "macro avg": {
+          "precision": 0.4983242563887725,
+          "recall": 0.5277368194061307,
+          "f1-score": 0.4800245062380985,
+          "support": 608.0
+        },
+        "weighted avg": {
+          "precision": 0.5407374228438094,
+          "recall": 0.618421052631579,
+          "f1-score": 0.5532410853709397,
+          "support": 608.0
+        }
+      }
+    },
+    "local_model_path": "models/model_20250713_195455_run_5fd7cbea2f414f3bb749d2b66ac648dd.pkl",
+    "registered": true,
+    "success": true
+  },
+  "performance_data": {
+    "model_name": "premier_league_predictor",
+    "current_accuracy": 0.618421052631579,
+    "current_f1": 0.0,
+    "threshold_accuracy": 0.55,
+    "threshold_f1": 0.5,
+    "needs_retraining": true,
+    "check_timestamp": "2025-07-13T19:54:51.261935",
+    "metrics_period_days": 30,
+    "total_recent_predictions": 0
+  },
+  "drift_data": {
+    "drift_detected": false,
+    "drift_score": 0.0,
+    "error": "Insufficient data for drift analysis",
+    "analysis_timestamp": "2025-07-13T19:54:51.412419"
+  },
+  "retrain_timestamp": "2025-07-13T19:54:55.712608",
+  "success": true
+}
