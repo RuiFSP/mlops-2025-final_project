@@ -9,6 +9,21 @@
 
 > **A production-ready MLOps pipeline for Premier League match prediction with automated monitoring, orchestration, and betting simulation.**
 
+## 🎓 About This Project
+
+This project is my final capstone for the **[MLOps Zoomcamp](https://github.com/DataTalksClub/mlops-zoomcamp)** course by [DataTalks.Club](https://datatalks.club/). The course provided comprehensive training in machine learning operations, covering everything from experiment tracking to production deployment.
+
+### 💡 Motivation
+
+As a football enthusiast and ML practitioner, I wanted to create a project that combines my passion for the Premier League with the MLOps skills learned throughout the course. This system demonstrates:
+
+- **Real-world application** of MLOps principles to sports analytics
+- **End-to-end pipeline** from data ingestion to production deployment
+- **Production-ready practices** including monitoring, orchestration, and automated workflows
+- **Practical value** through betting simulation and match prediction
+
+The goal was to build not just a model, but a complete MLOps system that could realistically be deployed and maintained in production, showcasing all the key concepts from the course.
+
 ## 📋 Table of Contents
 - [🎯 Overview](#-overview)
 - [✨ Features](#-features)
@@ -16,10 +31,9 @@
 - [🚀 Quick Start](#-quick-start)
 - [🔧 Configuration](#-configuration)
 - [🧪 Testing](#-testing)
-- [📊 Monitoring](#-monitoring)
-- [🔄 Orchestration](#-orchestration)
+- [📊 Monitoring & Orchestration](#-monitoring--orchestration)
 - [🛠️ Development](#️-development)
-- [📚 API Documentation](#-api-documentation)
+- [📚 Documentation](#-documentation)
 - [🤝 Contributing](#-contributing)
 
 ## 🎯 Overview
@@ -151,7 +165,7 @@ make help
 ## ✅ What's Working
 
 ### Core Features
-- **61.84% Model Accuracy** - Random Forest with 15 features
+- **Random Forest Model** - 61.84% accuracy on 3,040 Premier League matches
 - **REST API** - FastAPI with comprehensive endpoints
 - **Real-time Predictions** - Premier League match outcomes
 - **Betting Simulation** - Automated betting strategy testing
@@ -159,11 +173,7 @@ make help
 - **PostgreSQL Database** - Complete data persistence
 
 ### Monitoring & Orchestration
-- **Prefect Workflows** - Automated orchestration with 4 flows:
-  - `hourly-monitoring` - Model performance & drift checks
-  - `daily-predictions` - Generate predictions for upcoming matches
-  - `weekly-retraining-check` - Automated model retraining evaluation
-  - `emergency-retraining` - Manual retraining trigger
+- **Prefect Workflows** - 4 automated flows for operational needs
 - **Grafana Dashboards** - Real-time monitoring with PostgreSQL data source
 - **Performance Tracking** - Model drift detection and accuracy monitoring
 - **Alert System** - Automated notifications for performance degradation
@@ -262,100 +272,10 @@ mlops-2025-final_project/
 └── 📄 README.md                  # This file
 ```
 
-## 🎯 System Performance
-
-### 📊 Model Metrics
-- **Accuracy**: 61.84% on 3,040 Premier League matches
-- **Features**: 15 engineered features (team form, head-to-head, etc.)
-- **Algorithm**: Random Forest Classifier
-- **Training Time**: ~30 seconds on standard hardware
-
-### ⚡ API Performance
-- **Response Time**: <500ms for predictions
-- **Throughput**: 1000+ requests/minute
-- **Uptime**: 99.9% availability target
-- **Health Checks**: Comprehensive endpoint monitoring
-
-### 🔧 Infrastructure
-- **Database**: PostgreSQL with optimized indexing
-- **Containerization**: Docker Compose for easy deployment
-- **Monitoring**: 100% component coverage with Grafana
-- **Orchestration**: 4 automated Prefect workflows
-
-## 🧪 Testing
-
-### Integration Tests
-```bash
-make test        # Run all integration tests
-make test-orch   # Test orchestration components
-make health      # Health check all services
-```
-
-### Test Coverage
-- ✅ **API Endpoints** - All REST endpoints tested
-- ✅ **ML Pipeline** - Training and prediction workflows
-- ✅ **Database** - Schema and data integrity
-- ✅ **Monitoring** - Metrics collection and alerts
-- ✅ **Orchestration** - Prefect workflow execution
-
-## 📊 Monitoring
-
-### Grafana Dashboards
-- **Model Performance** - Accuracy trends and drift detection
-- **API Metrics** - Request rates, response times, error rates
-- **System Health** - Resource usage and service status
-- **Betting Performance** - Strategy effectiveness and ROI
-
-### Alert Conditions
-- Model accuracy drops below 55%
-- API response time exceeds 1 second
-- Database connection failures
-- Service downtime detection
-
-## 🔄 Orchestration
-
-### Prefect Workflows
-
-| Workflow | Schedule | Purpose |
-|----------|----------|---------|
-| **hourly-monitoring** | Every hour | Model performance & drift checks |
-| **daily-predictions** | Daily at 9 AM | Generate predictions for upcoming matches |
-| **weekly-retraining-check** | Weekly (Sunday) | Evaluate need for model retraining |
-| **emergency-retraining** | Manual trigger | Immediate model retraining |
-
-### Workflow Features
-- **Retry Logic** - Automatic retry on failures
-- **Notifications** - Slack/email alerts on completion
-- **Logging** - Comprehensive workflow execution logs
-- **Monitoring** - Real-time workflow status tracking
-
-## 📚 Documentation
-
-- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
-- **[Contributing Guide](CONTRIBUTING.md)** - Development guidelines
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-- Development setup
-- Code style guidelines
-- Testing requirements
-- Pull request process
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Premier League for providing match data
-- MLflow community for experiment tracking tools
-- Prefect team for orchestration framework
-- FastAPI developers for the excellent web framework
-
 ## 🔧 Configuration
 
-Key environment variables in `.env`:
+### Environment Variables
+Key configurations in `.env`:
 ```bash
 # Database Configuration
 POSTGRES_HOST=localhost
@@ -380,7 +300,35 @@ TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
 - **Grafana**: 3000
 - **PostgreSQL**: 5432
 
-## 🔧 Monitoring & Orchestration
+## 🧪 Testing
+
+### Running Tests
+```bash
+make test        # Run all integration tests
+make test-orch   # Test orchestration components
+make health      # Health check all services
+```
+
+### Test Coverage
+- ✅ **API Endpoints** - All REST endpoints tested
+- ✅ **ML Pipeline** - Training and prediction workflows
+- ✅ **Database** - Schema and data integrity
+- ✅ **Monitoring** - Metrics collection and alerts
+- ✅ **Orchestration** - Prefect workflow execution
+
+### Individual Test Scripts
+```bash
+# Test API integration
+uv run python scripts/test_simple_integration.py
+
+# Test monitoring workflows
+uv run python scripts/test_simple_monitoring.py
+
+# Test end-to-end orchestration
+uv run python scripts/test_end_to_end_monitoring.py
+```
+
+## 📊 Monitoring & Orchestration
 
 ### Prefect Workflows
 The system includes 4 automated workflows:
@@ -424,20 +372,15 @@ uv run python scripts/setup_grafana.py
 - System health indicators
 - Real-time alerts and notifications
 
-### Testing the Complete Stack
-```bash
-# Test API integration
-uv run python scripts/test_simple_integration.py
-
-# Test monitoring workflows
-uv run python scripts/test_simple_monitoring.py
-
-# Test end-to-end orchestration
-uv run python scripts/test_end_to_end_monitoring.py
-```
+### Alert Conditions
+- Model accuracy drops below 55%
+- API response time exceeds 1 second
+- Database connection failures
+- Service downtime detection
 
 ## 🛠️ Development
 
+### Development Commands
 ```bash
 # API development
 cd src/api && uv run uvicorn main:app --reload
@@ -447,10 +390,39 @@ uv run python scripts/check_db_tables.py
 uv run python scripts/clean_postgres.py
 ```
 
-## 📊 Current Status
+### Workflow Features
+- **Retry Logic** - Automatic retry on failures
+- **Notifications** - Slack/email alerts on completion
+- **Logging** - Comprehensive workflow execution logs
+- **Monitoring** - Real-time workflow status tracking
 
-**✅ Production Ready**: Complete MLOps system with monitoring, orchestration, and automated workflows.
+## 📚 Documentation
+
+- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
+- **[Contributing Guide](CONTRIBUTING.md)** - Development guidelines
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+- Development setup
+- Code style guidelines
+- Testing requirements
+- Pull request process
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+This project was made possible thanks to:
+
+- **[DataTalks.Club](https://datatalks.club/)** for the excellent MLOps Zoomcamp course
+- **[Alexey Grigorev](https://github.com/alexeygrigorev)** and the course instructors for their comprehensive MLOps training
+- **MLOps Zoomcamp community** for support, discussions, and shared learning experiences
+- **Premier League** for providing the match data that powers this system
+- **Open source communities** behind MLflow, Prefect, FastAPI, and other tools that made this project possible
 
 ---
 
-*Complete MLOps system for Premier League match prediction*
+*MLOps Zoomcamp Final Project - Complete MLOps system for Premier League match prediction*
