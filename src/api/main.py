@@ -20,7 +20,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from betting_simulator.simulator import BettingSimulator
 from data_integration.real_data_fetcher import RealDataFetcher
 from pipelines.prediction_pipeline import PredictionPipeline
-from retraining.retraining_monitor import RetrainingMonitor, RetrainingConfig
+from retraining.retraining_monitor import RetrainingMonitor
 from retraining.scheduler import RetrainingScheduler
 
 # Configure logging
@@ -40,7 +40,12 @@ retraining_scheduler = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for FastAPI startup and shutdown."""
-    global prediction_pipeline, betting_simulator, real_data_fetcher, retraining_monitor, retraining_scheduler
+    global \
+        prediction_pipeline, \
+        betting_simulator, \
+        real_data_fetcher, \
+        retraining_monitor, \
+        retraining_scheduler
 
     # Startup
     logger.info("🚀 Starting Premier League Match Predictor API...")
@@ -452,7 +457,7 @@ async def get_retraining_status(monitor: RetrainingMonitor = Depends(get_retrain
     try:
         summary = monitor.get_monitoring_summary()
         model_info = monitor.get_current_model_info()
-        
+
         return {
             "model_info": model_info,
             "monitoring_summary": summary,
@@ -464,7 +469,7 @@ async def get_retraining_status(monitor: RetrainingMonitor = Depends(get_retrain
                 "performance_degradation_threshold": monitor.config.performance_degradation_threshold,
                 "consecutive_poor_performance_limit": monitor.config.consecutive_poor_performance_limit,
             },
-            "timestamp": datetime.now()
+            "timestamp": datetime.now(),
         }
     except Exception as e:
         logger.error(f"❌ Failed to get retraining status: {e}")
@@ -480,11 +485,8 @@ async def run_retraining_check(monitor: RetrainingMonitor = Depends(get_retraini
     try:
         logger.info("🔍 Running immediate retraining check...")
         result = monitor.run_monitoring_cycle()
-        
-        return {
-            "check_result": result,
-            "timestamp": datetime.now()
-        }
+
+        return {"check_result": result, "timestamp": datetime.now()}
     except Exception as e:
         logger.error(f"❌ Failed to run retraining check: {e}")
         raise HTTPException(
@@ -498,20 +500,17 @@ async def force_retraining(monitor: RetrainingMonitor = Depends(get_retraining_m
     """Force an immediate retraining."""
     try:
         logger.info("🚨 Forcing immediate retraining...")
-        
+
         # Create fake trigger to force retraining
         fake_trigger = {
             "should_retrain": True,
             "triggers": ["Manual force retraining via API"],
-            "model_info": monitor.get_current_model_info()
+            "model_info": monitor.get_current_model_info(),
         }
-        
+
         result = monitor.trigger_retraining(fake_trigger)
-        
-        return {
-            "retraining_result": result,
-            "timestamp": datetime.now()
-        }
+
+        return {"retraining_result": result, "timestamp": datetime.now()}
     except Exception as e:
         logger.error(f"❌ Failed to force retraining: {e}")
         raise HTTPException(
@@ -525,11 +524,11 @@ async def get_retraining_history(monitor: RetrainingMonitor = Depends(get_retrai
     """Get retraining history."""
     try:
         summary = monitor.get_monitoring_summary()
-        
+
         return {
             "recent_evaluations": summary.get("recent_evaluations", []),
             "recent_retraining": summary.get("recent_retraining", []),
-            "timestamp": datetime.now()
+            "timestamp": datetime.now(),
         }
     except Exception as e:
         logger.error(f"❌ Failed to get retraining history: {e}")
