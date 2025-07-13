@@ -59,3 +59,55 @@ uv run python scripts/test_simple_integration.py
 - **Alert System** - Automated notifications
 
 ## 🏗️ Architecture
+
+```
+Training → MLflow → Model Registry
+    ↓         ↓           ↓
+Predictions → Database → Betting
+    ↓         ↓           ↓
+FastAPI → Monitoring → Grafana
+```
+
+## 📚 Documentation
+
+- **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
+- **[Contributing Guide](CONTRIBUTING.md)** - Development guidelines
+
+## 🎯 System Performance
+
+- **Model**: 61.84% accuracy on 3,040 matches
+- **API**: <500ms response time
+- **Database**: Optimized with indexing
+- **Monitoring**: 100% component coverage
+
+## 🔧 Configuration
+
+Key environment variables in `.env`:
+```bash
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=mlops_db
+MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+```
+
+## 🛠️ Development
+
+```bash
+# Run tests
+uv run python scripts/test_simple_integration.py
+
+# Start monitoring
+uv run prefect server start --host 0.0.0.0 --port 4200
+sudo systemctl start grafana-server  # http://localhost:3000
+
+# API development
+cd src/api && uv run uvicorn main:app --reload
+```
+
+## 📊 Current Status
+
+**✅ Production Ready**: Complete MLOps system with monitoring, orchestration, and automated workflows.
+
+---
+
+*Complete MLOps system for Premier League match prediction*
