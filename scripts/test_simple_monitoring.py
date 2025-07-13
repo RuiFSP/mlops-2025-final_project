@@ -16,10 +16,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 # Now import with proper path
 from prefect import flow, get_run_logger, task
 
+from monitoring.metrics_storage import metrics_storage
+
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -33,22 +33,20 @@ def initialize_monitoring():
         # Test database connection
         import psycopg2
 
-        conn = psycopg2.connect(
-            host="localhost", database="mlops_db", user="mlops_user", password="mlops_password"
-        )
+        conn = psycopg2.connect(host="localhost", database="mlops_db", user="mlops_user", password="mlops_password")
         conn.close()
         logger_task.info("✅ PostgreSQL connection verified")
 
         # Test metrics storage
         from monitoring.metrics_storage import MetricsStorage
 
-        metrics_storage = MetricsStorage()
+        MetricsStorage()
         logger_task.info("✅ Metrics storage initialized")
 
         # Test retraining monitor
         from retraining.retraining_monitor import RetrainingMonitor
 
-        retraining_monitor = RetrainingMonitor()
+        RetrainingMonitor()
         logger_task.info("✅ Retraining monitor initialized")
 
         return True
@@ -65,10 +63,6 @@ def generate_metrics():
     logger_task.info("📊 Generating sample metrics for monitoring")
 
     try:
-        from monitoring.metrics_storage import MetricsStorage
-
-        metrics_storage = MetricsStorage()
-
         # Generate sample metrics
         sample_metrics = [
             ("accuracy", 0.6184),
@@ -140,9 +134,7 @@ def monitor_model_performance():
 
         # Run monitoring cycle
         monitoring_result = monitor.run_monitoring_cycle()
-        logger_task.info(
-            f"📊 Monitoring cycle completed: {monitoring_result.get('status', 'unknown')}"
-        )
+        logger_task.info(f"📊 Monitoring cycle completed: {monitoring_result.get('status', 'unknown')}")
 
         # Check if retraining is needed
         needs_retraining = monitoring_result.get("needs_retraining", False)

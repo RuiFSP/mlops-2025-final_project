@@ -12,7 +12,7 @@ from typing import Any
 from prefect import flow, task
 from prefect.logging import get_run_logger
 
-from ..monitoring.metrics_storage import MetricsStorage
+from ..monitoring.metrics_storage import metrics_storage
 from ..pipelines.prediction_pipeline import PredictionPipeline
 
 # Import our batch processor
@@ -34,13 +34,10 @@ def process_weekly_batch(batch_data: dict[str, Any]) -> dict[str, Any]:
         Processing results
     """
     logger = get_run_logger()
-    logger.info(
-        f"🏈 Processing weekly batch {batch_data['week_id']} with {batch_data['total_matches']} matches"
-    )
+    logger.info(f"🏈 Processing weekly batch {batch_data['week_id']} with {batch_data['total_matches']} matches")
 
     try:
         pipeline = PredictionPipeline()
-        metrics_storage = MetricsStorage()
 
         batch_results = {
             "week_id": batch_data["week_id"],
@@ -102,9 +99,7 @@ def process_weekly_batch(batch_data: dict[str, Any]) -> dict[str, Any]:
                 batch_results["processed_matches"] += 1
 
             except Exception as e:
-                logger.warning(
-                    f"Error processing match {match['home_team']} vs {match['away_team']}: {e}"
-                )
+                logger.warning(f"Error processing match {match['home_team']} vs {match['away_team']}: {e}")
                 continue
 
         # Calculate batch accuracy metrics
@@ -172,9 +167,7 @@ def analyze_weekly_performance(batch_results: list[dict[str, Any]]) -> dict[str,
 
         # Calculate overall performance
         overall_accuracy = total_correct / total_matches if total_matches > 0 else 0
-        avg_weekly_accuracy = (
-            sum(weekly_accuracies) / len(weekly_accuracies) if weekly_accuracies else 0
-        )
+        avg_weekly_accuracy = sum(weekly_accuracies) / len(weekly_accuracies) if weekly_accuracies else 0
 
         # Analyze prediction patterns
         outcome_analysis = {
@@ -194,9 +187,7 @@ def analyze_weekly_performance(batch_results: list[dict[str, Any]]) -> dict[str,
         for outcome in outcome_analysis:
             predicted_count = outcome_analysis[outcome]["predicted"]
             if predicted_count > 0:
-                outcome_analysis[outcome]["accuracy"] = (
-                    outcome_analysis[outcome]["correct"] / predicted_count
-                )
+                outcome_analysis[outcome]["accuracy"] = outcome_analysis[outcome]["correct"] / predicted_count
             else:
                 outcome_analysis[outcome]["accuracy"] = 0
 
@@ -276,7 +267,7 @@ def weekly_batch_processing_flow(num_weeks: int = 4, simulate_live: bool = True)
         # Check if performance monitoring is needed
         overall_accuracy = performance_analysis.get("overall_accuracy", 0)
         if overall_accuracy < 0.55:  # Performance threshold
-            alert_result = send_alerts(
+            send_alerts(
                 alert_type="performance",
                 message=f"Weekly batch processing accuracy below threshold: {overall_accuracy:.2%}",
                 severity="warning",
@@ -324,9 +315,7 @@ def historical_replay_flow(start_weeks_back: int = 12, num_weeks: int = 8) -> di
         Historical replay results
     """
     logger = get_run_logger()
-    logger.info(
-        f"⏮️ Starting historical replay: {num_weeks} weeks starting {start_weeks_back} weeks back"
-    )
+    logger.info(f"⏮️ Starting historical replay: {num_weeks} weeks starting {start_weeks_back} weeks back")
 
     try:
         processor = WeeklyBatchProcessor()
@@ -337,9 +326,7 @@ def historical_replay_flow(start_weeks_back: int = 12, num_weeks: int = 8) -> di
         end_date = start_date + timedelta(weeks=num_weeks)
 
         # Get historical batches
-        historical_batches = processor.get_weekly_batches(
-            start_date=start_date, end_date=end_date, max_weeks=num_weeks
-        )
+        historical_batches = processor.get_weekly_batches(start_date=start_date, end_date=end_date, max_weeks=num_weeks)
 
         logger.info(
             f"📚 Replaying {len(historical_batches)} historical weeks from {start_date.date()} to {end_date.date()}"
@@ -350,9 +337,7 @@ def historical_replay_flow(start_weeks_back: int = 12, num_weeks: int = 8) -> di
         weekly_performance = []
 
         for i, batch in enumerate(historical_batches):
-            logger.info(
-                f"🔄 Processing historical week {i+1}/{len(historical_batches)}: {batch.week_id}"
-            )
+            logger.info(f"🔄 Processing historical week {i + 1}/{len(historical_batches)}: {batch.week_id}")
 
             # Convert to dict and process
             batch_dict = {
@@ -390,7 +375,7 @@ def historical_replay_flow(start_weeks_back: int = 12, num_weeks: int = 8) -> di
 
             drift_score = abs(recent_avg - early_avg)
             if drift_score > 0.05:  # 5% drift threshold
-                alert_result = send_alerts(
+                send_alerts(
                     alert_type="drift",
                     message=f"Historical replay detected performance drift: {drift_score:.2%} change",
                     severity="warning",
@@ -415,15 +400,11 @@ def historical_replay_flow(start_weeks_back: int = 12, num_weeks: int = 8) -> di
         results_dir = Path("data/historical_replay")
         results_dir.mkdir(parents=True, exist_ok=True)
 
-        results_file = (
-            results_dir / f"historical_replay_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        )
+        results_file = results_dir / f"historical_replay_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(results_file, "w") as f:
             json.dump(replay_results, f, indent=2, default=str)
 
-        logger.info(
-            f"✅ Historical replay completed: {performance_analysis['overall_accuracy']:.2%} average accuracy"
-        )
+        logger.info(f"✅ Historical replay completed: {performance_analysis['overall_accuracy']:.2%} average accuracy")
         return replay_results
 
     except Exception as e:
@@ -474,16 +455,14 @@ def comprehensive_weekly_monitoring_flow() -> dict[str, Any]:
 
         # Send comprehensive alert if needed
         if monitoring_results["overall_status"] != "healthy":
-            alert_result = send_alerts(
+            send_alerts(
                 alert_type="comprehensive_monitoring",
                 message=f"Weekly monitoring status: {monitoring_results['overall_status']}",
                 severity="warning",
                 data=monitoring_results,
             )
 
-        logger.info(
-            f"✅ Comprehensive weekly monitoring completed: {monitoring_results['overall_status']}"
-        )
+        logger.info(f"✅ Comprehensive weekly monitoring completed: {monitoring_results['overall_status']}")
         return monitoring_results
 
     except Exception as e:

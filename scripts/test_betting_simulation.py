@@ -43,7 +43,7 @@ def test_betting_simulation():
         # Show predictions
         for i, pred in enumerate(predictions):
             logger.info(
-                f"Prediction {i+1}: {pred['home_team']} vs {pred['away_team']} -> {pred['prediction']} (confidence: {pred['confidence']:.2%})"
+                f"Prediction {i + 1}: {pred['home_team']} vs {pred['away_team']} -> {pred['prediction']} (confidence: {pred['confidence']:.2%})"
             )
 
         # Test betting simulation
@@ -51,9 +51,7 @@ def test_betting_simulation():
         bets_placed = 0
 
         for prediction in predictions:
-            logger.info(
-                f"\n--- Processing prediction: {prediction['home_team']} vs {prediction['away_team']} ---"
-            )
+            logger.info(f"\n--- Processing prediction: {prediction['home_team']} vs {prediction['away_team']} ---")
 
             # Check if we should place a bet
             should_bet = betting_simulator.should_place_bet(prediction)
@@ -67,9 +65,7 @@ def test_betting_simulation():
                     bet = betting_simulator.place_bet(prediction)
                     if bet:
                         bets_placed += 1
-                        logger.info(
-                            f"✅ Bet placed successfully: £{bet['bet_amount']} on {bet['bet_type']}"
-                        )
+                        logger.info(f"✅ Bet placed successfully: £{bet['bet_amount']} on {bet['bet_type']}")
                     else:
                         logger.warning("❌ Bet placement failed")
                 else:

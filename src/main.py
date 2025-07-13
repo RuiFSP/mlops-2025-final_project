@@ -10,9 +10,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +27,7 @@ def main():
         logger.info("✅ All components loaded successfully")
 
         # Initialize components
-        training_pipeline = TrainingPipeline()
+        TrainingPipeline()
         prediction_pipeline = PredictionPipeline()
         betting_simulator = BettingSimulator(initial_balance=1000.0)
 
@@ -46,9 +44,7 @@ def main():
         for prediction in predictions:
             bet = betting_simulator.place_bet(prediction)
             if bet:
-                logger.info(
-                    f"Placed bet: £{bet['bet_amount']} on {bet['home_team']} vs {bet['away_team']}"
-                )
+                logger.info(f"Placed bet: £{bet['bet_amount']} on {bet['home_team']} vs {bet['away_team']}")
 
         # Get statistics
         stats = betting_simulator.get_statistics()

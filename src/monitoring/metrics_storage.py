@@ -282,9 +282,7 @@ class MetricsStorage:
             logger.error(f"❌ Failed to get metrics by date range: {e}")
             return []
 
-    def get_predictions_by_date_range(
-        self, start_date: datetime, end_date: datetime
-    ) -> list[dict[str, Any]]:
+    def get_predictions_by_date_range(self, start_date: datetime, end_date: datetime) -> list[dict[str, Any]]:
         """Get predictions within a date range for drift analysis."""
         try:
             with self._get_connection() as conn:
@@ -373,4 +371,4 @@ class MetricsStorage:
 
 
 # Global instance
-metrics_storage = PostgreSQLMetricsStorage()
+metrics_storage = MetricsStorage()

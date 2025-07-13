@@ -63,9 +63,15 @@ def test_api_endpoints():
         response = requests.get(f"{api_base_url}/model/info")
         if response.status_code == 200:
             model_info = response.json()
-            logger.info(
-                f"✅ Model: {model_info['model_name']} (accuracy: {model_info['accuracy']:.2f})"
-            )
+            # Handle both model_name and model_type for compatibility
+            model_name = model_info.get("model_name", model_info.get("model_type", "Unknown"))
+            accuracy = model_info.get("accuracy", "0%")
+            # Convert accuracy string to float if it's a percentage
+            if isinstance(accuracy, str) and accuracy.endswith("%"):
+                accuracy_float = float(accuracy.rstrip("%"))
+            else:
+                accuracy_float = float(accuracy)
+            logger.info(f"✅ Model: {model_name} (accuracy: {accuracy_float:.2f}%)")
         else:
             logger.error(f"❌ Model info failed: {response.status_code}")
             return False
@@ -79,7 +85,12 @@ def test_api_endpoints():
         response = requests.get(f"{api_base_url}/matches/upcoming")
         if response.status_code == 200:
             matches_data = response.json()
-            logger.info(f"✅ Found {len(matches_data['matches'])} upcoming matches")
+            # Handle both direct list and wrapped response
+            if isinstance(matches_data, list):
+                matches_count = len(matches_data)
+            else:
+                matches_count = len(matches_data.get("matches", []))
+            logger.info(f"✅ Found {matches_count} upcoming matches")
         else:
             logger.error(f"❌ Upcoming matches failed: {response.status_code}")
             return False
@@ -97,13 +108,17 @@ def test_api_endpoints():
                     "confidence": 0.7,
                     "home_team": "Arsenal",
                     "away_team": "Chelsea",
+                    "home_odds": 2.0,
+                    "away_odds": 3.0,
+                    "draw_odds": 3.5,
                 }
             ]
         }
         response = requests.post(f"{api_base_url}/betting/simulate", json=payload)
         if response.status_code == 200:
             betting_data = response.json()
-            logger.info(f"✅ Betting simulation: {betting_data['total_bets']} bets placed")
+            bets_placed = betting_data.get("bets_placed", 0)
+            logger.info(f"✅ Betting simulation: {bets_placed} bets placed")
         else:
             logger.error(f"❌ Betting simulation failed: {response.status_code}")
             return False

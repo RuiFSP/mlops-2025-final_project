@@ -26,7 +26,7 @@ def wait_for_grafana():
                 print("✅ Grafana is ready!")
                 return True
         except requests.exceptions.RequestException:
-            print(f"⏳ Attempt {i+1}/30: Grafana not ready yet...")
+            print(f"⏳ Attempt {i + 1}/30: Grafana not ready yet...")
             time.sleep(2)
     return False
 
@@ -75,9 +75,7 @@ def import_dashboard():
     """Import the MLOps dashboard"""
     print("📊 Importing MLOps dashboard...")
 
-    dashboard_path = (
-        Path(__file__).parent.parent / "grafana" / "dashboards" / "simple_mlops_dashboard.json"
-    )
+    dashboard_path = Path(__file__).parent.parent / "grafana" / "dashboards" / "simple_mlops_dashboard.json"
 
     if not dashboard_path.exists():
         print(f"❌ Dashboard file not found: {dashboard_path}")
@@ -131,9 +129,7 @@ def test_data_connection():
     try:
         import psycopg2
 
-        conn = psycopg2.connect(
-            host="localhost", database="mlops_db", user="mlops_user", password="mlops_password"
-        )
+        conn = psycopg2.connect(host="localhost", database="mlops_db", user="mlops_user", password="mlops_password")
 
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM model_metrics")

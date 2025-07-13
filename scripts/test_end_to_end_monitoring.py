@@ -20,7 +20,7 @@ sys.path.append(str(Path(__file__).parent.parent / "src"))
 
 from prefect import flow, get_run_logger, task
 
-from monitoring.metrics_storage import MetricsStorage
+from monitoring.metrics_storage import MetricsStorage, metrics_storage
 from orchestration.batch_processor import WeeklyBatchProcessor
 from orchestration.weekly_flows import (
     comprehensive_weekly_monitoring_flow,
@@ -28,9 +28,7 @@ from orchestration.weekly_flows import (
 from retraining.retraining_monitor import RetrainingMonitor
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -52,7 +50,6 @@ def generate_sample_metrics():
 
     try:
         # Initialize metrics storage
-        metrics_storage = MetricsStorage()
 
         # Generate sample model metrics
         sample_metrics = [
@@ -106,10 +103,10 @@ def verify_database_connection():
 
     try:
         # Test metrics storage
-        metrics_storage = MetricsStorage()
+        MetricsStorage()
 
         # Test retraining monitor
-        retraining_monitor = RetrainingMonitor()
+        RetrainingMonitor()
 
         logger.info("✅ Database connections verified")
         return True
@@ -172,7 +169,7 @@ def end_to_end_monitoring_demo():
     logger.info("🔧 Phase 5: Running Comprehensive Monitoring Flow")
     try:
         # This will trigger the comprehensive monitoring flow
-        comprehensive_result = comprehensive_weekly_monitoring_flow()
+        comprehensive_weekly_monitoring_flow()
         logger.info("✅ Comprehensive monitoring flow completed")
 
     except Exception as e:

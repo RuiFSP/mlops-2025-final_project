@@ -102,7 +102,7 @@ def check_bets_table():
                     )
                 """
 
-                result = conn.execute(text(insert_sql), test_bet)
+                conn.execute(text(insert_sql), test_bet)
                 conn.commit()
                 logger.info("✅ Test bet inserted successfully!")
 

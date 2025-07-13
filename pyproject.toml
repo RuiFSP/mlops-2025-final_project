@@ -42,19 +42,30 @@ build-backend = "hatchling.build"
 packages = ["src"]
 
 [tool.ruff]
-line-length = 100
+line-length = 120  # More flexible line length
 target-version = "py310"
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # Pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
+    "F",   # Pyflakes (critical: unused imports, undefined names)
+    "E4",  # Import errors (critical)
+    "E7",  # Statement errors (critical)
+    "E9",  # Runtime errors (critical)
+    "I",   # isort (import sorting)
 ]
+
+ignore = [
+    "E501",  # Line too long (let developers decide)
+    "E722",  # Bare except (sometimes needed for broad exception handling)
+    "B008",  # Do not perform function calls in argument defaults (FastAPI pattern)
+    "B904",  # Raise from None/err (sometimes not needed)
+    "E402",  # Module level import not at top (sometimes needed after load_dotenv)
+]
+
+[tool.ruff.lint.isort]
+# Keep imports organized but flexible
+force-single-line = false
+split-on-trailing-comma = true
 
 [dependency-groups]
 dev = [

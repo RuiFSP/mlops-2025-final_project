@@ -7,7 +7,11 @@ Creates all required tables and initializes the database schema.
 import logging
 import os
 
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -178,13 +182,9 @@ def setup_database():
                     try:
                         conn.execute(text(index_sql))
                     except Exception as e:
-                        logger.error(
-                            f"❌ Failed to create metrics index {index_name}: {e}\nSQL: {index_sql}"
-                        )
+                        logger.error(f"❌ Failed to create metrics index {index_name}: {e}\nSQL: {index_sql}")
             except Exception as e:
-                logger.warning(
-                    f"Metrics table not found or has different schema, skipping metrics indexes: {e}"
-                )
+                logger.warning(f"Metrics table not found or has different schema, skipping metrics indexes: {e}")
         # End of first transaction
 
         # Short delay to ensure all tables are committed

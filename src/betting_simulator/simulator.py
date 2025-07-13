@@ -118,9 +118,7 @@ class BettingSimulator:
                     logger.info(f"Initialized wallet with balance: £{self.initial_balance}")
                 else:
                     # Get current balance
-                    result = conn.execute(
-                        text("SELECT balance FROM wallet ORDER BY id DESC LIMIT 1")
-                    ).scalar()
+                    result = conn.execute(text("SELECT balance FROM wallet ORDER BY id DESC LIMIT 1")).scalar()
                     self.current_balance = result or self.initial_balance
 
         except Exception as e:
@@ -128,7 +126,7 @@ class BettingSimulator:
 
     def should_place_bet(self, prediction: dict[str, Any]) -> bool:
         """Determine if we should place a bet based on prediction confidence and odds."""
-        confidence = prediction["confidence"]
+        confidence = prediction.get("confidence", 0)
         prediction_prob = prediction.get("home_win_prob", 0)
 
         # Get the relevant odds based on prediction
@@ -149,7 +147,7 @@ class BettingSimulator:
 
     def calculate_bet_amount(self, prediction: dict[str, Any]) -> float:
         """Calculate bet amount based on Kelly Criterion and risk management."""
-        confidence = prediction["confidence"]
+        prediction["confidence"]
         prediction_prob = prediction.get("home_win_prob", 0)
 
         # Get the relevant odds
@@ -281,9 +279,7 @@ class BettingSimulator:
                 # Verify the bet was actually inserted
                 verify_sql = "SELECT COUNT(*) FROM bets WHERE match_id = :match_id"
                 count = conn.execute(text(verify_sql), {"match_id": bet["match_id"]}).scalar()
-                logger.info(
-                    f"[DEBUG] Verification: Found {count} bets with match_id {bet['match_id']}"
-                )
+                logger.info(f"[DEBUG] Verification: Found {count} bets with match_id {bet['match_id']}")
 
         except Exception as e:
             logger.error(f"Failed to save bet: {e}")
@@ -377,14 +373,10 @@ class BettingSimulator:
                 total_bets = conn.execute(text("SELECT COUNT(*) FROM bets")).scalar()
 
                 # Get winning bets
-                winning_bets = conn.execute(
-                    text("SELECT COUNT(*) FROM bets WHERE result = 'W'")
-                ).scalar()
+                winning_bets = conn.execute(text("SELECT COUNT(*) FROM bets WHERE result = 'W'")).scalar()
 
                 # Get total amount bet
-                total_amount = conn.execute(
-                    text("SELECT COALESCE(SUM(bet_amount), 0) FROM bets")
-                ).scalar()
+                total_amount = conn.execute(text("SELECT COALESCE(SUM(bet_amount), 0) FROM bets")).scalar()
 
                 # Get total winnings
                 total_winnings = conn.execute(
@@ -392,9 +384,7 @@ class BettingSimulator:
                 ).scalar()
 
                 # Calculate overall ROI
-                overall_roi = (
-                    (total_winnings - total_amount) / total_amount if total_amount > 0 else 0
-                )
+                overall_roi = (total_winnings - total_amount) / total_amount if total_amount > 0 else 0
 
                 # Get win rate
                 win_rate = winning_bets / total_bets if total_bets > 0 else 0

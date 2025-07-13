@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -29,6 +27,7 @@ services:
     working_dir: /app
     command: >
       sh -c "
+        apt-get update && apt-get install -y curl &&
         pip install mlflow==2.8.1 &&
         mlflow server
           --backend-store-uri /mlruns
@@ -37,7 +36,7 @@ services:
           --port 5000
       "
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 30s
       timeout: 10s
       retries: 3

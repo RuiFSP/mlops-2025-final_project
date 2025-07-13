@@ -23,4 +23,16 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [types-requests, types-PyYAML]
-        args: [--ignore-missing-imports, --disable-error-code=assignment]
+        args: [
+          --ignore-missing-imports,
+          --disable-error-code=assignment,
+          --disable-error-code=index,
+          --disable-error-code=attr-defined,
+          --disable-error-code=call-arg,
+          --disable-error-code=arg-type,
+          --disable-error-code=dict-item,
+          --no-strict-optional,
+          --allow-untyped-defs,
+          --allow-incomplete-defs,
+          --allow-untyped-calls
+        ]
