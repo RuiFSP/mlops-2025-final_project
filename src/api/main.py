@@ -24,9 +24,7 @@ from retraining.retraining_monitor import RetrainingMonitor
 from retraining.scheduler import RetrainingScheduler
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Global variables for singleton instances
@@ -40,12 +38,7 @@ retraining_scheduler = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for FastAPI startup and shutdown."""
-    global \
-        prediction_pipeline, \
-        betting_simulator, \
-        real_data_fetcher, \
-        retraining_monitor, \
-        retraining_scheduler
+    global prediction_pipeline, betting_simulator, real_data_fetcher, retraining_monitor, retraining_scheduler
 
     # Startup
     logger.info("🚀 Starting Premier League Match Predictor API...")
@@ -111,9 +104,7 @@ class PredictionResponse(BaseModel):
 class BettingRequest(BaseModel):
     """Request model for betting simulation."""
 
-    predictions: list[dict[str, Any]] = Field(
-        ..., description="List of predictions to evaluate for betting"
-    )
+    predictions: list[dict[str, Any]] = Field(..., description="List of predictions to evaluate for betting")
 
 
 class BettingResponse(BaseModel):
@@ -225,9 +216,7 @@ async def health_check():
 
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict_match(
-    request: PredictionRequest, pipeline: PredictionPipeline = Depends(get_prediction_pipeline)
-):
+async def predict_match(request: PredictionRequest, pipeline: PredictionPipeline = Depends(get_prediction_pipeline)):
     """Predict the outcome of a single match."""
     try:
         logger.info(f"🔮 Predicting match: {request.home_team} vs {request.away_team}")
@@ -256,9 +245,7 @@ async def predict_match(
 
     except Exception as e:
         logger.error(f"❌ Prediction failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Prediction failed: {str(e)}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Prediction failed: {str(e)}")
 
 
 @app.post("/predict/batch", response_model=list[PredictionResponse])
@@ -340,9 +327,7 @@ async def get_upcoming_predictions(
 
 
 @app.post("/betting/simulate", response_model=BettingResponse)
-async def simulate_betting(
-    request: BettingRequest, simulator: BettingSimulator = Depends(get_betting_simulator)
-):
+async def simulate_betting(request: BettingRequest, simulator: BettingSimulator = Depends(get_betting_simulator)):
     """Simulate betting on provided predictions."""
     try:
         logger.info(f"💰 Simulating betting on {len(request.predictions)} predictions")

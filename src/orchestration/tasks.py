@@ -68,13 +68,9 @@ def check_model_performance(
             f1_metrics = [m for m in recent_metrics if m["metric_type"] == "f1_score"]
 
             current_accuracy = (
-                sum(m["value"] for m in accuracy_metrics) / len(accuracy_metrics)
-                if accuracy_metrics
-                else 0.0
+                sum(m["value"] for m in accuracy_metrics) / len(accuracy_metrics) if accuracy_metrics else 0.0
             )
-            current_f1 = (
-                sum(m["value"] for m in f1_metrics) / len(f1_metrics) if f1_metrics else 0.0
-            )
+            current_f1 = sum(m["value"] for m in f1_metrics) / len(f1_metrics) if f1_metrics else 0.0
 
         # Check if retraining is needed
         needs_retraining = current_accuracy < threshold_accuracy or current_f1 < threshold_f1
@@ -138,9 +134,7 @@ def analyze_model_drift(
             start_date=reference_start, end_date=reference_end
         )
 
-        current_data = metrics_storage.get_predictions_by_date_range(
-            start_date=current_start, end_date=end_date
-        )
+        current_data = metrics_storage.get_predictions_by_date_range(start_date=current_start, end_date=end_date)
 
         if not reference_data or not current_data:
             logger.warning("Insufficient data for drift analysis")
@@ -172,9 +166,7 @@ def analyze_model_drift(
         drift_score = 0.0
         for outcome in ["H", "D", "A"]:
             if cur_dist[outcome] > 0 and ref_dist[outcome] > 0:
-                drift_score += (
-                    cur_dist[outcome] * ((cur_dist[outcome] / ref_dist[outcome]) ** 0.5 - 1) ** 2
-                )
+                drift_score += cur_dist[outcome] * ((cur_dist[outcome] / ref_dist[outcome]) ** 0.5 - 1) ** 2
 
         # Simple threshold for drift detection
         drift_detected = drift_score > 0.1
@@ -198,9 +190,7 @@ def analyze_model_drift(
         with open(analysis_path, "w") as f:
             json.dump(drift_analysis, f, indent=2, default=str)
 
-        logger.info(
-            f"📈 Drift analysis completed: drift_detected={drift_detected}, drift_score={drift_score:.3f}"
-        )
+        logger.info(f"📈 Drift analysis completed: drift_detected={drift_detected}, drift_score={drift_score:.3f}")
 
         return drift_analysis
 
@@ -330,9 +320,7 @@ def generate_predictions(days_ahead: int = 7) -> dict[str, Any]:
                     }
                 )
             except Exception as e:
-                logger.error(
-                    f"Error predicting match {match['home_team']} vs {match['away_team']}: {e}"
-                )
+                logger.error(f"Error predicting match {match['home_team']} vs {match['away_team']}: {e}")
                 continue
 
         # Save predictions
@@ -351,9 +339,7 @@ def generate_predictions(days_ahead: int = 7) -> dict[str, Any]:
                 default=str,
             )
 
-        logger.info(
-            f"✅ Generated {len(predictions)} predictions for {len(upcoming_matches)} matches"
-        )
+        logger.info(f"✅ Generated {len(predictions)} predictions for {len(upcoming_matches)} matches")
 
         return {
             "predictions_generated": len(predictions),

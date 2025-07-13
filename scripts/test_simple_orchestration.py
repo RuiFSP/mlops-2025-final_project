@@ -38,16 +38,12 @@ def test_orchestration_concept():
         # Test 1: Model performance check
         logger.info("1. 📊 Testing model performance check...")
         performance_result = check_model_performance.fn()
-        logger.info(
-            f"✅ Performance check result: {performance_result.get('current_accuracy', 'N/A'):.3f} accuracy"
-        )
+        logger.info(f"✅ Performance check result: {performance_result.get('current_accuracy', 'N/A'):.3f} accuracy")
 
         # Test 2: Drift analysis
         logger.info("2. 🔍 Testing drift analysis...")
         drift_result = analyze_model_drift.fn()
-        logger.info(
-            f"✅ Drift analysis result: drift_detected={drift_result.get('drift_detected', False)}"
-        )
+        logger.info(f"✅ Drift analysis result: drift_detected={drift_result.get('drift_detected', False)}")
 
         # Test 3: Prediction generation
         logger.info("3. 🔮 Testing prediction generation...")
@@ -99,9 +95,7 @@ def test_orchestration_concept():
         logger.info("\n📊 Key Results:")
         logger.info(f"  • Model Accuracy: {performance_result.get('current_accuracy', 0):.3f}")
         logger.info(f"  • Drift Detected: {drift_result.get('drift_detected', False)}")
-        logger.info(
-            f"  • Predictions Generated: {prediction_result.get('predictions_generated', 0)}"
-        )
+        logger.info(f"  • Predictions Generated: {prediction_result.get('predictions_generated', 0)}")
         logger.info(f"  • Alerts Sent: {len([alert_result, drift_result, performance_result])}")
 
         logger.info("\n🔧 Technology Stack:")

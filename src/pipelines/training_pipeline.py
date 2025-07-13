@@ -27,9 +27,7 @@ class TrainingPipeline:
     def __init__(self, data_path: str = None):
         """Initialize the training pipeline."""
         # Use environment variable or default for data path
-        self.data_path = data_path or os.getenv(
-            "TRAINING_DATA_PATH", "data/real_data/premier_league_matches.parquet"
-        )
+        self.data_path = data_path or os.getenv("TRAINING_DATA_PATH", "data/real_data/premier_league_matches.parquet")
 
         self.model = None
         self.feature_columns = [
@@ -86,9 +84,7 @@ class TrainingPipeline:
                 client.create_experiment(experiment_name)
                 logger.info(f"Created experiment: {experiment_name}")
             else:
-                logger.info(
-                    f"Using existing experiment: {experiment_name} (ID: {experiment.experiment_id})"
-                )
+                logger.info(f"Using existing experiment: {experiment_name} (ID: {experiment.experiment_id})")
         except Exception as e:
             logger.error(f"Failed to ensure experiment exists: {e}")
             logger.info("Falling back to MLflow default experiment handling")
@@ -115,9 +111,7 @@ class TrainingPipeline:
         initial_shape = df.shape
         # Filter to only include matches with results and odds
         df = df.dropna(subset=[self.target_column, "B365H", "B365D", "B365A"])
-        logger.info(
-            f"Dropped rows with missing target/odds: {initial_shape[0] - df.shape[0]} rows removed"
-        )
+        logger.info(f"Dropped rows with missing target/odds: {initial_shape[0] - df.shape[0]} rows removed")
         # Fill missing values in feature columns with 0
         for col in self.feature_columns:
             if col not in ["B365H", "B365D", "B365A"]:
@@ -140,17 +134,13 @@ class TrainingPipeline:
         logger.info("Model training completed")
         return model
 
-    def evaluate_model(
-        self, model: RandomForestClassifier, X_test: pd.DataFrame, y_test: pd.Series
-    ) -> dict[str, Any]:
+    def evaluate_model(self, model: RandomForestClassifier, X_test: pd.DataFrame, y_test: pd.Series) -> dict[str, Any]:
         """Evaluate the trained model."""
         logger.info("Evaluating model...")
         logger.info(f"Test samples: {X_test.shape[0]}")
         y_pred = model.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
-        feature_importance = dict(
-            zip(self.feature_columns, model.feature_importances_, strict=False)
-        )
+        feature_importance = dict(zip(self.feature_columns, model.feature_importances_, strict=False))
         class_report = classification_report(y_test, y_pred, output_dict=True)
         logger.info(f"Model accuracy: {accuracy:.4f}")
         logger.debug(f"Classification report: {class_report}")
@@ -210,9 +200,7 @@ class TrainingPipeline:
 
                 # Split data
                 logger.info("Splitting data into train and test sets...")
-                X_train, X_test, y_train, y_test = train_test_split(
-                    X, y, test_size=0.2, random_state=42, stratify=y
-                )
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
                 logger.info(f"Train shape: {X_train.shape}, Test shape: {X_test.shape}")
 
                 # Train model
@@ -255,9 +243,7 @@ class TrainingPipeline:
                         mlflow.register_model(f"runs:/{run_id}/model", "premier_league_predictor")
                         logger.info("Model registered in MLflow")
                     else:
-                        logger.warning(
-                            f"Model accuracy {metrics['accuracy']:.4f} is below registration threshold."
-                        )
+                        logger.warning(f"Model accuracy {metrics['accuracy']:.4f} is below registration threshold.")
 
                 except Exception as e:
                     logger.warning(f"MLflow logging failed: {e}")

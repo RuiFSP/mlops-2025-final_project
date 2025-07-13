@@ -51,17 +51,13 @@ class RetrainingScheduler:
                 logger.info("🚨 Retraining was triggered!")
                 retraining_result = result.get("retraining_result", {})
                 if retraining_result.get("success"):
-                    logger.info(
-                        f"✅ New model accuracy: {retraining_result.get('new_accuracy', 0.0):.3f}"
-                    )
+                    logger.info(f"✅ New model accuracy: {retraining_result.get('new_accuracy', 0.0):.3f}")
                 else:
                     logger.error(f"❌ Retraining failed: {retraining_result.get('error')}")
 
             elif status == "performance_acceptable":
                 metrics = result.get("metrics", {})
-                logger.info(
-                    f"✅ Model performance is acceptable: {metrics.get('accuracy', 0.0):.3f}"
-                )
+                logger.info(f"✅ Model performance is acceptable: {metrics.get('accuracy', 0.0):.3f}")
 
             elif status == "no_data":
                 logger.warning("⚠️ No data available for evaluation")
@@ -118,9 +114,7 @@ class RetrainingScheduler:
 def main():
     """Main function to run the scheduler."""
     # Configure logging
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Create and start scheduler
     scheduler = RetrainingScheduler()

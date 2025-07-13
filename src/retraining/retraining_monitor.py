@@ -217,14 +217,10 @@ class RetrainingMonitor:
             f1_score=report["macro avg"]["f1-score"],
             prediction_count=len(evaluated_df),
             evaluation_date=datetime.now(),
-            model_version=evaluated_df["model_version"].iloc[0]
-            if len(evaluated_df) > 0
-            else "unknown",
+            model_version=evaluated_df["model_version"].iloc[0] if len(evaluated_df) > 0 else "unknown",
         )
 
-        logger.info(
-            f"📈 Performance evaluation: Accuracy={accuracy:.3f}, Predictions={len(evaluated_df)}"
-        )
+        logger.info(f"📈 Performance evaluation: Accuracy={accuracy:.3f}, Predictions={len(evaluated_df)}")
         return metrics
 
     def check_retraining_triggers(self, metrics: PerformanceMetrics) -> dict[str, Any]:
@@ -234,17 +230,13 @@ class RetrainingMonitor:
 
         # Check accuracy threshold
         if metrics.accuracy < self.config.min_accuracy_threshold:
-            triggers.append(
-                f"Accuracy below threshold: {metrics.accuracy:.3f} < {self.config.min_accuracy_threshold}"
-            )
+            triggers.append(f"Accuracy below threshold: {metrics.accuracy:.3f} < {self.config.min_accuracy_threshold}")
 
         # Check model age
         if model_info and "creation_date" in model_info:
             model_age = (datetime.now() - model_info["creation_date"]).days
             if model_age > self.config.max_model_age_days:
-                triggers.append(
-                    f"Model too old: {model_age} days > {self.config.max_model_age_days} days"
-                )
+                triggers.append(f"Model too old: {model_age} days > {self.config.max_model_age_days} days")
 
         # Check performance degradation
         if model_info and "accuracy" in model_info:
