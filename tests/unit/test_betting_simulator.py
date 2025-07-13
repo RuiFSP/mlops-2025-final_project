@@ -17,7 +17,7 @@ class TestBettingSimulator:
         with (
             patch("src.betting_simulator.simulator.create_engine"),
             patch.object(BettingSimulator, "_init_tables"),
-            patch.object(BettingSimulator, "_load_current_balance", return_value=1000.0),
+            patch.object(BettingSimulator, "_init_wallet"),
         ):
             simulator = BettingSimulator()
             assert simulator.initial_balance == 1000.0
@@ -27,7 +27,7 @@ class TestBettingSimulator:
         with (
             patch("src.betting_simulator.simulator.create_engine"),
             patch.object(BettingSimulator, "_init_tables"),
-            patch.object(BettingSimulator, "_load_current_balance", return_value=500.0),
+            patch.object(BettingSimulator, "_init_wallet"),
         ):
             simulator = BettingSimulator(initial_balance=500.0)
             assert simulator.initial_balance == 500.0
@@ -37,7 +37,7 @@ class TestBettingSimulator:
         with (
             patch("src.betting_simulator.simulator.create_engine"),
             patch.object(BettingSimulator, "_init_tables"),
-            patch.object(BettingSimulator, "_load_current_balance", return_value=1000.0),
+            patch.object(BettingSimulator, "_init_wallet"),
         ):
             simulator = BettingSimulator(initial_balance=1000.0)
 
