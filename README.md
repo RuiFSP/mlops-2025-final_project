@@ -37,6 +37,7 @@ The goal was to build not just a model, but a complete MLOps system that could r
 - [📊 Monitoring & Orchestration](#-monitoring--orchestration)
 - [🚀 Cloud Deployment](#-cloud-deployment)
 - [🛠️ Development](#️-development)
+- [📡 API Endpoints](#-api-endpoints)
 - [📚 Documentation](#-documentation)
 - [🤝 Contributing](#-contributing)
 
@@ -96,7 +97,7 @@ This MLOps system provides a complete end-to-end pipeline for predicting Premier
 #### 🚀 Quick Start (Recommended)
 ```bash
 # 1. Clone and setup
-git clone <repo-url>
+git clone https://github.com/your-username/mlops-2025-final_project.git
 cd mlops-2025-final_project
 
 # 2. One-command setup and start
@@ -110,7 +111,7 @@ make test
 #### 🔧 Manual Setup (Alternative)
 ```bash
 # 1. Clone and install
-git clone <repo-url>
+git clone https://github.com/your-username/mlops-2025-final_project.git
 cd mlops-2025-final_project
 uv sync
 
@@ -270,12 +271,22 @@ mlops-2025-final_project/
 │   ├── 📁 monitoring/             # Metrics collection & storage
 │   ├── 📁 orchestration/          # Prefect workflows
 │   └── 📁 data_integration/       # Data fetching & processing
+├── 📁 tests/                      # Test suites
+│   ├── 📁 unit/                   # Unit tests
+│   └── 📁 integration/            # Integration tests
 ├── 📁 scripts/                    # Setup & testing scripts
 ├── 📁 data/                       # Training data & datasets
 ├── 📁 grafana/                    # Grafana dashboards & config
 ├── 📁 alerts/                     # Alert configurations
+├── 📁 deployment/                 # Cloud deployment documentation
+├── 📁 .github/workflows/          # CI/CD pipelines
 ├── 📄 docker-compose.yml         # Container orchestration
+├── 📄 Dockerfile                 # Production container image
+├── 📄 railway.toml               # Railway deployment config
+├── 📄 render.yaml                # Render deployment config
+├── 📄 .pre-commit-config.yaml    # Pre-commit hooks
 ├── 📄 Makefile                   # Development commands
+├── 📄 pyproject.toml             # Python dependencies & config
 └── 📄 README.md                  # This file
 ```
 
@@ -306,6 +317,22 @@ TRAINING_DATA_PATH=data/real_data/premier_league_matches.parquet
 - **Prefect UI**: 4200
 - **Grafana**: 3000
 - **PostgreSQL**: 5432
+
+### Additional Configuration Options
+```bash
+# Prefect Configuration
+PREFECT_API_URL=http://localhost:4200/api
+PREFECT_LOGGING_LEVEL=INFO
+
+# Grafana Configuration
+GF_SECURITY_ADMIN_PASSWORD=admin
+GF_USERS_ALLOW_SIGN_UP=false
+
+# Model Configuration
+MODEL_RETRAIN_THRESHOLD=0.55
+DRIFT_DETECTION_THRESHOLD=0.5
+BETTING_INITIAL_BALANCE=1000.0
+```
 
 ## 🧪 Testing
 
@@ -467,9 +494,36 @@ See [deployment/cloud-deployment.md](deployment/cloud-deployment.md) for detaile
 # API development
 cd src/api && uv run uvicorn main:app --reload
 
+# Run training pipeline
+uv run python -m src.pipelines.training_pipeline
+
+# Run prediction pipeline
+uv run python -m src.pipelines.prediction_pipeline
+
 # Database utilities
 uv run python scripts/check_db_tables.py
 uv run python scripts/clean_postgres.py
+uv run python scripts/setup_database.py
+
+# Monitoring and orchestration
+uv run python scripts/test_simple_monitoring.py
+uv run python scripts/test_simple_orchestration.py
+```
+
+### Code Quality & Testing
+```bash
+# Install pre-commit hooks
+uv run pre-commit install
+
+# Run all pre-commit hooks
+uv run pre-commit run --all-files
+
+# Run specific tests
+uv run pytest tests/unit/ -v
+uv run pytest tests/integration/ -v
+
+# Check code coverage
+uv run pytest --cov=src tests/
 ```
 
 ### Workflow Features
@@ -478,9 +532,63 @@ uv run python scripts/clean_postgres.py
 - **Logging** - Comprehensive workflow execution logs
 - **Monitoring** - Real-time workflow status tracking
 
+### Troubleshooting
+```bash
+# Check service status
+make status
+
+# View logs
+docker-compose logs -f
+
+# Reset database
+uv run python scripts/clean_postgres.py
+uv run python scripts/setup_database.py
+
+# Check API health
+curl http://localhost:8000/health
+```
+
+## 📡 API Endpoints
+
+### Core Endpoints
+- **GET** `/health` - System health check
+- **GET** `/` - API information and status
+- **POST** `/predict` - Single match prediction
+- **GET** `/predictions/today` - Today's match predictions
+- **GET** `/model/info` - Current model information
+- **GET** `/model/performance` - Model performance metrics
+
+### Betting Endpoints
+- **POST** `/betting/simulate` - Run betting simulation
+- **GET** `/betting/stats` - Betting statistics
+- **GET** `/betting/balance` - Current betting balance
+
+### Monitoring Endpoints
+- **GET** `/monitoring/metrics` - System metrics
+- **POST** `/monitoring/alert` - Trigger alerts
+- **GET** `/monitoring/drift` - Model drift analysis
+
+### Example Usage
+```bash
+# Get system health
+curl http://localhost:8000/health
+
+# Make a prediction
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"home_team": "Arsenal", "away_team": "Chelsea", "home_odds": 2.1, "away_odds": 3.2, "draw_odds": 3.5}'
+
+# Get today's predictions
+curl http://localhost:8000/predictions/today
+
+# Check model performance
+curl http://localhost:8000/model/performance
+```
+
 ## 📚 Documentation
 
 - **[API Documentation](API_DOCUMENTATION.md)** - Complete API reference
+- **[Cloud Deployment Guide](deployment/cloud-deployment.md)** - Detailed deployment instructions
 - **[Contributing Guide](CONTRIBUTING.md)** - Development guidelines
 
 ## 🤝 Contributing
