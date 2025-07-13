@@ -34,9 +34,7 @@ def test_batch_processor():
 
         for i, batch in enumerate(recent_batches, 1):
             logger.info(f"  Week {i}: {batch.week_id} - {batch.total_matches} matches")
-            logger.info(
-                f"    Period: {batch.week_start.strftime('%Y-%m-%d')} to {batch.week_end.strftime('%Y-%m-%d')}"
-            )
+            logger.info(f"    Period: {batch.week_start.strftime('%Y-%m-%d')} to {batch.week_end.strftime('%Y-%m-%d')}")
 
             # Show a sample match from the batch
             if batch.matches:
@@ -61,12 +59,8 @@ def test_batch_processor():
 
         logger.info(f"  Historical weeks: {simulation['simulation_summary']['historical_weeks']}")
         logger.info(f"  Upcoming weeks: {simulation['simulation_summary']['upcoming_weeks']}")
-        logger.info(
-            f"  Historical matches: {simulation['simulation_summary']['total_historical_matches']}"
-        )
-        logger.info(
-            f"  Upcoming matches: {simulation['simulation_summary']['total_upcoming_matches']}"
-        )
+        logger.info(f"  Historical matches: {simulation['simulation_summary']['total_historical_matches']}")
+        logger.info(f"  Upcoming matches: {simulation['simulation_summary']['total_upcoming_matches']}")
         logger.info(f"  Current simulation date: {simulation['current_date']}")
 
         # Test 4: Save and load batch
@@ -78,9 +72,7 @@ def test_batch_processor():
 
             # Load it back
             loaded_batch = processor.load_batch_from_file(saved_path)
-            logger.info(
-                f"  Loaded batch: {loaded_batch.week_id} with {loaded_batch.total_matches} matches"
-            )
+            logger.info(f"  Loaded batch: {loaded_batch.week_id} with {loaded_batch.total_matches} matches")
 
         logger.info("\n✅ All batch processor tests passed!")
         return True
@@ -115,9 +107,7 @@ def test_weekly_predictions():
             return False
 
         test_batch = recent_batches[0]
-        logger.info(
-            f"Testing predictions for week {test_batch.week_id} with {test_batch.total_matches} matches"
-        )
+        logger.info(f"Testing predictions for week {test_batch.week_id} with {test_batch.total_matches} matches")
 
         correct_predictions = 0
         total_predictions = 0
@@ -313,9 +303,7 @@ def main():
 
     if passed == len(tests):
         logger.info("🎉 All enhanced weekly processing tests PASSED!")
-        logger.info(
-            "💡 The system can now process realistic weekly batches of Premier League data!"
-        )
+        logger.info("💡 The system can now process realistic weekly batches of Premier League data!")
     else:
         logger.warning("⚠️ Some tests failed - check the logs above")
 

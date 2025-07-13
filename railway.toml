@@ -1,0 +1,28 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[[services]]
+name = "api"
+source = "."
+
+[services.variables]
+PYTHONPATH = "/app"
+PYTHONUNBUFFERED = "1"
+MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
+MODEL_REGISTRATION_THRESHOLD = "0.6"
+
+# Database will be provided by Railway PostgreSQL addon
+# These will be automatically set by Railway:
+# DATABASE_URL
+# POSTGRES_HOST
+# POSTGRES_PORT
+# POSTGRES_DB
+# POSTGRES_USER
+# POSTGRES_PASSWORD

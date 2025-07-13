@@ -191,9 +191,7 @@ def main():
 
     # Ask user if they want to open browsers
     try:
-        response = input(
-            "\n🌐 Would you like to open all monitoring services in your browser? (y/n): "
-        )
+        response = input("\n🌐 Would you like to open all monitoring services in your browser? (y/n): ")
         if response.lower() in ["y", "yes"]:
             open_services(True)
         else:

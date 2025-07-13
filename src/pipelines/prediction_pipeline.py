@@ -63,9 +63,7 @@ class PredictionPipeline:
             client = mlflow.MlflowClient()
 
             # Get the latest model version
-            latest_version = client.get_latest_versions(
-                model_name, stages=["Production", "Staging", "None"]
-            )
+            latest_version = client.get_latest_versions(model_name, stages=["Production", "Staging", "None"])
 
             if latest_version:
                 version = latest_version[0]

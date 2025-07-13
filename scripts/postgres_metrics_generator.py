@@ -83,9 +83,7 @@ def generate_prediction_metrics():
             prediction = result.get("prediction", "Unknown")
             confidence = result.get("confidence", 0.5)
 
-            logger.info(
-                f"✅ Prediction: {home_team} vs {away_team} -> {prediction} (confidence: {confidence:.3f})"
-            )
+            logger.info(f"✅ Prediction: {home_team} vs {away_team} -> {prediction} (confidence: {confidence:.3f})")
 
             # Store metrics in PostgreSQL
             metrics_storage.store_counter("api_predictions_total", 1)
@@ -98,9 +96,7 @@ def generate_prediction_metrics():
             metrics_storage.store_counter("team_predictions_total", 1, {"team": away_team})
 
             # Prediction type metrics
-            prediction_type = (
-                "home_win" if prediction == "H" else "away_win" if prediction == "A" else "draw"
-            )
+            prediction_type = "home_win" if prediction == "H" else "away_win" if prediction == "A" else "draw"
             metrics_storage.store_counter("prediction_type_total", 1, {"type": prediction_type})
 
         else:

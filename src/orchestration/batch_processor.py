@@ -62,9 +62,7 @@ class WeeklyBatchProcessor:
             # Sort by date
             self.df = self.df.sort_values("Date")
 
-            logger.info(
-                f"✅ Loaded {len(self.df)} matches from {self.df.Date.min()} to {self.df.Date.max()}"
-            )
+            logger.info(f"✅ Loaded {len(self.df)} matches from {self.df.Date.min()} to {self.df.Date.max()}")
             logger.info(
                 f"📅 Data spans {len(self.df.groupby('Week'))} weeks across {len(self.df.groupby('season'))} seasons"
             )
@@ -177,9 +175,7 @@ class WeeklyBatchProcessor:
         end_date = season_data.Date.max()
         return self.get_weekly_batches(start_date=start_date, end_date=end_date)
 
-    def simulate_live_processing(
-        self, weeks_back: int = 12, weeks_ahead: int = 4
-    ) -> dict[str, list[WeeklyBatch]]:
+    def simulate_live_processing(self, weeks_back: int = 12, weeks_ahead: int = 4) -> dict[str, list[WeeklyBatch]]:
         """
         Simulate live processing scenario with historical and upcoming data
 
@@ -196,9 +192,7 @@ class WeeklyBatchProcessor:
 
         # Historical data (for training/validation)
         historical_start = current_date - timedelta(weeks=weeks_back)
-        historical_batches = self.get_weekly_batches(
-            start_date=historical_start, end_date=current_date
-        )
+        historical_batches = self.get_weekly_batches(start_date=historical_start, end_date=current_date)
 
         # Upcoming data (simulate as "future" matches)
         upcoming_batches = self.get_weekly_batches(start_date=current_date, end_date=latest_date)
