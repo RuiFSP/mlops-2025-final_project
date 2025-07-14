@@ -53,52 +53,10 @@ class BettingSimulator:
         self._init_tables()
 
     def _init_tables(self):
-        """Initialize database tables."""
-        try:
-            # Create bets table
-            bets_table_sql = """
-                CREATE TABLE IF NOT EXISTS bets (
-                    id SERIAL PRIMARY KEY,
-                    match_id VARCHAR(100) NOT NULL,
-                    home_team VARCHAR(100) NOT NULL,
-                    away_team VARCHAR(100) NOT NULL,
-                    bet_type VARCHAR(10) NOT NULL, -- 'H', 'D', 'A'
-                    bet_amount FLOAT NOT NULL,
-                    odds FLOAT NOT NULL,
-                    prediction_confidence FLOAT NOT NULL,
-                    prediction_probability FLOAT NOT NULL,
-                    bet_date TIMESTAMP NOT NULL,
-                    result VARCHAR(10), -- 'W', 'L', 'P' (pending)
-                    payout FLOAT,
-                    roi FLOAT,
-                    created_at TIMESTAMP DEFAULT NOW()
-                )
-            """
-
-            # Create wallet table
-            wallet_table_sql = """
-                CREATE TABLE IF NOT EXISTS wallet (
-                    id SERIAL PRIMARY KEY,
-                    balance FLOAT NOT NULL,
-                    total_bets FLOAT NOT NULL,
-                    total_wins FLOAT NOT NULL,
-                    total_losses FLOAT NOT NULL,
-                    roi FLOAT NOT NULL,
-                    last_updated TIMESTAMP DEFAULT NOW()
-                )
-            """
-
-            with self.engine.connect() as conn:
-                conn.execute(text(bets_table_sql))
-                conn.execute(text(wallet_table_sql))
-                conn.commit()
-                logger.info("[DEBUG] Tables checked/created successfully.")
-
-            # Initialize wallet if empty
-            self._init_wallet()
-
-        except Exception as e:
-            logger.error(f"Failed to initialize tables: {e}")
+        """Initialize the betting tables"""
+        # Skip table creation as tables are created via scripts/fix_database.py
+        logger.info("✅ Using existing betting tables")
+        return
 
     def _init_wallet(self):
         """Initialize wallet with starting balance."""

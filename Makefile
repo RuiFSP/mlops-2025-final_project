@@ -1,7 +1,7 @@
 # MLOps Premier League Prediction System - Makefile
 # ==================================================
 
-.PHONY: help install setup start stop restart clean test logs status
+.PHONY: help install setup start stop restart clean test logs status troubleshoot
 
 # Default target
 help:
@@ -22,13 +22,14 @@ help:
 	@echo "  make start-mlflow    - Start MLflow server"
 	@echo "  make start-api       - Start API server"
 	@echo "  make start-prefect   - Start Prefect server"
-	@echo "  make start-grafana   - Start Grafana server"
+	@echo "  make start-dashboard - Start Streamlit dashboard"
 	@echo "  make train           - Run training pipeline"
 	@echo ""
 	@echo "🧪 Testing & Monitoring:"
 	@echo "  make test        - Run integration tests"
 	@echo "  make test-orch   - Test orchestration components"
 	@echo "  make logs        - Show logs from all services"
+	@echo "  make troubleshoot - Run dashboard troubleshooting script"
 	@echo ""
 	@echo "🔍 Code Quality:"
 	@echo "  make lint        - Run Ruff linter (check critical issues)"
@@ -88,13 +89,13 @@ start-prefect:
 		echo "✅ Prefect server started"; \
 	fi
 
-start-grafana:
-	@echo "📈 Starting Grafana server..."
-	@if pgrep -f "grafana" > /dev/null; then \
-		echo "⚠️  Grafana server already running"; \
+start-dashboard:
+	@echo "📊 Starting Streamlit dashboard..."
+	@if pgrep -f "streamlit.*streamlit_app" > /dev/null; then \
+		echo "⚠️  Streamlit dashboard already running"; \
 	else \
-		sudo systemctl start grafana-server; \
-		echo "✅ Grafana server started"; \
+		nohup uv run streamlit run src/dashboard/streamlit_app.py --server.port 8501 > logs/streamlit.log 2>&1 & \
+		echo "✅ Streamlit dashboard started"; \
 	fi
 
 train:
@@ -110,7 +111,7 @@ start: start-docker
 	@sleep 3
 	@$(MAKE) start-prefect
 	@sleep 3
-	@$(MAKE) start-grafana
+	@$(MAKE) start-dashboard
 	@echo ""
 	@echo "🎉 All services started!"
 	@echo "🌐 Access Points:"
@@ -118,7 +119,7 @@ start: start-docker
 	@echo "  • API Docs: http://localhost:8000/docs"
 	@echo "  • MLflow: http://127.0.0.1:5000"
 	@echo "  • Prefect UI: http://localhost:4200"
-	@echo "  • Grafana: http://localhost:3000 (admin/admin)"
+	@echo "  • Dashboard: http://localhost:8501"
 	@echo ""
 	@echo "🧪 Run 'make test' to verify everything is working!"
 
@@ -138,8 +139,8 @@ stop:
 	@-pkill -f "uv run prefect" || true
 	@echo "Stopping training pipeline..."
 	@-pkill -f "training_pipeline" || true
-	@echo "Stopping Grafana server..."
-	@-sudo systemctl stop grafana-server || true
+	@echo "Stopping Streamlit dashboard..."
+	@-pkill -f "streamlit.*streamlit_app" || true
 	@echo "Stopping Docker services..."
 	@-docker-compose down || true
 	@echo "Killing any remaining uv processes..."
@@ -163,8 +164,8 @@ status:
 	@if pgrep -f "uvicorn.*main:app" > /dev/null; then echo "✅ Running (http://localhost:8000)"; else echo "❌ Stopped"; fi
 	@echo -n "🔄 Prefect Server: "
 	@if pgrep -f "prefect server" > /dev/null; then echo "✅ Running (http://localhost:4200)"; else echo "❌ Stopped"; fi
-	@echo -n "📈 Grafana Server: "
-	@if pgrep -f "grafana" > /dev/null; then echo "✅ Running (http://localhost:3000)"; else echo "❌ Stopped"; fi
+	@echo -n "📊 Streamlit Dashboard: "
+	@if pgrep -f "streamlit.*streamlit_app" > /dev/null; then echo "✅ Running (http://localhost:8501)"; else echo "❌ Stopped"; fi
 
 # Testing
 test:
@@ -175,6 +176,11 @@ test-orch:
 	@echo "🔄 Testing orchestration components..."
 	uv run python scripts/test_simple_orchestration.py
 
+# Troubleshooting
+troubleshoot:
+	@echo "🔧 Running dashboard troubleshooting script..."
+	uv run python scripts/dashboard_troubleshoot.py
+
 # Logs
 logs:
 	@echo "📋 Service Logs:"
@@ -182,6 +188,7 @@ logs:
 	@if [ -f logs/mlflow.log ]; then echo "📊 MLflow Logs:"; tail -10 logs/mlflow.log; echo ""; fi
 	@if [ -f logs/api.log ]; then echo "🚀 API Logs:"; tail -10 logs/api.log; echo ""; fi
 	@if [ -f logs/prefect.log ]; then echo "🔄 Prefect Logs:"; tail -10 logs/prefect.log; echo ""; fi
+	@if [ -f logs/streamlit.log ]; then echo "📊 Streamlit Logs:"; tail -10 logs/streamlit.log; echo ""; fi
 	@echo "🐳 Docker Logs:"
 	@docker-compose logs --tail=10
 
@@ -216,8 +223,8 @@ health:
 	@curl -s http://127.0.0.1:5000/ | grep -q "MLflow" && echo "✅ Healthy" || echo "❌ Unhealthy"
 	@echo -n "Prefect Health: "
 	@curl -s http://localhost:4200/api/health | grep -q "true" && echo "✅ Healthy" || echo "❌ Unhealthy"
-	@echo -n "Grafana Health: "
-	@curl -s http://localhost:3000/api/health | grep -q "ok" && echo "✅ Healthy" || echo "❌ Unhealthy"
+	@echo -n "Dashboard Health: "
+	@curl -s http://localhost:8501/ | grep -q "html" && echo "✅ Healthy" || echo "❌ Unhealthy"
 
 # Code Quality
 lint:

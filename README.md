@@ -4,6 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
 [![MLflow](https://img.shields.io/badge/MLflow-2.8+-orange.svg)](https://mlflow.org)
 [![Prefect](https://img.shields.io/badge/Prefect-2.14+-purple.svg)](https://prefect.io)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-blue.svg)](https://streamlit.io)
 [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docker.com)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-green.svg)](https://github.com/features/actions)
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-Ruff-red.svg)](https://github.com/astral-sh/ruff)
@@ -46,7 +47,7 @@ This MLOps system provides a complete end-to-end pipeline for predicting Premier
 ### 🎪 Key Highlights
 - **🤖 61.84% Model Accuracy** - Random Forest classifier with 15 engineered features
 - **⚡ Real-time Predictions** - FastAPI-powered REST API with sub-second response times
-- **📊 Comprehensive Monitoring** - Grafana dashboards with PostgreSQL metrics storage
+- **📊 Interactive Dashboard** - Streamlit dashboard with real-time metrics and visualizations
 - **🔄 Automated Orchestration** - Prefect workflows for training, monitoring, and alerts
 - **💰 Betting Simulation** - Automated betting strategy testing and validation
 - **🐳 Containerized Deployment** - Docker Compose for easy deployment and scaling
@@ -70,7 +71,7 @@ This MLOps system provides a complete end-to-end pipeline for predicting Premier
 - **Health Monitoring** - Comprehensive health checks and status endpoints
 
 ### 📊 Monitoring & Observability
-- **Grafana Dashboards** - Real-time visualization of model performance and system metrics
+- **Streamlit Dashboard** - Interactive web dashboard for model and system monitoring
 - **Performance Tracking** - Model accuracy, drift detection, and prediction confidence
 - **Alert System** - Automated notifications for performance degradation
 - **Comprehensive Logging** - Structured logging across all components
@@ -89,7 +90,6 @@ This MLOps system provides a complete end-to-end pipeline for predicting Premier
 ### Prerequisites
 - Python 3.10+ with `uv` package manager
 - PostgreSQL (local or Docker)
-- Grafana server (for monitoring dashboards)
 - 15 minutes setup time
 
 ### Setup & Run
@@ -127,10 +127,10 @@ uv run mlflow server --host 127.0.0.1 --port 5000                           # Te
 uv run python -m src.pipelines.training_pipeline                            # Terminal 2 (once)
 cd src/api && uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload  # Terminal 3
 uv run prefect server start --host 0.0.0.0 --port 4200                     # Terminal 4
-sudo systemctl start grafana-server                                         # Terminal 5
+uv run python scripts/start_dashboard.py                                   # Terminal 5
 
-# 5. Setup Grafana dashboard
-uv run python scripts/setup_grafana.py
+# 5. Fix any database issues
+uv run python scripts/fix_database.py
 
 # 6. Test complete system
 uv run python scripts/test_simple_integration.py
@@ -156,7 +156,7 @@ make start-docker    # Start Docker only
 make start-mlflow    # Start MLflow only
 make start-api       # Start API only
 make start-prefect   # Start Prefect only
-make start-grafana   # Start Grafana only
+make start-dashboard # Start Streamlit dashboard only
 
 # View all commands
 make help
@@ -167,8 +167,23 @@ make help
 - **API Docs**: http://localhost:8000/docs
 - **MLflow**: http://127.0.0.1:5000
 - **Prefect UI**: http://localhost:4200
-- **Grafana**: http://localhost:3000 (admin/admin)
+- **Streamlit Dashboard**: http://localhost:8501
 - **Health Check**: http://localhost:8000/health
+
+### 🔧 Troubleshooting
+If you encounter issues with the dashboard or other components, use the troubleshooting script:
+
+```bash
+# Run the troubleshooting script
+python scripts/dashboard_troubleshoot.py
+```
+
+This script will:
+- Check database connectivity
+- Verify required tables exist
+- Check if MLflow model is available
+- Ensure Streamlit port is available
+- Offer to fix common issues automatically
 
 ## ✅ What's Working
 
@@ -184,7 +199,7 @@ make help
 
 ### Monitoring & Orchestration
 - **Prefect Workflows** - 4 automated flows for operational needs
-- **Grafana Dashboards** - Real-time monitoring with PostgreSQL data source
+- **Streamlit Dashboard** - Interactive monitoring with real-time visualizations
 - **Performance Tracking** - Model drift detection and accuracy monitoring
 - **Alert System** - Automated notifications for performance degradation
 
@@ -213,7 +228,7 @@ graph TB
 
     subgraph "Monitoring & Orchestration"
         PREF[Prefect<br/>Workflows]
-        GRAF[Grafana<br/>Dashboards]
+        STREAM[Streamlit<br/>Dashboard]
         ALERT[Alert System]
     end
 
@@ -233,9 +248,9 @@ graph TB
 
     PREF --> TRAIN
     PREF --> PRED
-    PREF --> GRAF
-    GRAF --> ALERT
-    PG --> GRAF
+    PREF --> STREAM
+    STREAM --> ALERT
+    PG --> STREAM
 
     DOCKER --> PG
     DOCKER --> MLF
@@ -252,14 +267,14 @@ graph TB
 | **ML Tracking** | MLflow | Experiment tracking & model registry | 5000 |
 | **Database** | PostgreSQL | Data persistence & metrics | 5432 |
 | **Orchestration** | Prefect | Workflow automation | 4200 |
-| **Monitoring** | Grafana | Dashboards & visualization | 3000 |
+| **Dashboard** | Streamlit | Interactive monitoring | 8501 |
 | **Containerization** | Docker Compose | Service orchestration | - |
 
 ### 🔄 Data Flow
 
 1. **Training Flow**: `Data → Feature Engineering → Model Training → MLflow → Model Registry`
 2. **Prediction Flow**: `API Request → Model Loading → Feature Processing → Prediction → Response`
-3. **Monitoring Flow**: `Metrics Collection → PostgreSQL → Grafana → Alerts`
+3. **Monitoring Flow**: `Metrics Collection → PostgreSQL → Streamlit → Alerts`
 4. **Orchestration Flow**: `Prefect Scheduler → Workflows → Monitoring → Notifications`
 
 ## 📁 Project Structure
@@ -272,14 +287,14 @@ mlops-2025-final_project/
 │   ├── 📁 betting_simulator/      # Betting strategy simulation
 │   ├── 📁 monitoring/             # Metrics collection & storage
 │   ├── 📁 orchestration/          # Prefect workflows
-│   └── 📁 data_integration/       # Data fetching & processing
+│   ├── 📁 dashboard/              # Streamlit dashboard
+│   ├── 📁 data_integration/       # Data fetching & processing
 │   └── 📁 retraining/             # Entry point for the MLOps betting simulation system
 ├── 📁 tests/                      # Test suites
 │   ├── 📁 unit/                   # Unit tests
 │   └── 📁 integration/            # Integration tests
 ├── 📁 scripts/                    # Setup & testing scripts
 ├── 📁 data/                       # Training data & datasets
-├── 📁 grafana/                    # Grafana dashboards & config
 ├── 📁 alerts/                     # Alert configurations
 ├── 📁 deployment/                 # Cloud deployment documentation
 ├── 📁 .github/workflows/          # CI/CD pipelines
@@ -365,27 +380,34 @@ uv run python scripts/test_simple_orchestration.py
 - **Weekly Retraining** - Automated model retraining evaluation
 - **Emergency Retraining** - Manual retraining trigger
 
-### Grafana Dashboards
-Real-time monitoring with PostgreSQL data source:
+### Streamlit Dashboard
+Interactive monitoring with real-time visualizations:
 
 ```bash
-# Start Grafana
-sudo systemctl start grafana-server
+# Start Streamlit dashboard
+./scripts/start_dashboard.py
 
-# Setup dashboard (automated)
-uv run python scripts/setup_grafana.py
-
-# Manual setup:
-# 1. Go to http://localhost:3000 (admin/admin)
-# 2. Add PostgreSQL data source (localhost:5432/mlops_db)
-# 3. Import: grafana/dashboards/corrected_mlops_dashboard.json
+# Alternative method
+cd src/dashboard && uv run streamlit run streamlit_app.py --server.port 8501 --server.headless true
 ```
 
 **Dashboard Features:**
-- Model performance metrics over time
-- Prediction accuracy tracking
-- System health indicators
-- Real-time alerts and notifications
+- **Overview** - Landing page with feature explanations and system status
+- **Model Performance** - Accuracy, precision, recall metrics over time
+- **Predictions** - Recent match predictions and confidence analysis
+- **Betting Performance** - ROI, win rate, and betting history charts
+- **Live Prediction** - Interactive tool for generating custom predictions
+- **Workflows** - Prefect workflow management and scheduling
+- **Simulation** - Season simulation with configurable parameters
+
+**Troubleshooting Dashboard Issues:**
+```bash
+# Run the dashboard troubleshooter
+python scripts/dashboard_troubleshoot.py
+
+# Fix database issues
+python scripts/fix_database.py
+```
 
 ### Alert Conditions
 - Model accuracy drops below 55%
@@ -459,6 +481,9 @@ uv run python -m src.pipelines.training_pipeline
 
 # Run prediction pipeline
 uv run python -m src.pipelines.prediction_pipeline
+
+# Start Streamlit dashboard
+cd src/dashboard && uv run streamlit run streamlit_app.py
 
 # Database utilities
 uv run python scripts/check_db_tables.py

@@ -209,43 +209,9 @@ class MetricsStorage:
 
     def _init_tables(self):
         """Initialize the metrics and predictions tables."""
-        try:
-            with self._get_connection() as conn:
-                with conn.cursor() as cursor:
-                    # Create metrics table
-                    cursor.execute("""
-                        CREATE TABLE IF NOT EXISTS model_metrics (
-                            id SERIAL PRIMARY KEY,
-                            metric_type VARCHAR(50) NOT NULL,
-                            value DOUBLE PRECISION NOT NULL,
-                            model_name VARCHAR(255) DEFAULT 'premier_league_predictor',
-                            timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                            metadata JSONB
-                        )
-                    """)
-
-                    # Create predictions table for drift analysis
-                    cursor.execute("""
-                        CREATE TABLE IF NOT EXISTS model_predictions (
-                            id SERIAL PRIMARY KEY,
-                            home_team VARCHAR(255) NOT NULL,
-                            away_team VARCHAR(255) NOT NULL,
-                            prediction VARCHAR(10) NOT NULL,
-                            confidence DOUBLE PRECISION NOT NULL,
-                            probabilities JSONB,
-                            home_odds DOUBLE PRECISION,
-                            away_odds DOUBLE PRECISION,
-                            draw_odds DOUBLE PRECISION,
-                            actual_result VARCHAR(10),
-                            timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                        )
-                    """)
-
-                    conn.commit()
-                    logger.info("✅ Enhanced metrics tables initialized successfully")
-
-        except Exception as e:
-            logger.error(f"❌ Failed to initialize enhanced metrics tables: {e}")
+        # Skip table creation as tables are created via scripts/fix_database.py
+        logger.info("✅ Using existing database tables")
+        return
 
     def get_metrics_by_date_range(
         self, start_date: datetime, end_date: datetime, metric_types: list[str] = None

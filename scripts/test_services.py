@@ -1,72 +1,65 @@
 #!/usr/bin/env python3
 """
-Script to test connectivity to all Docker services.
+Test script for checking the status of all MLOps services
 """
 
-import os
-
-import mlflow
-import psycopg2
+import sys
 import requests
-
+from urllib.parse import urlparse
 
 def test_postgres():
     """Test PostgreSQL connectivity."""
-    print("🔍 Testing PostgreSQL...")
     try:
+        import psycopg2
         conn = psycopg2.connect(
-            host=os.getenv("POSTGRES_HOST", "postgres"),
-            port=int(os.getenv("POSTGRES_PORT", 5432)),
-            database=os.getenv("POSTGRES_DB", "mlops_db"),
-            user=os.getenv("POSTGRES_USER", "mlops_user"),
-            password=os.getenv("POSTGRES_PASSWORD", "mlops_password"),
+            host="localhost",
+            port="5432",
+            dbname="mlops_db",
+            user="mlops_user",
+            password="mlops_password"
         )
-        cursor = conn.cursor()
-        cursor.execute("SELECT version();")
-        version = cursor.fetchone()
-        print(f"✅ PostgreSQL: Connected successfully - {version[0]}")
         conn.close()
+        print("✅ PostgreSQL: Connected successfully")
         return True
     except Exception as e:
         print(f"❌ PostgreSQL: Connection failed - {e}")
         return False
 
-
 def test_mlflow():
     """Test MLflow connectivity."""
     print("🔍 Testing MLflow...")
     try:
-        mlflow.set_tracking_uri("http://localhost:5000")
-        client = mlflow.tracking.MlflowClient()
-        experiments = client.search_experiments()
-        print(f"✅ MLflow: Connected successfully - {len(experiments)} experiments found")
-        return True
+        response = requests.get("http://127.0.0.1:5000/", timeout=5)
+        if response.status_code == 200:
+            print("✅ MLflow: Connected successfully")
+            return True
+        else:
+            print(f"❌ MLflow: HTTP {response.status_code}")
+            return False
     except Exception as e:
         print(f"❌ MLflow: Connection failed - {e}")
         return False
 
-
-def test_grafana():
-    """Test Grafana connectivity."""
-    print("🔍 Testing Grafana...")
+def test_api():
+    """Test FastAPI connectivity."""
+    print("🔍 Testing FastAPI...")
     try:
-        response = requests.get("http://localhost:3000", timeout=5)
+        response = requests.get("http://localhost:8000/health", timeout=5)
         if response.status_code == 200:
-            print("✅ Grafana: Connected successfully")
+            print("✅ FastAPI: Connected successfully")
             return True
         else:
-            print(f"❌ Grafana: HTTP {response.status_code}")
+            print(f"❌ FastAPI: HTTP {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ Grafana: Connection failed - {e}")
+        print(f"❌ FastAPI: Connection failed - {e}")
         return False
-
 
 def test_prefect():
     """Test Prefect connectivity."""
     print("🔍 Testing Prefect...")
     try:
-        response = requests.get("http://localhost:4200", timeout=5)
+        response = requests.get("http://localhost:4200/api/health", timeout=5)
         if response.status_code == 200:
             print("✅ Prefect: Connected successfully")
             return True
@@ -77,29 +70,46 @@ def test_prefect():
         print(f"❌ Prefect: Connection failed - {e}")
         return False
 
+def test_streamlit():
+    """Test Streamlit connectivity."""
+    print("🔍 Testing Streamlit...")
+    try:
+        response = requests.get("http://localhost:8501/", timeout=5)
+        if response.status_code == 200:
+            print("✅ Streamlit: Connected successfully")
+            return True
+        else:
+            print(f"❌ Streamlit: HTTP {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Streamlit: Connection failed - {e}")
+        return False
 
 def main():
-    """Test all services."""
-    print("🚀 Testing Docker Service Connectivity\n")
-
+    """Run all service tests."""
+    print("🔍 Testing MLOps services...")
+    
     results = {
         "postgres": test_postgres(),
         "mlflow": test_mlflow(),
-        "grafana": test_grafana(),
+        "api": test_api(),
         "prefect": test_prefect(),
+        "streamlit": test_streamlit(),
     }
-
-    print("\n📊 Results Summary:")
-    for service, status in results.items():
-        status_icon = "✅" if status else "❌"
-        print(f"  {status_icon} {service.upper()}")
-
-    all_good = all(results.values())
-    if all_good:
-        print("\n🎉 All services are accessible!")
+    
+    all_passed = all(results.values())
+    
+    print("\n📊 Summary:")
+    for service, passed in results.items():
+        status = "✅" if passed else "❌"
+        print(f"{status} {service}")
+    
+    if all_passed:
+        print("\n🎉 All services are running correctly!")
+        return 0
     else:
-        print("\n⚠️  Some services have connectivity issues.")
-
+        print("\n⚠️ Some services are not running correctly.")
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
