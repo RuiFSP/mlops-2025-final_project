@@ -58,8 +58,8 @@ services:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
     command: >
       sh -c "
-        uv run streamlit run src/dashboard/streamlit_app.py 
-          --server.address 0.0.0.0 
+        uv run streamlit run src/dashboard/streamlit_app.py
+          --server.address 0.0.0.0
           --server.port 8501
           --server.headless true
       "

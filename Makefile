@@ -1,7 +1,7 @@
 # MLOps Premier League Prediction System - Makefile
 # ==================================================
 
-.PHONY: help install setup start stop restart clean test logs status troubleshoot
+.PHONY: help install setup start stop restart clean test logs status troubleshoot fix-db fix-model
 
 # Default target
 help:
@@ -30,6 +30,8 @@ help:
 	@echo "  make test-orch   - Test orchestration components"
 	@echo "  make logs        - Show logs from all services"
 	@echo "  make troubleshoot - Run dashboard troubleshooting script"
+	@echo "  make fix-db      - Fix database permissions and schema issues"
+	@echo "  make fix-model   - Create mock model in MLflow to fix loading issues"
 	@echo ""
 	@echo "🔍 Code Quality:"
 	@echo "  make lint        - Run Ruff linter (check critical issues)"
@@ -52,7 +54,7 @@ setup: install
 	docker-compose up -d
 	@echo "⏳ Waiting for services to be ready..."
 	@sleep 10
-	uv run python scripts/setup_database.py
+	$(MAKE) fix-db
 	@echo "✅ Setup complete!"
 
 # Service Management
@@ -105,8 +107,10 @@ train:
 start: start-docker
 	@echo "🚀 Starting all services..."
 	@mkdir -p logs
+	@$(MAKE) fix-db
 	@$(MAKE) start-mlflow
 	@sleep 5
+	@$(MAKE) fix-model
 	@$(MAKE) start-api
 	@sleep 3
 	@$(MAKE) start-prefect
@@ -180,6 +184,16 @@ test-orch:
 troubleshoot:
 	@echo "🔧 Running dashboard troubleshooting script..."
 	uv run python scripts/dashboard_troubleshoot.py
+
+# Fix database issues
+fix-db:
+	@echo "🛠️ Fixing database permissions and schema issues..."
+	uv run python scripts/fix_database.py
+
+# Fix model loading issues
+fix-model:
+	@echo "🤖 Creating mock model in MLflow..."
+	uv run python scripts/fix_model.py
 
 # Logs
 logs:

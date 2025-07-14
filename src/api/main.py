@@ -43,11 +43,45 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting Premier League Match Predictor API...")
     try:
+        # Initialize components
         prediction_pipeline = PredictionPipeline()
         betting_simulator = BettingSimulator(initial_balance=1000.0)
         real_data_fetcher = RealDataFetcher()
         retraining_monitor = RetrainingMonitor()
         retraining_scheduler = RetrainingScheduler()
+
+        # Try to create tables but don't fail if there are permission issues
+        try:
+            from sqlalchemy import create_engine, text
+
+            from config.database import get_db_config
+
+            # Create database engine
+            db_config = get_db_config()
+            db_url = f"postgresql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
+            engine = create_engine(db_url)
+
+            # Try to create performance_monitoring table if it doesn't exist
+            with engine.connect() as conn:
+                conn.execute(
+                    text("""
+                    CREATE TABLE IF NOT EXISTS performance_monitoring (
+                        id SERIAL PRIMARY KEY,
+                        metric_name VARCHAR(100) NOT NULL,
+                        metric_value DOUBLE PRECISION NOT NULL,
+                        timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                        component VARCHAR(100) NOT NULL,
+                        metadata JSONB
+                    )
+                """)
+                )
+                conn.commit()
+
+            logger.info("✅ Database tables created/verified successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not create/verify database tables: {e}")
+            logger.info("API will continue to run with limited functionality")
+
         logger.info("✅ All components initialized successfully")
     except Exception as e:
         logger.error(f"❌ Failed to initialize components: {e}")

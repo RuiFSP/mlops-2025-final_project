@@ -4,19 +4,17 @@ Test script for checking the status of all MLOps services
 """
 
 import sys
+
 import requests
-from urllib.parse import urlparse
+
 
 def test_postgres():
     """Test PostgreSQL connectivity."""
     try:
         import psycopg2
+
         conn = psycopg2.connect(
-            host="localhost",
-            port="5432",
-            dbname="mlops_db",
-            user="mlops_user",
-            password="mlops_password"
+            host="localhost", port="5432", dbname="mlops_db", user="mlops_user", password="mlops_password"
         )
         conn.close()
         print("✅ PostgreSQL: Connected successfully")
@@ -24,6 +22,7 @@ def test_postgres():
     except Exception as e:
         print(f"❌ PostgreSQL: Connection failed - {e}")
         return False
+
 
 def test_mlflow():
     """Test MLflow connectivity."""
@@ -40,6 +39,7 @@ def test_mlflow():
         print(f"❌ MLflow: Connection failed - {e}")
         return False
 
+
 def test_api():
     """Test FastAPI connectivity."""
     print("🔍 Testing FastAPI...")
@@ -54,6 +54,7 @@ def test_api():
     except Exception as e:
         print(f"❌ FastAPI: Connection failed - {e}")
         return False
+
 
 def test_prefect():
     """Test Prefect connectivity."""
@@ -70,6 +71,7 @@ def test_prefect():
         print(f"❌ Prefect: Connection failed - {e}")
         return False
 
+
 def test_streamlit():
     """Test Streamlit connectivity."""
     print("🔍 Testing Streamlit...")
@@ -85,10 +87,11 @@ def test_streamlit():
         print(f"❌ Streamlit: Connection failed - {e}")
         return False
 
+
 def main():
     """Run all service tests."""
     print("🔍 Testing MLOps services...")
-    
+
     results = {
         "postgres": test_postgres(),
         "mlflow": test_mlflow(),
@@ -96,20 +99,21 @@ def main():
         "prefect": test_prefect(),
         "streamlit": test_streamlit(),
     }
-    
+
     all_passed = all(results.values())
-    
+
     print("\n📊 Summary:")
     for service, passed in results.items():
         status = "✅" if passed else "❌"
         print(f"{status} {service}")
-    
+
     if all_passed:
         print("\n🎉 All services are running correctly!")
         return 0
     else:
         print("\n⚠️ Some services are not running correctly.")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

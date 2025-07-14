@@ -185,6 +185,15 @@ This script will:
 - Ensure Streamlit port is available
 - Offer to fix common issues automatically
 
+### 🛠️ Simplified Setup
+
+We've simplified the database and model setup to avoid common permission issues. For details, see [Simplified Setup Guide](docs/simplified_setup.md).
+
+Quick commands:
+- `make fix-db` - Fix database permissions and schema issues
+- `make fix-model` - Create a mock model in MLflow
+- `make troubleshoot` - Run the troubleshooting script to diagnose and fix issues
+
 ## ✅ What's Working
 
 ### Core Features

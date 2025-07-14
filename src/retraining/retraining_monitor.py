@@ -110,15 +110,20 @@ class RetrainingMonitor:
                     )
                 """
 
-                conn.execute(text(monitoring_sql))
-                conn.execute(text(history_sql))
-                conn.commit()
-
-                logger.info("✅ Monitoring tables initialized")
+                try:
+                    conn.execute(text(monitoring_sql))
+                    conn.execute(text(history_sql))
+                    conn.commit()
+                    logger.info("✅ Monitoring tables initialized")
+                except Exception as table_error:
+                    # Log the error but continue - the API should still work even if tables can't be created
+                    logger.warning(f"⚠️ Could not create monitoring tables: {table_error}")
+                    logger.info("The monitor will operate with limited functionality")
 
         except Exception as e:
-            logger.error(f"❌ Failed to initialize monitoring tables: {e}")
-            raise
+            logger.error(f"❌ Failed to connect to database: {e}")
+            logger.warning("⚠️ Retraining monitor will operate without database functionality")
+            # Don't raise the exception - allow the API to start anyway
 
     def get_current_model_info(self) -> dict[str, Any]:
         """Get information about the current model."""

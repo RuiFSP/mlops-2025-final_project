@@ -13,6 +13,7 @@ DB_CONFIG = {
     "password": os.environ.get("POSTGRES_PASSWORD", "mlops_password"),
 }
 
+
 def get_db_config():
     """Return database configuration dictionary"""
-    return DB_CONFIG.copy() 
+    return DB_CONFIG.copy()

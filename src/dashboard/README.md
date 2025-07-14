@@ -91,4 +91,4 @@ streamlit run src/dashboard/streamlit_app.py --server.port 8502
 ```
 
 #### Mock Data
-The dashboard is designed to show mock data when real data is not available. This allows you to explore the interface even if some components are not working. 
+The dashboard is designed to show mock data when real data is not available. This allows you to explore the interface even if some components are not working.
