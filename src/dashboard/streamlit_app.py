@@ -543,7 +543,7 @@ class StreamlitDashboard:
                         fig = px.histogram(
                             df,
                             x="confidence",
-                            bins=20,
+                            nbins=20,
                             title="Prediction Confidence Distribution",
                             labels={"confidence": "Confidence Score", "count": "Number of Predictions"},
                         )
@@ -633,7 +633,7 @@ class StreamlitDashboard:
         fig = px.histogram(
             df,
             x="confidence",
-            bins=20,
+            nbins=20,
             title="Prediction Confidence Distribution",
             labels={"confidence": "Confidence Score", "count": "Number of Predictions"},
         )
