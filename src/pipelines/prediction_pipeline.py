@@ -5,7 +5,7 @@ Prediction pipeline for daily Premier League match predictions.
 import logging
 import os
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, List, Optional, Union
 
 from dotenv import load_dotenv
 
@@ -29,10 +29,15 @@ class PredictionPipeline:
 
         # Set up database connection
         try:
-            from config.database import get_db_url
+            try:
+                from config_minimal.config import DATA_DIR
+                # Use the simplified config
+                self.db_url = f"sqlite:///{os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), DATA_DIR, 'predictions', 'predictions.db')}"
+            except ImportError:
+                from config.database import get_db_url
+                # Get database URL
+                self.db_url = get_db_url()
             
-            # Get database URL
-            self.db_url = get_db_url()
             logger.info(f"Using database: {self.db_url}")
         except Exception as e:
             logger.warning(f"Failed to get database URL: {e}")
