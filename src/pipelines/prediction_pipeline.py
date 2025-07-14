@@ -30,8 +30,8 @@ class PredictionPipeline:
         # Set up database connection
         try:
             try:
-                from config_minimal.config import DATA_DIR
-                # Use the simplified config
+                from config.config import DATA_DIR
+                # Use the config
                 self.db_url = f"sqlite:///{os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), DATA_DIR, 'predictions', 'predictions.db')}"
             except ImportError:
                 from config.database import get_db_url

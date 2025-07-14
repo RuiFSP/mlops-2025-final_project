@@ -1,146 +1,117 @@
-# Premier League Match Prediction System (Simplified)
+# Premier League Match Prediction System
 
-A streamlined MLOps system for predicting Premier League football match outcomes.
+A machine learning system for predicting Premier League match outcomes with MLOps best practices.
 
-## Tech Stack
+## Overview
 
-- **MLflow**: Experiment tracking and model registry
-- **Prefect**: Workflow orchestration
-- **SQLite**: Lightweight database storage
-- **FastAPI**: Backend API
-- **Streamlit**: Frontend dashboard
-- **uv**: Python package management
+This project implements an end-to-end MLOps system for Premier League match prediction, featuring:
 
-## System Components
+1. **Data Pipeline** - Fetches and processes Premier League match data
+2. **Training Pipeline** - Trains and registers ML models for match prediction
+3. **Prediction Pipeline** - Generates predictions for upcoming matches
+4. **Dashboard** - A Streamlit dashboard for monitoring and interacting with the system
 
-1. **Streamlit Dashboard** - A web interface with:
-   - Overview page with system information
-   - Model performance metrics
-   - Live prediction page for upcoming matches
-   - Workflow page to trigger Prefect flows
+## Project Structure
 
-2. **FastAPI Backend** - REST API with endpoints for:
-   - Match prediction
-   - Model information
-   - Health checks
-   - Upcoming matches data
+```
+premier-league-mlops/
+├── config/             # Configuration
+├── data/               # Data directory
+│   ├── predictions/    # Prediction storage
+│   └── real_data/      # Real data storage
+├── mlflow/             # MLflow structure
+├── models/             # Model storage
+├── scripts/            # Utility scripts
+│   ├── start.py        # Startup script
+│   └── run_tests.py    # Test runner script
+├── src/                # Source code
+│   ├── api/            # API code
+│   │   └── api.py      # FastAPI application
+│   ├── dashboard/      # Dashboard code
+│   │   ├── app.py      # Streamlit dashboard
+│   │   └── integrated_example.py # Integrated example
+│   ├── orchestration/  # Workflow orchestration
+│   │   └── flows.py    # Prefect flows
+│   └── pipelines/      # ML pipelines
+├── tests/              # Test suite
+└── pyproject.toml      # Project configuration
+```
 
-3. **Prefect Flows** - Orchestration for:
-   - Data fetching from football-data.uk
-   - Data preprocessing
-   - Model training
-   - Match prediction
-
-4. **Integrated Example** - A simplified dashboard that demonstrates all components working together:
-   - System status overview (FastAPI, SQLite, MLflow, Prefect)
-   - Match prediction form with visualization
-   - Recent predictions from SQLite database
-   - Model metrics visualization
-   - Workflow triggering interface
-
-## Setup
-
-### Prerequisites
-
-- Python 3.10+
-- uv installed (`pip install uv`)
-
-### Installation
+## Installation
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/yourusername/premier-league-mlops.git
+   cd premier-league-mlops
    ```
 
-2. Create and activate a virtual environment with uv:
+2. Create a virtual environment:
    ```bash
-   uv venv
+   python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. Install dependencies:
    ```bash
-   uv pip install -r requirements.txt
+   pip install -r requirements.txt
    ```
 
-## Running the System
+## Usage
+
+### Starting the System
 
 Run the startup script to launch all components:
 
 ```bash
-python scripts/start_simplified.py
+python scripts/start.py
 ```
 
 This will start:
-- FastAPI server on port 8000
-- Streamlit dashboard on port 8501
-- Integrated example dashboard on port 8502
-- Prefect server
+- FastAPI backend on http://localhost:8000
+- Streamlit dashboard on http://localhost:8501
 
-Access the components:
-- Dashboard: http://localhost:8501
-- Integrated Example: http://localhost:8502
-- API documentation: http://localhost:8000/docs
-- Prefect dashboard: http://localhost:4200
-
-### Manual Component Startup
-
-If you prefer to start components individually:
-
-1. Start the API:
-   ```bash
-   uv run uvicorn src.api.simplified_api:app --host 0.0.0.0 --port 8000
-   ```
-
-2. Start the Streamlit dashboard:
-   ```bash
-   uv run streamlit run src/dashboard/simplified_app.py --server.port 8501
-   ```
-
-3. Start the integrated example dashboard:
-   ```bash
-   uv run streamlit run src/dashboard/integrated_example.py --server.port 8502
-   ```
-
-4. Start the Prefect server:
-   ```bash
-   uv run prefect server start
-   ```
-
-## Project Structure
-
-```
-├── data/                  # Data storage
-│   ├── real_data/         # Real match data
-│   └── predictions/       # Model predictions
-├── models/                # Trained models
-├── logs/                  # Log files
-├── config_minimal/        # Configuration
-├── mlflow_simplified/     # MLflow structure
-│   └── models/            # Model artifacts
-├── scripts/
-│   ├── start_simplified.py # Startup script
-│   └── run_simplified_tests.py # Test runner script
-├── src/
-│   ├── api/
-│   │   └── simplified_api.py # FastAPI application
-│   ├── dashboard/
-│   │   ├── simplified_app.py # Streamlit dashboard
-│   │   └── integrated_example.py # Integrated example dashboard
-│   ├── orchestration/
-│   │   └── simplified_flows.py # Prefect flows
-│   ├── pipelines/         # Model pipelines
-│   └── data_integration/  # Data fetching
-└── tests_simplified/      # Test suite
-```
-
-## Running Tests
-
-To run the test suite:
+You can also start individual components:
 
 ```bash
-python scripts/run_simplified_tests.py
+# Start only the API
+python scripts/start.py --api-only
+
+# Start only the dashboard
+python scripts/start.py --dashboard-only
 ```
 
-This will run all tests in the tests_simplified directory and provide a summary of the results. 
+### API Endpoints
+
+The API provides the following endpoints:
+
+- `GET /health` - Health check endpoint
+- `GET /model/info` - Get model information
+- `POST /predictions/match` - Predict a specific match
+- `GET /predictions/upcoming` - Get predictions for upcoming matches
+- `POST /retraining/force` - Force model retraining
+
+### Running the API Directly
+
+```bash
+uv run uvicorn src.api.api:app --host 0.0.0.0 --port 8000
+```
+
+### Running the Dashboard Directly
+
+```bash
+uv run streamlit run src/dashboard/app.py --server.port 8501
+```
+
+## Testing
+
+Run the test suite using:
+
+```bash
+python scripts/run_tests.py
+```
+
+This will run all tests in the tests directory and provide a summary of the results.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 

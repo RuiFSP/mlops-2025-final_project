@@ -1,8 +1,6 @@
-"""
-Dashboard module for the Premier League MLOps system.
-"""
+"""Dashboard module for the Premier League MLOps System."""
 
-from .streamlit_app import StreamlitDashboard
-from .simplified_app import SimplifiedDashboard
+# Import the main dashboard class
+from .app import Dashboard
 
-__all__ = ["StreamlitDashboard", "SimplifiedDashboard"]
+__all__ = ["Dashboard"]

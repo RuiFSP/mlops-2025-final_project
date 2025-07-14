@@ -1,5 +1,5 @@
 """
-Minimal configuration for the simplified Premier League MLOps System.
+Configuration for the Premier League MLOps System.
 """
 
 # Data paths
