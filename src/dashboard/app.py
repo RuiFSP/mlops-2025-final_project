@@ -3,6 +3,7 @@ Streamlit Dashboard for Premier League MLOps System
 """
 
 import logging
+import os
 import sys
 import sqlite3
 import json
@@ -13,7 +14,6 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
 
 # Add src to path
 current_file = Path(__file__).resolve()
@@ -21,95 +21,90 @@ project_root = current_file.parent.parent.parent
 sys.path.append(str(project_root))
 sys.path.append(str(project_root / "src"))
 
-# Import project modules
-try:
-    from src.pipelines.prediction_pipeline import PredictionPipeline
-    
-    # Define run_flow function to trigger workflows via API
-    def run_flow(flow_name, parameters=None):
-        """
-        Trigger a workflow via the API
-        
-        Args:
-            flow_name: Name of the workflow to trigger
-            parameters: Optional parameters for the workflow
-            
-        Returns:
-            Response from the API or None if failed
-        """
-        try:
-            import requests
-            
-            # Set default parameters if none provided
-            if parameters is None:
-                parameters = {}
-                
-            # Use different endpoints based on flow type
-            if flow_name == "training_pipeline_flow":
-                # Use the retraining endpoint
-                force_retrain = parameters.get("force_retrain", False)
-                url = "http://localhost:8000/retraining/force"
-                    
-                response = requests.post(url)
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    # Create a workflow-like response
-                    return {
-                        "workflow_id": f"training_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                        "workflow_name": "training_pipeline",
-                        "status": "triggered",
-                        "started_at": datetime.now().isoformat(),
-                        "parameters": parameters
-                    }
-            elif flow_name == "prediction_pipeline_flow":
-                # Use the predictions endpoint
-                days_ahead = parameters.get("days_ahead", 7)
-                url = "http://localhost:8000/predictions/upcoming"
-                
-                response = requests.get(url)
-                
-                if response.status_code == 200:
-                    # Create a workflow-like response
-                    return {
-                        "workflow_id": f"prediction_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                        "workflow_name": "prediction_pipeline",
-                        "status": "triggered",
-                        "started_at": datetime.now().isoformat(),
-                        "parameters": parameters
-                    }
-            elif flow_name == "data_pipeline_flow":
-                # Use the model info endpoint as a proxy for data pipeline
-                url = "http://localhost:8000/model/info"
-                
-                response = requests.get(url)
-                
-                if response.status_code == 200:
-                    # Create a workflow-like response
-                    return {
-                        "workflow_id": f"data_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                        "workflow_name": "data_pipeline",
-                        "status": "triggered",
-                        "started_at": datetime.now().isoformat(),
-                        "parameters": parameters
-                    }
-            else:
-                logging.error(f"Unknown flow name: {flow_name}")
-                return None
-                
-            logging.error(f"Failed to trigger workflow: {response.text}")
-            return None
-        except Exception as e:
-            logging.error(f"Error triggering workflow: {e}")
-            return None
-except ImportError:
-    # Fallback imports if src prefix doesn't work
-    from pipelines.prediction_pipeline import PredictionPipeline
+# Initialize dashboard with mock data if needed
+MOCK_MODE = True  # Set to True to use mock data
 
-    # Define placeholder functions if orchestration module is not available
-    def run_flow(flow_name, parameters=None):
-        """Placeholder for run_flow"""
-        logging.warning("Orchestration module not available, run_flow is a placeholder")
+# Configuration - Use container names for Docker networking
+API_URL = os.getenv("API_URL", "http://premier-league-api:8000")
+PREFECT_API_URL = os.getenv("PREFECT_API_URL", "http://premier-league-prefect-server:4200/api")
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://premier-league-mlflow:5000")
+
+# Define run_flow function to trigger workflows via API
+def run_flow(flow_name, parameters=None):
+    """
+    Trigger a workflow via the API
+    
+    Args:
+        flow_name: Name of the workflow to trigger
+        parameters: Optional parameters for the workflow
+        
+    Returns:
+        Response from the API or None if failed
+    """
+    try:
+        import requests
+        
+        # Set default parameters if none provided
+        if parameters is None:
+            parameters = {}
+            
+        # Use different endpoints based on flow type
+        if flow_name == "training_pipeline_flow":
+            # Use the retraining endpoint
+            force_retrain = parameters.get("force_retrain", False)
+            url = f"{API_URL}/retraining/force"
+                
+            response = requests.post(url)
+            
+            if response.status_code == 200:
+                result = response.json()
+                # Create a workflow-like response
+                return {
+                    "workflow_id": f"training_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    "workflow_name": "training_pipeline",
+                    "status": "triggered",
+                    "started_at": datetime.now().isoformat(),
+                    "parameters": parameters
+                }
+        elif flow_name == "prediction_pipeline_flow":
+            # Use the predictions endpoint
+            days_ahead = parameters.get("days_ahead", 7)
+            url = f"{API_URL}/predictions/upcoming"
+            
+            response = requests.get(url)
+            
+            if response.status_code == 200:
+                # Create a workflow-like response
+                return {
+                    "workflow_id": f"prediction_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    "workflow_name": "prediction_pipeline",
+                    "status": "triggered",
+                    "started_at": datetime.now().isoformat(),
+                    "parameters": parameters
+                }
+        elif flow_name == "data_pipeline_flow":
+            # Use the model info endpoint as a proxy for data pipeline
+            url = f"{API_URL}/model/info"
+            
+            response = requests.get(url)
+            
+            if response.status_code == 200:
+                # Create a workflow-like response
+                return {
+                    "workflow_id": f"data_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    "workflow_name": "data_pipeline",
+                    "status": "triggered",
+                    "started_at": datetime.now().isoformat(),
+                    "parameters": parameters
+                }
+        else:
+            logging.error(f"Unknown flow name: {flow_name}")
+            return None
+            
+        logging.error(f"Failed to trigger workflow: {response.text}")
+        return None
+    except Exception as e:
+        logging.error(f"Error triggering workflow: {e}")
         return None
 
 
@@ -207,39 +202,66 @@ class MetricsStorage:
 
 
 class Dashboard:
-    """Streamlit Dashboard for Premier League MLOps System"""
-
+    """Streamlit dashboard for Premier League MLOps System."""
+    
     def __init__(self):
-        """Initialize the dashboard"""
-        self.metrics_storage = MetricsStorage()
+        """Initialize the dashboard."""
+        self.title = "Premier League Match Prediction System"
+        self.description = "MLOps System for Premier League Match Predictions"
+        
+        # Try to import PredictionPipeline if not in mock mode
         self.prediction_pipeline = None
-
-        # Initialize components
-        self._init_components()
-
-    def _init_components(self):
-        """Initialize ML components"""
-        try:
-            # Try to initialize components with a shorter timeout
-            import os
-            import mlflow
-            
-            # Set a shorter timeout for MLflow API calls
-            os.environ['MLFLOW_HTTP_REQUEST_TIMEOUT'] = '10'  # 10 seconds instead of default 120
-            
+        if not MOCK_MODE:
             try:
+                from src.pipelines.prediction_pipeline import PredictionPipeline
                 self.prediction_pipeline = PredictionPipeline()
             except Exception as e:
-                st.warning(f"⚠️ Could not initialize prediction pipeline: {e}")
-                st.info("Dashboard will run in limited mode without prediction capabilities.")
-                self.prediction_pipeline = None
-                logging.warning(f"Prediction pipeline initialization failed: {e}")
-                
-        except Exception as e:
-            st.error(f"❌ Failed to initialize components: {e}")
-            st.info("Dashboard will run in limited mode. Some features may not be available.")
-            self.prediction_pipeline = None
-            logging.error(f"Component initialization failed: {e}")
+                st.warning(f"Failed to initialize prediction pipeline: {e}")
+                st.info("Running in mock mode with sample data")
+        
+        # Initialize components
+        self.metrics_storage = MetricsStorage()
+        self._init_components()
+        
+    def _init_components(self):
+        """Initialize dashboard components."""
+        # Set page config
+        st.set_page_config(
+            page_title=self.title,
+            page_icon="⚽",
+            layout="wide",
+            initial_sidebar_state="expanded",
+        )
+        
+        # Apply custom CSS
+        st.markdown(
+            """
+            <style>
+            .status-card {
+                padding: 1rem;
+                border-radius: 0.5rem;
+                margin-bottom: 1rem;
+            }
+            .status-healthy {
+                background-color: #d4edda;
+                color: #155724;
+            }
+            .status-unhealthy {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+            .status-warning {
+                background-color: #fff3cd;
+                color: #856404;
+            }
+            .status-offline {
+                background-color: #e2e3e5;
+                color: #383d41;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
     def render_header(self):
         """Render the main header"""
@@ -286,7 +308,7 @@ class Dashboard:
         try:
             import requests
 
-            response = requests.get("http://localhost:8000/health", timeout=5)
+            response = requests.get(f"{API_URL}/health", timeout=5)
             return "Healthy" if response.status_code == 200 else "Unhealthy"
         except:
             return "Offline"
@@ -620,7 +642,7 @@ class Dashboard:
         try:
             import requests
 
-            response = requests.get("http://localhost:4200/api/health", timeout=5)
+            response = requests.get(f"{PREFECT_API_URL}/health", timeout=5)
             return "Healthy" if response.status_code == 200 else "Unhealthy"
         except:
             return "Offline"
@@ -629,11 +651,17 @@ class Dashboard:
 def main():
     """Main entry point for the Streamlit dashboard"""
     try:
-        # Add auto-refresh every 5 minutes (300000 milliseconds)
-        st_autorefresh(interval=300000, key="dashboard_refresh")
+        # Add debug output
+        st.write("Initializing dashboard...")
+        
+        # Manual refresh via sidebar button (autorefresh removed as workflows now work in real-time)
+        if st.sidebar.button("🔄 Refresh Dashboard"):
+            st.rerun()
         
         # Create the dashboard
+        st.write("Creating Dashboard instance...")
         dashboard = Dashboard()
+        st.write("Dashboard instance created successfully!")
 
         # Sidebar navigation
         st.sidebar.title("⚽ Navigation")
@@ -654,6 +682,7 @@ def main():
             dashboard._render_status_card("Prefect Status", dashboard._check_prefect_status(), "🔄", sidebar=True)
 
         # Render the selected page
+        st.write(f"Rendering page: {page}")
         if page == "Overview":
             dashboard.render_landing_page()
         elif page == "Model Performance":
@@ -680,9 +709,13 @@ def main():
         st.warning("Please check the logs for more details and try refreshing the page.")
         logging.exception("Dashboard error")
         
+        # Show detailed error
+        import traceback
+        st.code(traceback.format_exc(), language="python")
+        
         # Provide a way to recover
         if st.button("🔄 Refresh Dashboard"):
-            st.experimental_rerun()
+            st.rerun()
 
 
 if __name__ == "__main__":

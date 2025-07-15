@@ -1,0 +1,21 @@
+# Allow .env file access (contains only non-sensitive config)
+!.env
+
+# Block sensitive files
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/secrets/
+**/*_key
+**/*_secret
+**/id_rsa*
+**/id_ed25519*
+
+# Block large files and logs
+**/*.log
+**/logs/*.log
+**/.venv/
+**/node_modules/
+**/__pycache__/
+**/.git/objects/ 

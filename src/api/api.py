@@ -29,12 +29,13 @@ import sys
 sys.path.append(str(project_root))
 
 # Import project modules
+prediction_pipeline = None
 try:
     from src.pipelines.prediction_pipeline import PredictionPipeline
     prediction_pipeline = PredictionPipeline()
 except Exception as e:
     logger.error(f"Failed to initialize prediction pipeline: {e}")
-    prediction_pipeline = None
+    # Continue without prediction pipeline - API will return appropriate errors
 
 
 # Define models

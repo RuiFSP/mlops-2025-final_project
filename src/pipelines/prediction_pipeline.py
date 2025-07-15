@@ -11,7 +11,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Import MLflow with graceful fallbacks
 import mlflow
+try:
+    import mlflow.pyfunc
+except ImportError:
+    logging.warning("mlflow.pyfunc not available - model loading will be disabled")
+    mlflow.pyfunc = None
+
+try:
+    from mlflow.tracking import MlflowClient
+except ImportError:
+    logging.warning("mlflow.tracking.MlflowClient not available - model registry access will be disabled")
+    MlflowClient = None
+
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -25,7 +38,13 @@ class PredictionPipeline:
     def __init__(self):
         """Initialize the prediction pipeline."""
         # Set up MLflow
-        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000"))
+        try:
+            tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+            # Use environment variable instead of API call
+            os.environ["MLFLOW_TRACKING_URI"] = tracking_uri
+            logger.info(f"Set MLflow tracking URI via environment variable: {tracking_uri}")
+        except Exception as e:
+            logger.error(f"Error setting MLflow tracking URI: {e}")
 
         # Set up database connection
         try:
@@ -34,9 +53,8 @@ class PredictionPipeline:
                 # Use the config
                 self.db_url = f"sqlite:///{os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), DATA_DIR, 'predictions', 'predictions.db')}"
             except ImportError:
-                from config.database import get_db_url
-                # Get database URL
-                self.db_url = get_db_url()
+                logger.warning("Could not import config.config, using fallback database path")
+                self.db_url = f"sqlite:///{os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data', 'predictions', 'predictions.db')}"
             
             logger.info(f"Using database: {self.db_url}")
         except Exception as e:
@@ -57,6 +75,11 @@ class PredictionPipeline:
             import os
             os.environ["MLFLOW_TRACKING_REQUEST_TIMEOUT"] = "10"  # 10 seconds timeout
             
+            # Check if mlflow.pyfunc is available
+            if mlflow.pyfunc is None:
+                logger.error("mlflow.pyfunc module is not available - cannot load model")
+                return None
+                
             # Try to load the model with a shorter timeout
             logger.info("Loading latest model from MLflow...")
             model_name = "premier_league_predictor"
@@ -74,8 +97,22 @@ class PredictionPipeline:
             import os
             os.environ["MLFLOW_TRACKING_REQUEST_TIMEOUT"] = "10"  # 10 seconds timeout
             
+            # Check if MlflowClient is available
+            if MlflowClient is None:
+                logger.error("MlflowClient is not available - cannot get model metadata")
+                return {
+                    "model_name": "premier_league_predictor",
+                    "version": "unknown",
+                    "stage": "unknown",
+                    "accuracy": 0.0,
+                    "f1_score": 0.0,
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "status": "MLflow client not available",
+                }
+                
             model_name = "premier_league_predictor"
-            client = mlflow.MlflowClient()
+            client = MlflowClient()
 
             # Get the latest model version
             latest_version = client.get_latest_versions(model_name, stages=["Production", "Staging", "None"])

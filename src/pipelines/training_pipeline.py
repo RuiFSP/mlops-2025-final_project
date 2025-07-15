@@ -2,23 +2,30 @@
 Training pipeline for Premier League match prediction model.
 """
 
-import logging
 import os
-from datetime import datetime
+import logging
 from pathlib import Path
-from typing import Any
+from datetime import datetime
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
+# Import MLflow with graceful fallbacks
 import mlflow
+try:
+    from mlflow.tracking import MlflowClient
+except ImportError:
+    logging.warning("mlflow.tracking.MlflowClient not available - model registry access will be disabled")
+    MlflowClient = None
+
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 
 logger = logging.getLogger(__name__)
+
+# Add project root to path
+current_file = Path(__file__).resolve()
+project_root = current_file.parent.parent.parent
 
 
 class TrainingPipeline:
@@ -56,7 +63,9 @@ class TrainingPipeline:
         """Set up MLflow tracking with environment-aware configuration."""
         # Get MLflow tracking URI from environment or use default
         tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
-        mlflow.set_tracking_uri(tracking_uri)
+        
+        # Use environment variable instead of API call
+        os.environ["MLFLOW_TRACKING_URI"] = tracking_uri
 
         # Set artifact root - use relative path that works in both local and Docker
         artifact_root = os.getenv("MLFLOW_ARTIFACT_ROOT", "./mlruns")

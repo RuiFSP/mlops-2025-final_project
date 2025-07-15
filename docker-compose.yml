@@ -1,0 +1,145 @@
+services:
+  # MLflow tracking server
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.1.1
+    container_name: premier-league-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlflow:/mlflow
+    environment:
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-http://localhost:5000}
+    command: >
+      mlflow server 
+        --backend-store-uri ${MLFLOW_BACKEND_STORE_URI} 
+        --default-artifact-root ${MLFLOW_ARTIFACT_ROOT} 
+        --host 0.0.0.0 
+        --port 5000
+    networks:
+      - premier-league-network
+
+  # Prefect server
+  prefect-server:
+    image: prefecthq/prefect:3.4.9.dev3-python3.10-conda
+    container_name: premier-league-prefect-server
+    ports:
+      - "4200:4200"
+    volumes:
+      - prefect-data:/root/.prefect
+    environment:
+      - PREFECT_UI_URL=${PREFECT_UI_URL}
+      - PREFECT_API_URL=${PREFECT_API_URL}
+      - PREFECT_SERVER_API_HOST=${PREFECT_SERVER_API_HOST}
+    command: prefect server start --host 0.0.0.0
+    networks:
+      - premier-league-network
+
+  # Prefect setup and flow servers
+  prefect-setup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: premier-league-prefect-setup
+    volumes:
+      - ./:/app
+      - prefect-data:/root/.prefect
+    environment:
+      - PREFECT_API_URL=http://premier-league-prefect-server:4200/api
+      - PYTHONPATH=/app
+    command: >
+      sh -c "
+        echo 'Waiting for Prefect server...' &&
+        sleep 15 &&
+        echo 'Setting up Prefect work pools and flow servers...' &&
+        uv run python scripts/setup_prefect.py
+      "
+    depends_on:
+      - prefect-server
+    networks:
+      - premier-league-network
+    restart: unless-stopped
+
+  # Prefect worker
+  prefect-worker:
+    image: prefecthq/prefect:3.4.9.dev3-python3.10-conda
+    container_name: premier-league-prefect-worker
+    volumes:
+      - ./:/app
+      - prefect-data:/root/.prefect
+    environment:
+      - PREFECT_API_URL=http://premier-league-prefect-server:4200/api
+      - PYTHONPATH=/app
+    command: >
+      sh -c "
+        echo 'Waiting for Prefect setup...' &&
+        sleep 25 &&
+        echo 'Starting Prefect worker...' &&
+        prefect worker start --pool premier-league-pool
+      "
+    depends_on:
+      - prefect-server
+      - prefect-setup
+    networks:
+      - premier-league-network
+    restart: unless-stopped
+
+  # Enhanced API service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: premier-league-api
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    environment:
+      - MLFLOW_TRACKING_URI=http://premier-league-mlflow:5000
+      - PREFECT_API_URL=http://premier-league-prefect-server:4200/api
+      - PYTHONPATH=${PYTHONPATH}
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    command: uv run uvicorn src.api.enhanced_api:app --host ${API_HOST} --port ${API_PORT}
+    depends_on:
+      - mlflow
+      - prefect-server
+    networks:
+      - premier-league-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${API_PORT}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Dashboard service
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: premier-league-dashboard
+    ports:
+      - "${DASHBOARD_PORT}:${DASHBOARD_PORT}"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    environment:
+      - MLFLOW_TRACKING_URI=http://premier-league-mlflow:5000
+      - PREFECT_API_URL=http://premier-league-prefect-server:4200/api
+      - API_URL=http://premier-league-api:8000
+      - PYTHONPATH=${PYTHONPATH}
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+    command: uv run streamlit run src/dashboard/app.py --server.port ${DASHBOARD_PORT} --server.address ${DASHBOARD_HOST}
+    depends_on:
+      - api
+    networks:
+      - premier-league-network
+
+networks:
+  premier-league-network:
+    driver: bridge
+
+volumes:
+  prefect-data: 
