@@ -80,3 +80,5 @@ htmlcov/
 # Simulation outputs (generated during testing)
 data/simulation_output/
 data/test_simulation/
+
+.cursorignore
